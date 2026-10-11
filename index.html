@@ -7925,7 +7925,18 @@
                 localStorage.setItem(PRECIOS_KEY, JSON.stringify(PRECIOS));
                 localStorage.setItem(TIENDA_KEY, JSON.stringify(TIENDA));
             } catch (e) {}
-            const listo = () => showNotification('📋 ¡Copiado y guardado acá! Reemplaza los bloques PRECIOS_DEFECTO y TIENDA_DEFECTO del archivo index.html por este texto');
+            // Y APLICA los cambios en vivo, igual que "Ver cambios ahora":
+            // antes, si se desmarcaba un check (ej. ocultar el producto en
+            // tendencia) y se tocaba solo este boton, el cambio quedaba
+            // guardado pero la pagina no se enteraba hasta recargar — se
+            // leia como "no funciono". Ahora todos los botones de guardar
+            // hacen lo mismo: guardar, copiar y aplicar.
+            aplicarAnalitica();
+            aplicarIdentidad();
+            aplicarEstadoCredito();
+            recalcularPrecios();
+            pintarPanelAdmin();
+            const listo = () => showNotification('📋 ¡Copiado, guardado y aplicado! Reemplaza los bloques PRECIOS_DEFECTO y TIENDA_DEFECTO del archivo index.html por este texto');
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(codigo).then(listo).catch(function () {
                     window.prompt('Copia este texto y reemplaza los bloques PRECIOS_DEFECTO y TIENDA_DEFECTO del archivo index.html:', codigo);
