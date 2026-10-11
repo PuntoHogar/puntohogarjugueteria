@@ -39,7 +39,9 @@
     <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="preload" as="image" href="https://jugueteriataiwan.com/storage/products/30533/thumb/e1e78f2f-8d84-458a-8f73-afdac0a201e3.webp" fetchpriority="high">
+    <!-- (El preload de la foto del héroe se quitó: pre-descargaba el
+         producto de fábrica aunque el panel hubiera elegido otro. La foto
+         correcta la pide actualizarHeroDestacado con fetchpriority high.) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -5285,24 +5287,29 @@
                         <i class="fas fa-truck"></i>Envíos a toda Colombia
                     </div>
                 </div>
-                <div class="hero-product-card">
+                <!-- La tarjeta nace INVISIBLE y sin foto (visibility
+                     conserva su espacio, sin saltos de diseño): asi nunca
+                     se ve el producto de fabrica "un segundo" antes de
+                     que el JS ponga el que se eligio en el panel. La
+                     revela actualizarHeroDestacado al llenarla. -->
+                <div class="hero-product-card" style="visibility: hidden;">
                     <div class="card-gallery">
                         <div class="card-gallery-track">
-                            <div class="card-slide" id="heroProductoSlide" style="--img:url('https://jugueteriataiwan.com/storage/products/30533/thumb/e1e78f2f-8d84-458a-8f73-afdac0a201e3.webp')" onclick="openImageLightbox('https://jugueteriataiwan.com/storage/products/30533/thumb/e1e78f2f-8d84-458a-8f73-afdac0a201e3.webp', 'PISTA NEON CARRO PILA LUZ CON NUMERO', 'pista-neon-carro-pila-luz-con-numero')">
-                                <img id="heroProductoImg" src="https://jugueteriataiwan.com/storage/products/30533/full/e1e78f2f-8d84-458a-8f73-afdac0a201e3.webp" data-thumb="https://jugueteriataiwan.com/storage/products/30533/thumb/e1e78f2f-8d84-458a-8f73-afdac0a201e3.webp" alt="Pista Neón Carro con pila y luz, incluye número — Juguetería Taiwan" width="400" height="500" fetchpriority="high" decoding="async" onerror="imgOnError(this)">
+                            <div class="card-slide" id="heroProductoSlide">
+                                <img id="heroProductoImg" alt="Producto en tendencia — Juguetería Taiwan" width="400" height="500" fetchpriority="high" decoding="async" onerror="imgOnError(this)">
                             </div>
                         </div>
                     </div>
                     <div class="product-info">
-                        <div class="product-category" id="heroProductoCat">JUGUETERÍA</div>
-                        <h3 class="product-title" id="heroProductoTitle">PISTA NEON CARRO PILA LUZ CON NUMERO</h3>
-                        <div class="product-ref-line"><span id="heroProductoSku">SKU: 2026888805337</span></div>
+                        <div class="product-category" id="heroProductoCat"></div>
+                        <h3 class="product-title" id="heroProductoTitle"></h3>
+                        <div class="product-ref-line"><span id="heroProductoSku"></span></div>
                         <p class="product-description">Producto destacado del catálogo. Confirmamos disponibilidad y detalles por WhatsApp.</p>
                         <div class="product-price">
-                            <div class="current-price" id="heroPriceRange">$68.800</div>
+                            <div class="current-price" id="heroPriceRange"></div>
                             <div class="wholesale-badge" data-neutro='🚚 Envíos a toda Colombia'>💳 Paga a cuotas con Addi o Sistecrédito</div>
                         </div>
-                        <button class="add-to-cart-btn" id="heroProductoBtn" onclick="scrollToProduct('pista-neon-carro-pila-luz-con-numero')">
+                        <button class="add-to-cart-btn" id="heroProductoBtn">
                             <i class="fas fa-shopping-bag"></i>COMPRAR AHORA
                         </button>
                         <div class="payment-info">
@@ -5502,7 +5509,7 @@
                      clientes, vuelve a este bloque. Cada foto enlaza a la
                      tarjeta del producto (no a un lightbox), para llevar
                      directo a la compra. -->
-                <div class="testimonial-card" data-fav-slot="0">
+                <div class="testimonial-card" data-fav-slot="0" style="visibility: hidden;">
                     <div class="testimonial-image-container square" data-links-to-product="mesa-futbol-de-madera" style="--img:url('https://jugueteriataiwan.com/storage/products/30385/thumb/3b4c8612-2e7b-44d0-9d68-fa32e9efe45e.webp')" onclick="scrollToProduct('mesa-futbol-de-madera')" role="button" tabindex="0" aria-label="Ver Mesa Fútbol de Madera y comprar" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();scrollToProduct('mesa-futbol-de-madera');}">
                         <img src="https://jugueteriataiwan.com/storage/products/30385/thumb/3b4c8612-2e7b-44d0-9d68-fa32e9efe45e.webp" alt="Mesa Fútbol de Madera — Juguetería Taiwan" loading="lazy" onerror="imgOnError(this)">
                     </div>
@@ -5514,7 +5521,7 @@
                     </div>
                 </div>
 
-                <div class="testimonial-card" data-fav-slot="1">
+                <div class="testimonial-card" data-fav-slot="1" style="visibility: hidden;">
                     <div class="testimonial-image-container square" data-links-to-product="pista-neon-carro-pila-luz-con-numero" style="--img:url('https://jugueteriataiwan.com/storage/products/30533/thumb/e1e78f2f-8d84-458a-8f73-afdac0a201e3.webp')" onclick="scrollToProduct('pista-neon-carro-pila-luz-con-numero')" role="button" tabindex="0" aria-label="Ver Pista Neón Carro Pila Luz y comprar" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();scrollToProduct('pista-neon-carro-pila-luz-con-numero');}">
                         <img src="https://jugueteriataiwan.com/storage/products/30533/thumb/e1e78f2f-8d84-458a-8f73-afdac0a201e3.webp" alt="Pista Neón Carro con pila y luz, incluye número" loading="lazy" onerror="imgOnError(this)">
                     </div>
@@ -5526,7 +5533,7 @@
                     </div>
                 </div>
 
-                <div class="testimonial-card" data-fav-slot="2">
+                <div class="testimonial-card" data-fav-slot="2" style="visibility: hidden;">
                     <div class="testimonial-image-container square" data-links-to-product="burbujero-mil-burbujas-pilas-cj-bubble-gun-4-motivos" style="--img:url('https://jugueteriataiwan.com/storage/products/30523/thumb/fe6f444a-ebca-4fea-bc42-198023f51e3a.webp')" onclick="scrollToProduct('burbujero-mil-burbujas-pilas-cj-bubble-gun-4-motivos')" role="button" tabindex="0" aria-label="Ver Burbujero Mil Burbujas y comprar" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();scrollToProduct('burbujero-mil-burbujas-pilas-cj-bubble-gun-4-motivos');}">
                         <img src="https://jugueteriataiwan.com/storage/products/30523/thumb/fe6f444a-ebca-4fea-bc42-198023f51e3a.webp" alt="Burbujero Mil Burbujas con pilas, modelo CJ Bubble Gun" loading="lazy" onerror="imgOnError(this)">
                     </div>
@@ -6958,6 +6965,17 @@
                 btn.setAttribute('aria-label', 'Comprar ' + p.name);
             }
             actualizarPrecioHero();
+            // La tarjeta nacio invisible (sin src ni texto de fabrica) para
+            // que nunca se vea "un segundo" el producto viejo antes del
+            // elegido: recien aqui, ya llena con el producto correcto,
+            // se revela. Si el producto configurado no existe, queda oculta.
+            const heroCard = document.querySelector('.hero-product-card');
+            if (heroCard && heroCard.style.visibility === 'hidden') {
+                heroCard.style.transition = 'opacity 0.35s ease';
+                heroCard.style.opacity = '0';
+                heroCard.style.visibility = 'visible';
+                requestAnimationFrame(() => { heroCard.style.opacity = '1'; });
+            }
         }
 
         // Sección "Favoritos del inicio": cada tarjeta se rellena en vivo con
@@ -6972,6 +6990,15 @@
                 const p = ids.length ? products.find(x => x.id === ids[slot]) : null;
                 if (!p) { card.style.display = 'none'; return; }
                 card.style.display = '';
+                // Igual que el héroe: las tarjetas nacen invisibles para que
+                // nunca se vean los productos/precios de fabrica "un segundo"
+                // antes de que el JS ponga los configurados.
+                if (card.style.visibility === 'hidden') {
+                    card.style.transition = 'opacity 0.35s ease';
+                    card.style.opacity = '0';
+                    card.style.visibility = 'visible';
+                    requestAnimationFrame(() => { card.style.opacity = '1'; });
+                }
                 const cont = card.querySelector('.testimonial-image-container');
                 const img = card.querySelector('img');
                 const texto = card.querySelector('.testimonial-text');
