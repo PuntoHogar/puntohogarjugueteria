@@ -6860,7 +6860,15 @@
             'piñateria': { label: 'Piñatería', icon: 'fa-gift' },
             'deporte': { label: 'Deporte', icon: 'fa-futbol' }
         };
-        function categoryLabel(cat) { return (CATEGORY_META[cat] && CATEGORY_META[cat].label) || cat || 'Otros'; }
+        // Si llega una categoria sin registrar en CATEGORY_META (el cron
+        // puede mapear una categoria nueva de POSGold a un slug nuevo),
+        // su etiqueta se humaniza sola: "cocina-juguete" -> "Cocina juguete".
+        // Antes se mostraba el slug crudo con guiones.
+        function categoryLabel(cat) {
+            if (CATEGORY_META[cat] && CATEGORY_META[cat].label) return CATEGORY_META[cat].label;
+            if (!cat) return 'Otros';
+            return cat.replace(/-/g, ' ').replace(/^\w/, c => c.toUpperCase());
+        }
         function categoryIcon(cat) { return (CATEGORY_META[cat] && CATEGORY_META[cat].icon) || 'fa-cube'; }
 
         // Diseños de temporada navideña (oct-dic): se detectan por nombre,
@@ -7717,9 +7725,12 @@
 
             // Una fila por categoría con productos, con margen propio y un
             // ejemplo en vivo (producto más barato de la categoría).
+            // Incluye TODAS las categorías con productos — registradas en
+            // CATEGORY_META o nuevas (así Valeria puede marginear una
+            // categoría que el cron acabe de mapear, sin esperar código).
             const counts = {};
             CATALOGO_BASE.forEach(p => { counts[p.category] = (counts[p.category] || 0) + 1; });
-            const cats = Object.keys(CATEGORY_META).filter(c => counts[c]);
+            const cats = Object.keys(counts).sort((a, b) => categoryLabel(a).localeCompare(categoryLabel(b), 'es'));
             const cont = document.getElementById('adminCats');
             cont.innerHTML = cats.map(cat => {
                 const enCat = CATALOGO_BASE.filter(p => p.category === cat);
