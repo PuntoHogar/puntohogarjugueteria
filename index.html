@@ -6046,6 +6046,35 @@
                     </div>
                 </details>
 
+                <!-- Costos desde el navegador: el Excel se CIFRA aqui mismo
+                     (WebCrypto, formato openssl compatible con el cron) y se
+                     commitea directo al repo por API. Asi refrescar costos
+                     no requiere Python ni ningun computador preparado. -->
+                <h4 class="admin-sub">💰 Actualizar costos <small>(exporta el Excel de POSGold y súbelo aquí, desde cualquier dispositivo)</small></h4>
+                <p class="admin-help admin-help-mini">El archivo se cifra <strong>en tu navegador</strong> con la llave del proyecto y queda en el repo para el cron. La próxima sincronización (o el botón de arriba) aplica los costos nuevos al ranking.</p>
+                <div class="admin-grid">
+                    <label>Archivo Excel de POSGold (PRODUCTOS…xlsx)
+                        <input type="file" id="adminCostosFile" accept=".xlsx">
+                    </label>
+                    <label>Llave de cifrado (COSTOS_KEY — solo se pide una vez)
+                        <input type="password" id="adminCostosKey" autocomplete="off" onchange="guardarCostosClave()" placeholder="la llave generada al configurar el proyecto">
+                    </label>
+                    <label>Token de GitHub con permiso Contents (Read and write), solo este repo
+                        <input type="password" id="adminCostosToken" autocomplete="off" onchange="guardarCostosToken()" placeholder="github_pat_… (se guarda solo en este navegador)">
+                    </label>
+                </div>
+                <div class="admin-botones admin-sync-botones">
+                    <button class="btn btn-primary" type="button" onclick="subirCostosNavegador()"><i class="fas fa-upload"></i> Cifrar y subir costos</button>
+                </div>
+                <details class="admin-sync-ayuda">
+                    <summary>¿Cómo consigo ese token y esa llave?</summary>
+                    <div class="admin-help-mini">
+                        <strong>Llave (COSTOS_KEY):</strong> es la que generó tu persona de confianza al configurar el proyecto (está en el archivo <em>.env</em> del computador donde se creó, o en los <em>secrets</em> del repo). Se pega una vez y queda en este navegador.<br><br>
+                        <strong>Token:</strong> mismo camino del otro token (github.com → Settings → Developer settings → Fine-grained tokens → Generate new), pero el permiso es <strong>Repository permissions → Contents → Read and write</strong>, solo sobre <em>jugueteriataiwan/jugueteriataiwan</em>.<br>
+                        <em>Con ese token alguien solo podría cambiar archivos del repo: no toca POSGold, ni la tienda publicada, ni nada más. Igual que la llave, se queda únicamente en este navegador — nunca viaja en "Guardar para TODOS".</em>
+                    </div>
+                </details>
+
                 <h4 class="admin-sub">📈 Analítica y píxeles <small>(pega SOLO el ID; vacío = esa etiqueta queda apagada)</small></h4>
                 <div class="admin-grid">
                     <label>Pixel de Meta (número largo)
@@ -7122,6 +7151,11 @@
             pintarEstadoSync();
             const tkn = document.getElementById('adminSyncToken');
             if (tkn) tkn.value = leerTokenSync();
+            // llave y token de costos (localStorage propios, nunca exportados)
+            const ck = document.getElementById('adminCostosKey');
+            if (ck) ck.value = leerCostosClave();
+            const ct = document.getElementById('adminCostosToken');
+            if (ct) { try { ct.value = localStorage.getItem(COSTOS_TOKEN_KEY) || ''; } catch (e) {} }
         }
 
         /* ------------------------------------------------------------------
@@ -7235,6 +7269,104 @@
                     }
                 }
             }, 20000);
+        }
+
+        /* ------------------------------------------------------------------
+           COSTOS DESDE EL NAVEGADOR (cualquier dispositivo, sin Python)
+           El Excel de POSGold se cifra AQUI con WebCrypto en el formato
+           exacto de "openssl enc -aes-256-cbc -pbkdf2 -iter 200000"
+           ("Salted__" + salt + ciphertext, key||iv derivados con PBKDF2)
+           y se sube a costos.posgold.enc via la API de GitHub. La llave y
+           el token viven en claves de localStorage PROPIAS (igual que el
+           token de sync): jamas viajan en "Guardar para TODOS".
+           ------------------------------------------------------------------ */
+        const COSTOS_LLAVE_KEY = 'jt_costos_llave';
+        const COSTOS_TOKEN_KEY = 'jt_costos_token';
+        const REPO_API = 'https://api.github.com/repos/jugueteriataiwanoficial/jugueteriataiwan';
+
+        function leerCostosClave() {
+            try { return localStorage.getItem(COSTOS_LLAVE_KEY) || ''; } catch (e) { return ''; }
+        }
+        function guardarCostosClave() {
+            const inp = document.getElementById('adminCostosKey');
+            if (!inp) return;
+            try { localStorage.setItem(COSTOS_LLAVE_KEY, inp.value.trim()); } catch (e) {}
+            showNotification(inp.value.trim() ? 'Llave de costos guardada en este navegador' : 'Llave borrada', 'success');
+        }
+        function guardarCostosToken() {
+            const inp = document.getElementById('adminCostosToken');
+            if (!inp) return;
+            try { localStorage.setItem(COSTOS_TOKEN_KEY, inp.value.trim()); } catch (e) {}
+            showNotification(inp.value.trim() ? 'Token de costos guardado en este navegador' : 'Token borrado', 'success');
+        }
+
+        function ab64(buffer) {
+            const bytes = new Uint8Array(buffer);
+            let bin = '';
+            const trozo = 0x8000;
+            for (let i = 0; i < bytes.length; i += trozo) {
+                bin += String.fromCharCode.apply(null, bytes.subarray(i, i + trozo));
+            }
+            return btoa(bin);
+        }
+
+        async function subirCostosNavegador() {
+            const fileInput = document.getElementById('adminCostosFile');
+            const file = fileInput && fileInput.files && fileInput.files[0];
+            const clave = leerCostosClave();
+            const token = (() => { try { return localStorage.getItem(COSTOS_TOKEN_KEY) || ''; } catch (e) { return ''; } })();
+            if (!file) { showNotification('Elige primero el Excel exportado de POSGold', 'error'); return; }
+            if (!clave || !token) {
+                showNotification('Falta ' + (clave ? 'el token' : 'la llave') + ' de costos — mira la guía de abajo', 'error');
+                const guias = document.querySelectorAll('.admin-sync-ayuda');
+                if (guias.length) guias[guias.length - 1].open = true;
+                return;
+            }
+            const btn = document.querySelector('.admin-sync-botones .btn.btn-primary:not([disabled])');
+            const etiquetaOriginal = btn ? btn.innerHTML : '';
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-hourglass-half"></i> Cifrando…'; }
+            try {
+                // 1. leer + cifrar en formato openssl enc -pbkdf2
+                const buf = await file.arrayBuffer();
+                const enc = new TextEncoder();
+                const salt = crypto.getRandomValues(new Uint8Array(8));
+                const material = await crypto.subtle.importKey('raw', enc.encode(clave), 'PBKDF2', false, ['deriveBits']);
+                const keyIv = new Uint8Array(await crypto.subtle.deriveBits(
+                    { name: 'PBKDF2', salt, iterations: 200000, hash: 'SHA-256' }, material, 384));
+                const aesKey = await crypto.subtle.importKey('raw', keyIv.slice(0, 32), 'AES-CBC', false, ['encrypt']);
+                const ciphertext = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-CBC', iv: keyIv.slice(32, 48) }, aesKey, buf));
+                const salida = new Uint8Array(16 + ciphertext.length);
+                salida.set(enc.encode('Salted__'), 0);
+                salida.set(salt, 8);
+                salida.set(ciphertext, 16);
+                const contenido = ab64(salida.buffer ? salida.buffer : salida);
+                if (btn) btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Subiendo…';
+                // 2. sha del archivo actual (para reemplazarlo) y PUT
+                let sha = null;
+                const r1 = await fetch(REPO_API + '/contents/costos.posgold.enc',
+                    { headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' } });
+                if (r1.ok) sha = (await r1.json()).sha;
+                const r2 = await fetch(REPO_API + '/contents/costos.posgold.enc', {
+                    method: 'PUT',
+                    headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: 'costos: ' + file.name + ' actualizado desde el navegador',
+                        content: contenido,
+                        sha: sha,
+                    }),
+                });
+                if (r2.status === 200 || r2.status === 201) {
+                    showNotification('✅ Costos cifrados y subidos — la próxima sincronización los aplica', 'success');
+                    if (fileInput) fileInput.value = '';
+                } else if (r2.status === 401 || r2.status === 403) {
+                    showNotification('El token no tiene permiso Contents — créalo de nuevo con la guía', 'error');
+                } else {
+                    showNotification('GitHub respondió ' + r2.status + ' — intenta de nuevo', 'error');
+                }
+            } catch (e) {
+                showNotification('No se pudo procesar el archivo — ¿es un .xlsx válido?', 'error');
+            }
+            if (btn) { btn.disabled = false; btn.innerHTML = etiquetaOriginal; }
         }
 
 
