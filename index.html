@@ -6074,6 +6074,18 @@
                         <em>Con ese token alguien solo podría cambiar archivos del repo: no toca POSGold, ni la tienda publicada, ni nada más. Igual que la llave, se queda únicamente en este navegador — nunca viaja en "Guardar para TODOS".</em>
                     </div>
                 </details>
+                <details class="admin-sync-ayuda">
+                    <summary>¿Cómo reconozco el archivo correcto? (no hay plantilla a propósito)</summary>
+                    <div class="admin-help-mini">
+                        El export de productos de POSGold se reconoce así:
+                        <ul style="margin: 6px 0 6px 18px;">
+                            <li>Nombre: <strong>PRODUCTOS + fecha.xlsx</strong> y pesa <strong>más de 1 MB</strong></li>
+                            <li>Una sola hoja, llamada <strong>"Productos"</strong>, con más de 6.000 filas</li>
+                            <li>La primera fila trae columnas como: productoid, codigo, descripcion, precio1, saldo, disponible, costo, costopromedio, costoultimo, activo…</li>
+                        </ul>
+                        <strong>Exporta siempre TODO el inventario, sin filtros activos</strong> en la lista de productos: si subieras un export a medias, el catálogo ocultaría los productos que falten. Este panel revisa el archivo antes de subirlo (columnas y volumen) y te avisa si algo no cuadra — por eso no existe una plantilla para llenar a mano: el único archivo válido lo genera POSGold completo.
+                    </div>
+                </details>
 
                 <h4 class="admin-sub">📈 Analítica y píxeles <small>(pega SOLO el ID; vacío = esa etiqueta queda apagada)</small></h4>
                 <div class="admin-grid">
@@ -7311,12 +7323,20 @@
         }
 
         async function validarExcelPosgold(buf) {
-            /* Abre el zip interno del xlsx, lee la tabla de cadenas
-               (sharedStrings.xml) y confirma que el archivo trae las
-               columnas de costo de POSGold (productoid, costopromedio,
-               costoultimo). Asi el panel rechaza cualquier export
-               equivocado ANTES de subirlo — si se subiera otro archivo,
-               la siguiente sincronización fallaría hasta reemplazarlo. */
+            /* Abre el zip interno del xlsx y verifica DOS cosas antes de
+               dejar subir el archivo:
+               1. COLUMNAS: la tabla de cadenas (sharedStrings.xml) debe
+                  traer productoid/costopromedio/costoultimo — asi se
+                  rechaza cualquier export equivocado (plantillas de carga,
+                  consolidados, reportes de venta...).
+               2. VOLUMEN: la hoja de calculo debe traer TODO el inventario
+                  (1000+ filas). El cron interpreta "sin costo en el Excel"
+                  como "ocultar el producto": un export hecho con un filtro
+                  activo en POSGold ocultaria los otros 5.000+ productos.
+                  Este guard es tambien la razon por la que NO existe una
+                  "plantilla descargable": el unico archivo valido es el
+                  export completo que genera POSGold — nunca algo llenado a
+                  mano ni exportado a medias. */
             try {
                 const bytes = new Uint8Array(buf);
                 if (!(bytes[0] === 0x50 && bytes[1] === 0x4B)) {
@@ -7329,7 +7349,16 @@
                     return { ok: true, motivo: '' };  // navegador viejo: no se puede verificar
                 }
                 const dv = new DataView(bytes.buffer);
-                // buscar el EOCD (final del zip) desde atrás
+                const leerEntrada = async (metodo, cSize, lho) => {
+                    const lfn = dv.getUint16(lho + 26, true);
+                    const lex = dv.getUint16(lho + 28, true);
+                    const inicio = lho + 30 + lfn + lex;
+                    const comprimido = bytes.subarray(inicio, inicio + cSize);
+                    if (metodo === 0) return new TextDecoder().decode(comprimido);
+                    const flujo = new Blob([comprimido]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+                    return await new Response(flujo).text();
+                };
+                // buscar el EOCD (final del zip) desde atras
                 let eocd = -1;
                 const desde = Math.max(0, bytes.length - 65557);
                 for (let i = bytes.length - 22; i >= desde; i--) {
@@ -7338,6 +7367,7 @@
                 if (eocd < 0) return { ok: false, motivo: 'el archivo Excel no está completo' };
                 const nEntradas = dv.getUint16(eocd + 10, true);
                 const cdOffset = dv.getUint32(eocd + 16, true);
+                let textoCadenas = null, textoHoja = null;
                 let pos = cdOffset;
                 for (let i = 0; i < nEntradas; i++) {
                     if (dv.getUint32(pos, true) !== 0x02014b50) break;
@@ -7349,27 +7379,29 @@
                     const lho = dv.getUint32(pos + 42, true);
                     const nombre = new TextDecoder().decode(bytes.subarray(pos + 46, pos + 46 + fnLen));
                     if (nombre === 'xl/sharedStrings.xml') {
-                        const lfn = dv.getUint16(lho + 26, true);
-                        const lex = dv.getUint16(lho + 28, true);
-                        const inicio = lho + 30 + lfn + lex;
-                        const comprimido = bytes.subarray(inicio, inicio + cSize);
-                        let texto;
-                        if (metodo === 0) {
-                            texto = new TextDecoder().decode(comprimido);
-                        } else {
-                            const flujo = new Blob([comprimido]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
-                            texto = await new Response(flujo).text();
-                        }
-                        const okCols = texto.includes('productoid') &&
-                                       texto.includes('costopromedio') &&
-                                       texto.includes('costoultimo');
-                        return okCols
-                            ? { ok: true, motivo: '' }
-                            : { ok: false, motivo: 'le faltan las columnas de costo (productoid/costopromedio/costoultimo): no parece el export de PRODUCTOS de POSGold' };
+                        textoCadenas = await leerEntrada(metodo, cSize, lho);
+                    } else if (nombre === 'xl/worksheets/sheet1.xml') {
+                        textoHoja = await leerEntrada(metodo, cSize, lho);
                     }
                     pos += 46 + fnLen + exLen + cmLen;
                 }
-                return { ok: false, motivo: 'formato de Excel inesperado' };
+                if (!textoCadenas && !textoHoja) return { ok: false, motivo: 'formato de Excel inesperado' };
+                // columnas: en sharedStrings (export de POSGold) o inline en
+                // la hoja (otros generadores de xlsx) — se revisa donde este
+                const textoCols = textoCadenas || textoHoja;
+                const okCols = textoCols.includes('productoid') &&
+                               textoCols.includes('costopromedio') &&
+                               textoCols.includes('costoultimo');
+                if (!okCols) {
+                    return { ok: false, motivo: 'le faltan las columnas de costo (productoid/costopromedio/costoultimo): no parece el export de PRODUCTOS de POSGold' };
+                }
+                // volumen: el export completo trae 6.000+ filas; uno
+                // filtrado (o una plantilla llenada a mano) traeria pocas
+                const filas = textoHoja ? (textoHoja.match(/<row[\s>]/g) || []).length : 0;
+                if (textoHoja && filas < 1000) {
+                    return { ok: false, motivo: 'solo trae ' + filas + ' filas: parece un export filtrado o incompleto. Exporta TODO el inventario de POSGold (sin filtros activos), porque un archivo a medias ocultaría los productos que falten' };
+                }
+                return { ok: true, motivo: '' };
             } catch (e) {
                 return { ok: false, motivo: 'no se pudo leer el archivo' };
             }
