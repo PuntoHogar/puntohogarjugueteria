@@ -5121,6 +5121,13 @@
             line-height: 1.5;
         }
         .admin-nota strong { color: var(--text-dark); }
+        /* Sincronizacion manual desde el panel */
+        .admin-sync-botones { margin-top: 6px; }
+        .admin-sync-botones .btn[disabled] { opacity: 0.7; cursor: wait; }
+        .admin-sync-ayuda { margin: 6px 0 16px; font-size: 0.8rem; }
+        .admin-sync-ayuda summary { cursor: pointer; color: var(--primary-color); font-weight: 600; }
+        .admin-sync-ayuda[open] summary { margin-bottom: 8px; }
+        .admin-sync-ayuda .admin-help-mini { line-height: 1.55; }
         /* PANEL EN MOVIL: responsive SIN ocultar nada. Antes este bloque
            escondia con display:none el costo y el precio final de cada
            producto y la vista previa de cada categoria; ahora las filas
@@ -6010,6 +6017,31 @@
                         <input type="text" id="adminClaveNueva" autocomplete="off" placeholder="Escribe una clave nueva">
                     </label>
                 </div>
+
+                <!-- Sincronizacion con POSGold: estado en vivo + disparo manual.
+                     El token vive SOLO en este navegador (localStorage aparte):
+                     nunca viaja en "Guardar para TODOS" ni en el archivo. -->
+                <h4 class="admin-sub">🔄 Sincronización con POSGold</h4>
+                <p class="admin-help admin-help-mini" id="adminSyncEstado">Consultando la última sincronización…</p>
+                <div class="admin-grid">
+                    <label>Token de GitHub para sincronizar <small>(solo se pide una vez; véase la ayuda de abajo)</small>
+                        <input type="password" id="adminSyncToken" autocomplete="off" placeholder="github_pat_… (se guarda solo en este computador)">
+                    </label>
+                </div>
+                <div class="admin-botones admin-sync-botones">
+                    <button class="btn btn-primary" type="button" onclick="forzarSyncAhora()"><i class="fas fa-sync-alt"></i> Sincronizar ahora</button>
+                </div>
+                <details class="admin-sync-ayuda">
+                    <summary>¿Cómo consigo el token? (una sola vez, ~3 minutos)</summary>
+                    <div class="admin-help-mini">
+                        1. Entra a <strong>github.com</strong> con la cuenta de la tienda → foto de perfil →
+                        <strong>Settings</strong> → <strong>Developer settings</strong> → <strong>Fine-grained tokens</strong> → <em>Generate new token</em>.<br>
+                        2. <strong>Repository access</strong> → <em>Only select repositories</em> → marca <em>jugueteriataiwan/jugueteriataiwan</em>.<br>
+                        3. <strong>Permissions → Repository permissions → Actions</strong> → <strong>Read and write</strong> (nada más).<br>
+                        4. Genera el token (empieza por <em>github_pat_</em>), cópialo y pégalo aquí.<br>
+                        <em>Es un permiso quirúrgico: ese token solo puede lanzar la sincronización — no puede tocar la página, el catálogo ni nada más.</em>
+                    </div>
+                </details>
 
                 <h4 class="admin-sub">📈 Analítica y píxeles <small>(pega SOLO el ID; vacío = esa etiqueta queda apagada)</small></h4>
                 <div class="admin-grid">
@@ -7061,7 +7093,125 @@
         function abrirPanelAdmin() {
             pintarPanelAdmin();
             document.getElementById('adminModal').classList.add('show');
+            // estado de la sincronizacion en vivo (API publica, sin token)
+            pintarEstadoSync();
+            const tkn = document.getElementById('adminSyncToken');
+            if (tkn) tkn.value = leerTokenSync();
         }
+
+        /* ------------------------------------------------------------------
+           SINCRONIZACION MANUAL DESDE EL PANEL
+           El cron de la nube corre 4 veces al dia; este boton lanza la MISMA
+           corrida al instante via la API de GitHub (workflow_dispatch).
+
+           Seguridad: se usa un token de grano fino con UNICO permiso
+           "Actions: Write" sobre este repo (si se filtrara, lo peor que
+           alguien podria hacer es re-sincronizar el catalogo). El token se
+           guarda en localStorage aparte (clave propia) — JAMAS en TIENDA ni
+           en el texto de "Guardar para TODOS", y el codigo no lo imprime.
+           El ESTADO de las corridas se lee de la API publica (sin token).
+           ------------------------------------------------------------------ */
+        const SYNC_TOKEN_KEY = 'jt_sync_token';
+        const SYNC_API = 'https://api.github.com/repos/jugueteriataiwanoficial/jugueteriataiwan/actions/workflows/sync-top300.yml';
+        let syncVigilando = null;
+
+        function leerTokenSync() {
+            try { return localStorage.getItem(SYNC_TOKEN_KEY) || ''; } catch (e) { return ''; }
+        }
+
+        function guardarTokenSync() {
+            const inp = document.getElementById('adminSyncToken');
+            if (!inp) return;
+            try { localStorage.setItem(SYNC_TOKEN_KEY, inp.value.trim()); } catch (e) {}
+            showNotification(inp.value.trim() ? 'Token guardado en este computador' : 'Token borrado', 'success');
+        }
+
+        async function pintarEstadoSync() {
+            const el = document.getElementById('adminSyncEstado');
+            if (!el) return;
+            try {
+                const r = await fetch(SYNC_API + '/runs?per_page=1', { headers: { 'Accept': 'application/vnd.github+json' } });
+                const d = await r.json();
+                const run = d.workflow_runs && d.workflow_runs[0];
+                if (!run) { el.innerHTML = 'Sin corridas todavía — el cron corre a las 07:15, 08:15, 19:15 y 20:15.'; return; }
+                const cuando = new Date(run.run_started_at);
+                const horas = Math.round((Date.now() - cuando.getTime()) / 3600000);
+                const hace = horas >= 1 ? `hace ${horas} h` : `hace ${Math.max(1, Math.round((Date.now() - cuando.getTime()) / 60000))} min`;
+                const icono = run.status !== 'completed'
+                    ? '🟡 corriendo…'
+                    : (run.conclusion === 'success' ? '🟢 última sincronización: ' + hace : '🔴 falló la última (' + hace + ')');
+                el.innerHTML = icono + ' · catálogo activo: <strong>' + products.length + '</strong> productos.';
+            } catch (e) {
+                el.innerHTML = 'No pudimos consultar el estado (sin conexión con GitHub).';
+            }
+        }
+
+        async function forzarSyncAhora() {
+            const token = leerTokenSync();
+            const inp = document.getElementById('adminSyncToken');
+            if (inp && inp.value.trim() !== token) guardarTokenSync();
+            if (!token) {
+                showNotification('Pega primero el token de GitHub (mira la ayuda de abajo) y vuelve a tocar el botón', 'error');
+                const ayuda = document.querySelector('.admin-sync-ayuda');
+                if (ayuda) ayuda.open = true;
+                return;
+            }
+            const btn = document.querySelector('.admin-sync-botones .btn');
+            const etiquetaOriginal = btn ? btn.innerHTML : '';
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-hourglass-half"></i> Enviando…'; }
+            try {
+                const r = await fetch(SYNC_API + '/dispatches', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Accept': 'application/vnd.github+json',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ ref: 'main' }),
+                });
+                if (r.status === 204) {
+                    showNotification('¡Sincronización lanzada! Tarda 3-6 min; el catálogo se actualiza solo', 'success');
+                    if (btn) btn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Sincronizando…';
+                    vigilarSync(btn, etiquetaOriginal);
+                } else if (r.status === 401 || r.status === 403) {
+                    showNotification('El token no sirve o no tiene permiso de Actions — créalo de nuevo con la guía de abajo', 'error');
+                    if (btn) { btn.disabled = false; btn.innerHTML = etiquetaOriginal; }
+                    const ayuda = document.querySelector('.admin-sync-ayuda');
+                    if (ayuda) ayuda.open = true;
+                } else if (r.status === 422) {
+                    showNotification('El workflow no acepta disparo manual — avísale a tu persona de confianza', 'error');
+                    if (btn) { btn.disabled = false; btn.innerHTML = etiquetaOriginal; }
+                } else {
+                    showNotification('GitHub respondió ' + r.status + ' — intenta de nuevo en un momento', 'error');
+                    if (btn) { btn.disabled = false; btn.innerHTML = etiquetaOriginal; }
+                }
+            } catch (e) {
+                showNotification('No pudimos hablar con GitHub — revisa la conexión', 'error');
+                if (btn) { btn.disabled = false; btn.innerHTML = etiquetaOriginal; }
+            }
+        }
+
+        function vigilarSync(btn, etiquetaOriginal) {
+            if (syncVigilando) clearInterval(syncVigilando);
+            const t0 = Date.now();
+            syncVigilando = setInterval(async () => {
+                await pintarEstadoSync();
+                const el = document.getElementById('adminSyncEstado');
+                const txt = el ? el.textContent : '';
+                const termino = !txt.includes('corriendo');
+                if (termino || Date.now() - t0 > 8 * 60000) {
+                    clearInterval(syncVigilando);
+                    syncVigilando = null;
+                    if (btn) { btn.disabled = false; btn.innerHTML = etiquetaOriginal; }
+                    if (termino) {
+                        showNotification(txt.includes('🟢')
+                            ? '✅ Sincronización terminada: el catálogo quedó actualizado'
+                            : 'La sincronización terminó con problemas — revisa la pestaña Actions del repo', txt.includes('🟢') ? 'success' : 'error');
+                    }
+                }
+            }, 20000);
+        }
+
 
         function cerrarPanelAdmin() {
             document.getElementById('adminModal').classList.remove('show');
