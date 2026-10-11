@@ -7310,6 +7310,71 @@
             return btoa(bin);
         }
 
+        async function validarExcelPosgold(buf) {
+            /* Abre el zip interno del xlsx, lee la tabla de cadenas
+               (sharedStrings.xml) y confirma que el archivo trae las
+               columnas de costo de POSGold (productoid, costopromedio,
+               costoultimo). Asi el panel rechaza cualquier export
+               equivocado ANTES de subirlo — si se subiera otro archivo,
+               la siguiente sincronización fallaría hasta reemplazarlo. */
+            try {
+                const bytes = new Uint8Array(buf);
+                if (!(bytes[0] === 0x50 && bytes[1] === 0x4B)) {
+                    return { ok: false, motivo: 'no es un archivo Excel' };
+                }
+                if (bytes.length < 100000) {
+                    return { ok: false, motivo: 'demasiado pequeño: el export de POSGold pesa más de 1 MB' };
+                }
+                if (typeof DecompressionStream === 'undefined') {
+                    return { ok: true, motivo: '' };  // navegador viejo: no se puede verificar
+                }
+                const dv = new DataView(bytes.buffer);
+                // buscar el EOCD (final del zip) desde atrás
+                let eocd = -1;
+                const desde = Math.max(0, bytes.length - 65557);
+                for (let i = bytes.length - 22; i >= desde; i--) {
+                    if (bytes[i] === 0x50 && bytes[i+1] === 0x4B && bytes[i+2] === 0x05 && bytes[i+3] === 0x06) { eocd = i; break; }
+                }
+                if (eocd < 0) return { ok: false, motivo: 'el archivo Excel no está completo' };
+                const nEntradas = dv.getUint16(eocd + 10, true);
+                const cdOffset = dv.getUint32(eocd + 16, true);
+                let pos = cdOffset;
+                for (let i = 0; i < nEntradas; i++) {
+                    if (dv.getUint32(pos, true) !== 0x02014b50) break;
+                    const metodo = dv.getUint16(pos + 10, true);
+                    const cSize = dv.getUint32(pos + 20, true);
+                    const fnLen = dv.getUint16(pos + 28, true);
+                    const exLen = dv.getUint16(pos + 30, true);
+                    const cmLen = dv.getUint16(pos + 32, true);
+                    const lho = dv.getUint32(pos + 42, true);
+                    const nombre = new TextDecoder().decode(bytes.subarray(pos + 46, pos + 46 + fnLen));
+                    if (nombre === 'xl/sharedStrings.xml') {
+                        const lfn = dv.getUint16(lho + 26, true);
+                        const lex = dv.getUint16(lho + 28, true);
+                        const inicio = lho + 30 + lfn + lex;
+                        const comprimido = bytes.subarray(inicio, inicio + cSize);
+                        let texto;
+                        if (metodo === 0) {
+                            texto = new TextDecoder().decode(comprimido);
+                        } else {
+                            const flujo = new Blob([comprimido]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+                            texto = await new Response(flujo).text();
+                        }
+                        const okCols = texto.includes('productoid') &&
+                                       texto.includes('costopromedio') &&
+                                       texto.includes('costoultimo');
+                        return okCols
+                            ? { ok: true, motivo: '' }
+                            : { ok: false, motivo: 'le faltan las columnas de costo (productoid/costopromedio/costoultimo): no parece el export de PRODUCTOS de POSGold' };
+                    }
+                    pos += 46 + fnLen + exLen + cmLen;
+                }
+                return { ok: false, motivo: 'formato de Excel inesperado' };
+            } catch (e) {
+                return { ok: false, motivo: 'no se pudo leer el archivo' };
+            }
+        }
+
         async function subirCostosNavegador() {
             const fileInput = document.getElementById('adminCostosFile');
             const file = fileInput && fileInput.files && fileInput.files[0];
@@ -7324,10 +7389,18 @@
             }
             const btn = document.querySelector('.admin-sync-botones .btn.btn-primary:not([disabled])');
             const etiquetaOriginal = btn ? btn.innerHTML : '';
-            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-hourglass-half"></i> Cifrando…'; }
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-search"></i> Verificando…'; }
             try {
-                // 1. leer + cifrar en formato openssl enc -pbkdf2
+                // 1. leer + VERIFICAR que sea el export de productos de POSGold
                 const buf = await file.arrayBuffer();
+                const verificado = await validarExcelPosgold(buf);
+                if (!verificado.ok) {
+                    showNotification('Archivo rechazado: ' + verificado.motivo, 'error');
+                    if (fileInput) fileInput.value = '';
+                    if (btn) { btn.disabled = false; btn.innerHTML = etiquetaOriginal; }
+                    return;
+                }
+                // 2. cifrar en formato openssl enc -pbkdf2
                 const enc = new TextEncoder();
                 const salt = crypto.getRandomValues(new Uint8Array(8));
                 const material = await crypto.subtle.importKey('raw', enc.encode(clave), 'PBKDF2', false, ['deriveBits']);
