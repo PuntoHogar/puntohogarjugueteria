@@ -171,7 +171,10 @@
         }
         
         .container {
-            max-width: 1200px;
+            /* 1320: en portatiles 1366 el contenido usaba solo 1200px y las
+               tarjetas quedaban angostas (268px) y larguisimas; con este
+               techo aprovechan los 40px de margen a cada lado. */
+            max-width: 1320px;
             margin: 0 auto;
             padding: 0 20px;
         }
@@ -858,11 +861,15 @@
         .hero-content {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 60px;
+            gap: 40px;
             align-items: center;
             position: relative;
             z-index: 1;
         }
+        /* Sin producto destacado (se oculta desde el panel de admin):
+           el texto del hero ocupa todo el ancho. */
+        .hero-content.sin-destacado { grid-template-columns: 1fr; }
+        .hero-content.sin-destacado .hero-text { max-width: 760px; }
         .hero-text {
             animation: slideInLeft 1s ease-out;
         }
@@ -1722,15 +1729,16 @@
         }
         .products-grid {
             display: grid;
-            /* 260px: en portatiles/tablets caben 3 columnas en vez de 2
-               tarjetas estiradas; en escritorio grande siguen siendo 4. */
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 30px;
+            /* min 280px: tarjetas mas anchas y por lo tanto mas bajas — en
+               un portatil 1366 ahora se ven 4 columnas de ~317px (antes 4
+               de 268px) y la informacion completa cabe sin tanto scroll. */
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
         }
         .product-card {
             background: var(--white);
             border-radius: 20px;
-            padding: 25px;
+            padding: 20px;
             box-shadow: var(--shadow);
             transition: all 0.3s ease;
             position: relative;
@@ -4400,8 +4408,10 @@
             scroll-snap-type: none;
         }
         .category-showcase .carousel-arrow { top: 42%; }
-        .category-showcase .carousel-arrow.left { left: -4px; }
-        .category-showcase .carousel-arrow.right { right: -4px; }
+        /* 4px hacia ADENTRO: antes sobresalian 4px del viewport y la pagina
+           entera quedaba con scroll horizontal en portatiles. */
+        .category-showcase .carousel-arrow.left { left: 4px; }
+        .category-showcase .carousel-arrow.right { right: 4px; }
         @media (max-width: 600px) {
             .category-showcase-container { padding: 0 16px; }
             .category-showcase-track { grid-auto-columns: 68px; gap: 14px; }
@@ -6015,9 +6025,14 @@
                 </div>
                 <p class="admin-help admin-help-mini">La página reporta automáticamente: PageView, ver producto, agregar al carrito, iniciar pedido, buscar y compartir catálogo. Al guardar los IDs las etiquetas se activan al instante (Clarity termina de aplicar al recargar la página).</p>
 
-                <h4 class="admin-sub">⭐ Productos y textos del inicio</h4>
+                <h4 class="admin-sub">🛍️ Producto en tendencia del inicio (héroe) <small>(el juguete grande que abre la tienda)</small></h4>
                 <div class="admin-grid">
-                    <label>Producto destacado del héroe (id del juguete grande)
+                    <label class="admin-check"><input type="checkbox" id="adminHeroVisible" checked> Mostrar el producto destacado del inicio <small>(desmárcalo para ocultar la sección completa)</small></label>
+                </div>
+                <input type="text" class="admin-buscar" id="adminBuscarHero" placeholder="Busca el juguete que quieres destacar… ej: mesa futbol, dron, peluche" oninput="buscarProductoHero()">
+                <div class="admin-resultados" id="adminHeroResultados"></div>
+                <div class="admin-grid">
+                    <label>Id del producto destacado (la búsqueda de arriba lo llena sola)
                         <input type="text" id="adminProductoDestacado" placeholder="pista-neon-carro-pila-luz-con-numero">
                     </label>
                     <label>Favoritos del inicio (ids separados por comas)
@@ -6276,6 +6291,7 @@
 
             // Contenido editable del inicio
             productoDestacado: 'pista-neon-carro-pila-luz-con-numero',   // tarjeta grande del héroe
+            heroDestacadoVisible: true,      // false = se oculta la sección del héroe
             productosFavoritos: 'mesa-futbol-de-madera, pista-neon-carro-pila-luz-con-numero, burbujero-mil-burbujas-pilas-cj-bubble-gun-4-motivos', // sección "Favoritos" (ids separados por comas)
             cantidadProductos: '+22.000',  // el número que se promociona en el héroe, el pie y al compartir
 
@@ -6315,6 +6331,7 @@
                 ga4: (typeof guardados.ga4 === 'string') ? guardados.ga4.trim() : TIENDA_DEFECTO.ga4,
                 clarity: (typeof guardados.clarity === 'string') ? guardados.clarity.trim() : TIENDA_DEFECTO.clarity,
                 productoDestacado: texto(guardados.productoDestacado, TIENDA_DEFECTO.productoDestacado),
+            heroDestacadoVisible: guardados.heroDestacadoVisible !== false,
                 productosFavoritos: texto(guardados.productosFavoritos, TIENDA_DEFECTO.productosFavoritos),
                 cantidadProductos: texto(guardados.cantidadProductos, TIENDA_DEFECTO.cantidadProductos),
                 creditoActivo: si(guardados.creditoActivo, TIENDA_DEFECTO.creditoActivo),
@@ -6868,9 +6885,17 @@
         }
 
         // Tarjeta grande del héroe: foto, nombre, categoría, SKU, precio y
-        // botones salen del producto configurado (antes todo estaba fijo en
-        // el HTML). Se llama al arrancar y al recalcular precios.
+        // botones salen del producto configurado (antes todo estaba fijo en el
+        // HTML). Se llama al arrancar y al recalcular precios.
         function actualizarHeroDestacado() {
+            // Visibilidad de la sección completa (configurable desde el
+            // panel: "Mostrar el producto destacado del inicio").
+            const heroCard = document.querySelector('.hero-product-card');
+            const heroContent = document.querySelector('.hero-content');
+            const visible = TIENDA.heroDestacadoVisible !== false;
+            if (heroCard) heroCard.style.display = visible ? '' : 'none';
+            if (heroContent) heroContent.classList.toggle('sin-destacado', !visible);
+
             const p = products.find(x => x.id === TIENDA.productoDestacado);
             if (!p) return;
             const slide = document.getElementById('heroProductoSlide');
@@ -7071,6 +7096,8 @@
             val('adminGa4', TIENDA.ga4);
             val('adminClarity', TIENDA.clarity);
             val('adminProductoDestacado', TIENDA.productoDestacado);
+            const chkHero = document.getElementById('adminHeroVisible');
+            if (chkHero) chkHero.checked = TIENDA.heroDestacadoVisible !== false;
             val('adminFavoritos', TIENDA.productosFavoritos);
             val('adminCantidadProductos', TIENDA.cantidadProductos);
             val('adminAliados', TIENDA.aliados);
@@ -7114,6 +7141,7 @@
             TIENDA.ga4 = val('adminGa4');
             TIENDA.clarity = val('adminClarity');
             TIENDA.productoDestacado = val('adminProductoDestacado') || TIENDA_DEFECTO.productoDestacado;
+            TIENDA.heroDestacadoVisible = check('adminHeroVisible');
             TIENDA.productosFavoritos = val('adminFavoritos') || TIENDA_DEFECTO.productosFavoritos;
             TIENDA.cantidadProductos = val('adminCantidadProductos') || TIENDA_DEFECTO.cantidadProductos;
             TIENDA.creditoActivo = check('adminCreditoActivo');
@@ -7380,6 +7408,55 @@
         function quitarPrecioFijo(id) {
             delete PRECIOS.preciosPersonalizados[id];
             aplicarPanelAdmin();
+        }
+
+        /* ------------------------------------------------------------------
+           PRODUCTO EN TENDENCIA (héroe): buscar y elegir desde el panel el
+           juguete que abre la tienda. El resultado se ve al instante ("Ver
+           cambios ahora" lo aplica y "Guardar" lo persiste).
+           ------------------------------------------------------------------ */
+        function buscarProductoHero() {
+            const q = (document.getElementById('adminBuscarHero').value || '').trim().toLowerCase();
+            const cont = document.getElementById('adminHeroResultados');
+            if (!cont) return;
+            if (q.length < 2) { cont.innerHTML = ''; return; }
+            const base = products.filter(p =>
+                p.name.toLowerCase().includes(q) || String(p.sku || '').toLowerCase().includes(q) || p.id.includes(q)
+            ).slice(0, 6);
+            if (!base.length) {
+                cont.innerHTML = '<div class="admin-preview">No encontramos juguetes con "' + esc(q) + '". Prueba con otra palabra.</div>';
+                return;
+            }
+            cont.innerHTML = base.map(p => {
+                const esActual = TIENDA.productoDestacado === p.id;
+                return `
+                <div class="admin-prod-fila">
+                    <span class="admin-prod-nombre" title="${esc(p.name)}">${esc(p.name)}</span>
+                    <span class="admin-prod-base">categoría ${esc(categoryLabel(p.category))}</span>
+                    <span class="admin-prod-final">${cop(precioDetal(p))}</span>
+                    <button type="button" class="admin-btn-fijar" ${esActual ? 'disabled' : ''}
+                            onclick="destacarProductoHero('${escJs(p.id)}')">${esActual ? '★ En tendencia' : 'Destacar'}</button>
+                </div>`;
+            }).join('');
+        }
+
+        function destacarProductoHero(id) {
+            const p = products.find(x => x.id === id);
+            if (!p) return;
+            TIENDA.productoDestacado = id;
+            TIENDA.heroDestacadoVisible = true;   // elegir un producto reenciende la sección
+            const inp = document.getElementById('adminProductoDestacado');
+            if (inp) inp.value = id;
+            const chk = document.getElementById('adminHeroVisible');
+            if (chk) chk.checked = true;
+            const heroCard = document.querySelector('.hero-product-card');
+            if (heroCard) heroCard.style.display = '';
+            actualizarHeroDestacado();
+            showNotification('"' + p.name + '" es el nuevo producto en tendencia del inicio', 'success');
+            const res = document.getElementById('adminHeroResultados');
+            const bus = document.getElementById('adminBuscarHero');
+            if (res) res.innerHTML = '';
+            if (bus) bus.value = '';
         }
 
         /* ------------------------------------------------------------------
@@ -7659,6 +7736,7 @@
             L.push('            clarity: ' + JSON.stringify(TIENDA.clarity) + ',');
             L.push('');
             L.push('            productoDestacado: ' + JSON.stringify(TIENDA.productoDestacado) + ',');
+            L.push('            heroDestacadoVisible: ' + (TIENDA.heroDestacadoVisible !== false ? 'true' : 'false') + ',');
             L.push('            productosFavoritos: ' + JSON.stringify(TIENDA.productosFavoritos) + ',');
             L.push('            cantidadProductos: ' + JSON.stringify(TIENDA.cantidadProductos) + ',');
             L.push('            creditoActivo: ' + (TIENDA.creditoActivo ? 'true' : 'false') + ',');
@@ -7921,7 +7999,7 @@
                     ${descripcionVisible(product) ? `<p class="product-description">${esc(product.description)}</p>` : ''}
                     <div class="product-price">
                         <div class="current-price">${cop(price)}</div>
-                        ${ahorro ? `<div class="wholesale-badge"><i class="fas fa-tags"></i> Antes <span class="price-struck">${cop(compare)}</span> · Ahorras ${cop(ahorro)} (−${pctDesc}%)</div>` : ''}
+                        ${ahorro ? `<div class="wholesale-badge"><i class="fas fa-tags"></i> Antes <span class="price-struck">${cop(compare)}</span> · −${pctDesc}%</div>` : ''}
                     </div>
 
                     <button class="size-toggle-btn" type="button" id="toggle-${esc(product.id)}" aria-expanded="false" aria-controls="sizes-${esc(product.id)}" onclick="toggleSizePanel('${escJs(product.id)}')">
