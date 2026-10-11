@@ -1,5 +1,5 @@
 // ==================================================================
-// CATALOGO DE JUGUETERIA TAIWAN — generado automaticamente el 2026-10-10 16:27
+// CATALOGO DE JUGUETERIA TAIWAN — generado automaticamente el 2026-10-11 00:43
 // por sync_posgold.py (cron). Todo el inventario elegible de
 // POSGold que cumple la regla de la tienda: activo + existencias
 // en bodega + foto real. El producto que deja de cumplir se
@@ -1878,23 +1878,6 @@ const CATALOGO_BASE = [
         ]
     },
     {
-        id: "desestresante-fresa-cj-x-12",
-        name: "DESESTRESANTE FRESA CJ X 12",
-        description: "SKU: 7702232644337",
-        image: "https://jugueteriataiwan.com/storage/products/30593/thumb/0ab3839e-0c2b-414e-8c20-b0885e7913d4.webp",
-        images: ["https://jugueteriataiwan.com/storage/products/30593/thumb/0ab3839e-0c2b-414e-8c20-b0885e7913d4.webp"],
-        category: "slime",
-        sku: "7702232644337",
-        url: "https://jugueteriataiwan.com/producto/desestresante-fresa-cj-x-12",
-        price: 6500,
-        comparePrice: 12000,
-        sizeGroups: [
-            { key: 'unidad', label: 'Unidades', options: [
-                { id: 'unidad', label: 'Unidad', price: 6500 }
-            ]}
-        ]
-    },
-    {
         id: "foami-moldeable-con-figura-x-20-und",
         name: "FOAMI MOLDEABLE CON FIGURA  X 20 UND",
         description: "SKU: 7702222656364",
@@ -2787,23 +2770,6 @@ const CATALOGO_BASE = [
         category: "slime",
         sku: "7702202644411",
         url: "https://jugueteriataiwan.com/producto/desestresante-mazorca-cj-x-8",
-        price: 7000,
-        comparePrice: 15000,
-        sizeGroups: [
-            { key: 'unidad', label: 'Unidades', options: [
-                { id: 'unidad', label: 'Unidad', price: 7000 }
-            ]}
-        ]
-    },
-    {
-        id: "desestresante-queso-cj-x-12",
-        name: "DESESTRESANTE QUESO CJ X 12",
-        description: "SKU: 7702202644381",
-        image: "https://jugueteriataiwan.com/storage/products/30610/thumb/916f4b7d-7167-4dda-bcb5-5604a4cc54da.webp",
-        images: ["https://jugueteriataiwan.com/storage/products/30610/thumb/916f4b7d-7167-4dda-bcb5-5604a4cc54da.webp"],
-        category: "slime",
-        sku: "7702202644381",
-        url: "https://jugueteriataiwan.com/producto/desestresante-queso-cj-x-12",
         price: 7000,
         comparePrice: 15000,
         sizeGroups: [
@@ -6196,23 +6162,6 @@ const CATALOGO_BASE = [
         ]
     },
     {
-        id: "desestresante-gota-cj-x-12",
-        name: "DESESTRESANTE GOTA CJ X 12",
-        description: "SKU: 7702202652409",
-        image: "https://jugueteriataiwan.com/storage/products/30626/thumb/edef1bfe-4505-4d72-9c8e-12c9f6d64176.webp",
-        images: ["https://jugueteriataiwan.com/storage/products/30626/thumb/edef1bfe-4505-4d72-9c8e-12c9f6d64176.webp"],
-        category: "slime",
-        sku: "7702202652409",
-        url: "https://jugueteriataiwan.com/producto/desestresante-gota-cj-x-12",
-        price: 8000,
-        comparePrice: 12000,
-        sizeGroups: [
-            { key: 'unidad', label: 'Unidades', options: [
-                { id: 'unidad', label: 'Unidad', price: 8000 }
-            ]}
-        ]
-    },
-    {
         id: "munecos-plateados-cj-x-9-metal-die-cast",
         name: "MUÑECOS PLATEADOS CJ X 9 METAL DIE CAST",
         description: "SKU: 2026888800707",
@@ -6272,23 +6221,6 @@ const CATALOGO_BASE = [
         category: "slime",
         sku: "7702202645104",
         url: "https://jugueteriataiwan.com/producto/desestresante-frutas-cj-x-20",
-        price: 6500,
-        comparePrice: 10000,
-        sizeGroups: [
-            { key: 'unidad', label: 'Unidades', options: [
-                { id: 'unidad', label: 'Unidad', price: 6500 }
-            ]}
-        ]
-    },
-    {
-        id: "desestresante-comidas-cj-x-20",
-        name: "DESESTRESANTE COMIDAS CJ X 20",
-        description: "SKU: 7702202646606",
-        image: "https://jugueteriataiwan.com/storage/products/30624/thumb/e16403f0-8eb0-4aad-9cef-d918f6df190a.webp",
-        images: ["https://jugueteriataiwan.com/storage/products/30624/thumb/e16403f0-8eb0-4aad-9cef-d918f6df190a.webp"],
-        category: "slime",
-        sku: "7702202646606",
-        url: "https://jugueteriataiwan.com/producto/desestresante-comidas-cj-x-20",
         price: 6500,
         comparePrice: 10000,
         sizeGroups: [
@@ -6587,23 +6519,6 @@ const CATALOGO_BASE = [
         ]
     },
     {
-        id: "lazo-para-saltar-3m-nacional",
-        name: "LAZO PARA SALTAR 3M NACIONAL",
-        description: "SKU: 01387",
-        image: "https://jugueteriataiwan.com/storage/products/23904/thumb/908b1d10-0b0d-436a-b14b-01cc736d1a57.webp",
-        images: ["https://jugueteriataiwan.com/storage/products/23904/thumb/908b1d10-0b0d-436a-b14b-01cc736d1a57.webp"],
-        category: "deporte",
-        sku: "01387",
-        url: "https://jugueteriataiwan.com/producto/lazo-para-saltar-3m-nacional",
-        price: 2500,
-        comparePrice: 4000,
-        sizeGroups: [
-            { key: 'unidad', label: 'Unidades', options: [
-                { id: 'unidad', label: 'Unidad', price: 2500 }
-            ]}
-        ]
-    },
-    {
         id: "lego-super-heroes-transformers-4-motivos",
         name: "LEGO SUPER HEROES TRANSFORMERS  4 MOTIVOS",
         description: "SKU: 05496",
@@ -6617,6 +6532,23 @@ const CATALOGO_BASE = [
         sizeGroups: [
             { key: 'unidad', label: 'Unidades', options: [
                 { id: 'unidad', label: 'Unidad', price: 15000 }
+            ]}
+        ]
+    },
+    {
+        id: "lazo-para-saltar-3m-nacional",
+        name: "LAZO PARA SALTAR 3M NACIONAL",
+        description: "SKU: 01387",
+        image: "https://jugueteriataiwan.com/storage/products/23904/thumb/908b1d10-0b0d-436a-b14b-01cc736d1a57.webp",
+        images: ["https://jugueteriataiwan.com/storage/products/23904/thumb/908b1d10-0b0d-436a-b14b-01cc736d1a57.webp"],
+        category: "deporte",
+        sku: "01387",
+        url: "https://jugueteriataiwan.com/producto/lazo-para-saltar-3m-nacional",
+        price: 2500,
+        comparePrice: 4000,
+        sizeGroups: [
+            { key: 'unidad', label: 'Unidades', options: [
+                { id: 'unidad', label: 'Unidad', price: 2500 }
             ]}
         ]
     },
@@ -7379,23 +7311,6 @@ const CATALOGO_BASE = [
         url: "https://jugueteriataiwan.com/producto/flauta-dulce",
         price: 8000,
         comparePrice: 12000,
-        sizeGroups: [
-            { key: 'unidad', label: 'Unidades', options: [
-                { id: 'unidad', label: 'Unidad', price: 8000 }
-            ]}
-        ]
-    },
-    {
-        id: "desestresante-tarro-crema-cjx12-1",
-        name: "DESESTRESANTE TARRO CREMA CJX12",
-        description: "SKU: 7702202645227",
-        image: "https://jugueteriataiwan.com/storage/products/30614/thumb/24c18c08-e77a-4cfe-b03b-ea475f2e56c2.webp",
-        images: ["https://jugueteriataiwan.com/storage/products/30614/thumb/24c18c08-e77a-4cfe-b03b-ea475f2e56c2.webp"],
-        category: "slime",
-        sku: "7702202645227",
-        url: "https://jugueteriataiwan.com/producto/desestresante-tarro-crema-cjx12-1",
-        price: 8000,
-        comparePrice: 15000,
         sizeGroups: [
             { key: 'unidad', label: 'Unidades', options: [
                 { id: 'unidad', label: 'Unidad', price: 8000 }
@@ -8695,23 +8610,6 @@ const CATALOGO_BASE = [
         ]
     },
     {
-        id: "atari-con-reloj",
-        name: "ATARI CON RELOJ",
-        description: "SKU: 05082",
-        image: "https://jugueteriataiwan.com/storage/products/25865/thumb/5eccebbd-89bf-4eed-b947-d642299debbc.webp",
-        images: ["https://jugueteriataiwan.com/storage/products/25865/thumb/5eccebbd-89bf-4eed-b947-d642299debbc.webp"],
-        category: "piñateria",
-        sku: "05082",
-        url: "https://jugueteriataiwan.com/producto/atari-con-reloj",
-        price: 5000,
-        comparePrice: 8000,
-        sizeGroups: [
-            { key: 'unidad', label: 'Unidades', options: [
-                { id: 'unidad', label: 'Unidad', price: 5000 }
-            ]}
-        ]
-    },
-    {
         id: "set-cocina-pocillos-en-bolsa",
         name: "SET COCINA POCILLOS EN BOLSA",
         description: "SKU: 7709583282409",
@@ -8742,6 +8640,23 @@ const CATALOGO_BASE = [
         sizeGroups: [
             { key: 'unidad', label: 'Unidades', options: [
                 { id: 'unidad', label: 'Unidad', price: 7000 }
+            ]}
+        ]
+    },
+    {
+        id: "atari-con-reloj",
+        name: "ATARI CON RELOJ",
+        description: "SKU: 05082",
+        image: "https://jugueteriataiwan.com/storage/products/25865/thumb/5eccebbd-89bf-4eed-b947-d642299debbc.webp",
+        images: ["https://jugueteriataiwan.com/storage/products/25865/thumb/5eccebbd-89bf-4eed-b947-d642299debbc.webp"],
+        category: "piñateria",
+        sku: "05082",
+        url: "https://jugueteriataiwan.com/producto/atari-con-reloj",
+        price: 5000,
+        comparePrice: 8000,
+        sizeGroups: [
+            { key: 'unidad', label: 'Unidades', options: [
+                { id: 'unidad', label: 'Unidad', price: 5000 }
             ]}
         ]
     },
@@ -8899,23 +8814,6 @@ const CATALOGO_BASE = [
         ]
     },
     {
-        id: "lanza-balines-t139-p",
-        name: "LANZA BALINES T139 P",
-        description: "SKU: 6920250807676",
-        image: "https://jugueteriataiwan.com/storage/products/29432/thumb/14d560a1-7a37-4783-a23f-29ca75e47893.webp",
-        images: ["https://jugueteriataiwan.com/storage/products/29432/thumb/14d560a1-7a37-4783-a23f-29ca75e47893.webp"],
-        category: "deporte",
-        sku: "6920250807676",
-        url: "https://jugueteriataiwan.com/producto/lanza-balines-t139-p",
-        price: 20000,
-        comparePrice: 30000,
-        sizeGroups: [
-            { key: 'unidad', label: 'Unidades', options: [
-                { id: 'unidad', label: 'Unidad', price: 20000 }
-            ]}
-        ]
-    },
-    {
         id: "masajeador-muntifuncional-en-madera",
         name: "MASAJEADOR MUNTIFUNCIONAL EN MADERA",
         description: "SKU: 01133",
@@ -8943,6 +8841,23 @@ const CATALOGO_BASE = [
         url: "https://jugueteriataiwan.com/producto/carton-truco-de-magia-carta-y-nailon-x20",
         price: 20000,
         comparePrice: 22000,
+        sizeGroups: [
+            { key: 'unidad', label: 'Unidades', options: [
+                { id: 'unidad', label: 'Unidad', price: 20000 }
+            ]}
+        ]
+    },
+    {
+        id: "lanza-balines-t139-p",
+        name: "LANZA BALINES T139 P",
+        description: "SKU: 6920250807676",
+        image: "https://jugueteriataiwan.com/storage/products/29432/thumb/14d560a1-7a37-4783-a23f-29ca75e47893.webp",
+        images: ["https://jugueteriataiwan.com/storage/products/29432/thumb/14d560a1-7a37-4783-a23f-29ca75e47893.webp"],
+        category: "deporte",
+        sku: "6920250807676",
+        url: "https://jugueteriataiwan.com/producto/lanza-balines-t139-p",
+        price: 20000,
+        comparePrice: 30000,
         sizeGroups: [
             { key: 'unidad', label: 'Unidades', options: [
                 { id: 'unidad', label: 'Unidad', price: 20000 }
@@ -17144,23 +17059,6 @@ const CATALOGO_BASE = [
         ]
     },
     {
-        id: "mini-gift-comidas-peq",
-        name: "MINI GIFT COMIDAS PEQ",
-        description: "SKU: 05715",
-        image: "https://jugueteriataiwan.com/storage/products/30143/thumb/b24b174c-4a35-400d-bc69-db6d6aced894.webp",
-        images: ["https://jugueteriataiwan.com/storage/products/30143/thumb/b24b174c-4a35-400d-bc69-db6d6aced894.webp"],
-        category: "piñateria",
-        sku: "05715",
-        url: "https://jugueteriataiwan.com/producto/mini-gift-comidas-peq",
-        price: 6000,
-        comparePrice: 10000,
-        sizeGroups: [
-            { key: 'unidad', label: 'Unidades', options: [
-                { id: 'unidad', label: 'Unidad', price: 6000 }
-            ]}
-        ]
-    },
-    {
         id: "dragon-shenlong",
         name: "DRAGON SHENLONG",
         description: "SKU: 05551",
@@ -17820,23 +17718,6 @@ const CATALOGO_BASE = [
         sizeGroups: [
             { key: 'unidad', label: 'Unidades', options: [
                 { id: 'unidad', label: 'Unidad', price: 45000 }
-            ]}
-        ]
-    },
-    {
-        id: "encajable-madera-x9-piezas",
-        name: "ENCAJABLE MADERA X9 PIEZAS",
-        description: "SKU: 04558",
-        image: "https://jugueteriataiwan.com/storage/products/25579/thumb/87413114-515f-45d0-ad7f-f6ddb77c7306.webp",
-        images: ["https://jugueteriataiwan.com/storage/products/25579/thumb/87413114-515f-45d0-ad7f-f6ddb77c7306.webp"],
-        category: "didactico",
-        sku: "04558",
-        url: "https://jugueteriataiwan.com/producto/encajable-madera-x9-piezas",
-        price: 9000,
-        comparePrice: 15000,
-        sizeGroups: [
-            { key: 'unidad', label: 'Unidades', options: [
-                { id: 'unidad', label: 'Unidad', price: 9000 }
             ]}
         ]
     },
@@ -18606,23 +18487,6 @@ const CATALOGO_BASE = [
         ]
     },
     {
-        id: "lanza-blin-comba-force-2-modelos",
-        name: "LANZA BLIN COMBA FORCE 2 MODELOS",
-        description: "SKU: 05856",
-        image: "https://jugueteriataiwan.com/storage/products/30332/thumb/3754855a-48d0-4ebc-bc77-11a6e3b5f7fc.webp",
-        images: ["https://jugueteriataiwan.com/storage/products/30332/thumb/3754855a-48d0-4ebc-bc77-11a6e3b5f7fc.webp"],
-        category: "deporte",
-        sku: "05856",
-        url: "https://jugueteriataiwan.com/producto/lanza-blin-comba-force-2-modelos",
-        price: 50000,
-        comparePrice: 70000,
-        sizeGroups: [
-            { key: 'unidad', label: 'Unidades', options: [
-                { id: 'unidad', label: 'Unidad', price: 50000 }
-            ]}
-        ]
-    },
-    {
         id: "paquete-50-sobres-carta-brillante-fifa-world-cup",
         name: "PAQUETE 50 SOBRES CARTA BRILLANTE FIFA WORLD CUP",
         description: "SKU: 9780202379623",
@@ -18687,6 +18551,23 @@ const CATALOGO_BASE = [
         sizeGroups: [
             { key: 'unidad', label: 'Unidades', options: [
                 { id: 'unidad', label: 'Unidad', price: 40000 }
+            ]}
+        ]
+    },
+    {
+        id: "lanza-blin-comba-force-2-modelos",
+        name: "LANZA BLIN COMBA FORCE 2 MODELOS",
+        description: "SKU: 05856",
+        image: "https://jugueteriataiwan.com/storage/products/30332/thumb/3754855a-48d0-4ebc-bc77-11a6e3b5f7fc.webp",
+        images: ["https://jugueteriataiwan.com/storage/products/30332/thumb/3754855a-48d0-4ebc-bc77-11a6e3b5f7fc.webp"],
+        category: "deporte",
+        sku: "05856",
+        url: "https://jugueteriataiwan.com/producto/lanza-blin-comba-force-2-modelos",
+        price: 50000,
+        comparePrice: 70000,
+        sizeGroups: [
+            { key: 'unidad', label: 'Unidades', options: [
+                { id: 'unidad', label: 'Unidad', price: 50000 }
             ]}
         ]
     },
@@ -20387,23 +20268,6 @@ const CATALOGO_BASE = [
         sizeGroups: [
             { key: 'unidad', label: 'Unidades', options: [
                 { id: 'unidad', label: 'Unidad', price: 140000 }
-            ]}
-        ]
-    },
-    {
-        id: "tabla-juego-didactico-numeros-con-dibujos-ingles-madera",
-        name: "TABLA JUEGO DIDACTICO NUMEROS CON DIBUJOS INGLES MADERA",
-        description: "SKU: 7702202260703",
-        image: "https://jugueteriataiwan.com/storage/products/27155/thumb/86abc07b-e414-43ea-9bf1-a5b3659b03c9.webp",
-        images: ["https://jugueteriataiwan.com/storage/products/27155/thumb/86abc07b-e414-43ea-9bf1-a5b3659b03c9.webp"],
-        category: "didactico",
-        sku: "7702202260703",
-        url: "https://jugueteriataiwan.com/producto/tabla-juego-didactico-numeros-con-dibujos-ingles-madera",
-        price: 14000,
-        comparePrice: 18000,
-        sizeGroups: [
-            { key: 'unidad', label: 'Unidades', options: [
-                { id: 'unidad', label: 'Unidad', price: 14000 }
             ]}
         ]
     },
@@ -26779,40 +26643,6 @@ const CATALOGO_BASE = [
         sizeGroups: [
             { key: 'unidad', label: 'Unidades', options: [
                 { id: 'unidad', label: 'Unidad', price: 60000 }
-            ]}
-        ]
-    },
-    {
-        id: "zelda-arco",
-        name: "ZELDA ARCO",
-        description: "SKU: 05544",
-        image: "https://jugueteriataiwan.com/storage/products/29864/thumb/79f069d0-8014-4110-a149-62b283bc7f71.webp",
-        images: ["https://jugueteriataiwan.com/storage/products/29864/thumb/79f069d0-8014-4110-a149-62b283bc7f71.webp"],
-        category: "colecciones",
-        sku: "05544",
-        url: "https://jugueteriataiwan.com/producto/zelda-arco",
-        price: 25000,
-        comparePrice: 40000,
-        sizeGroups: [
-            { key: 'unidad', label: 'Unidades', options: [
-                { id: 'unidad', label: 'Unidad', price: 25000 }
-            ]}
-        ]
-    },
-    {
-        id: "zelda-guante",
-        name: "ZELDA GUANTE",
-        description: "SKU: 05539",
-        image: "https://jugueteriataiwan.com/storage/products/29859/thumb/50578963-47a6-4b21-9f9a-ccee2f159c0b.webp",
-        images: ["https://jugueteriataiwan.com/storage/products/29859/thumb/50578963-47a6-4b21-9f9a-ccee2f159c0b.webp"],
-        category: "colecciones",
-        sku: "05539",
-        url: "https://jugueteriataiwan.com/producto/zelda-guante",
-        price: 25000,
-        comparePrice: 40000,
-        sizeGroups: [
-            { key: 'unidad', label: 'Unidades', options: [
-                { id: 'unidad', label: 'Unidad', price: 25000 }
             ]}
         ]
     },
