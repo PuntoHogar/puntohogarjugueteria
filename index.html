@@ -6025,7 +6025,7 @@
                 <p class="admin-help admin-help-mini" id="adminSyncEstado">Consultando la última sincronización…</p>
                 <div class="admin-grid">
                     <label>Token de GitHub para sincronizar <small>(solo se pide una vez; véase la ayuda de abajo)</small>
-                        <input type="password" id="adminSyncToken" autocomplete="off" placeholder="github_pat_… (se guarda solo en este computador)">
+                        <input type="password" id="adminSyncToken" autocomplete="off" onchange="guardarTokenSync()" placeholder="github_pat_… (se guarda solo en este computador)">
                     </label>
                 </div>
                 <div class="admin-botones admin-sync-botones">
@@ -7790,6 +7790,13 @@
             aplicarIdentidad();
             aplicarEstadoCredito();
             recalcularPrecios();
+            // Tambien persiste: nada de lo escrito se pierde al cerrar el
+            // panel (antes solo "Guardar en MI computador" escribia en
+            // localStorage y era facil perder valores en el camino).
+            try {
+                localStorage.setItem(PRECIOS_KEY, JSON.stringify(PRECIOS));
+                localStorage.setItem(TIENDA_KEY, JSON.stringify(TIENDA));
+            } catch (e) {}
             pintarPanelAdmin();
             showNotification('¡Listo! Los cambios ya se ven en toda la página');
         }
@@ -7797,6 +7804,7 @@
         function guardarPanelAdmin() {
             leerPanelEnPrecios();
             leerPanelTienda();
+            guardarTokenSync();   // el token viaja aparte (localStorage propio)
             try {
                 localStorage.setItem(PRECIOS_KEY, JSON.stringify(PRECIOS));
                 localStorage.setItem(TIENDA_KEY, JSON.stringify(TIENDA));
@@ -7827,6 +7835,12 @@
         // Código listo para reemplazar los bloques PRECIOS_DEFECTO y
         // TIENDA_DEFECTO del archivo ("Guardar para TODOS").
         function codigoConfigAdmin() {
+            // Se leen los campos del panel ANTES de generar el texto: antes,
+            // si se escribia algo y se tocaba solo "Guardar para TODOS", el
+            // texto copiado salia con los valores VIEJOS (los campos solo se
+            // leian con los otros dos botones).
+            leerPanelEnPrecios();
+            leerPanelTienda();
             const cats = Object.keys(PRECIOS.margenesPorCategoria);
             const temporada = PRECIOS.temporadaIds || [];
             const fijados = Object.keys(PRECIOS.preciosPersonalizados);
@@ -7904,7 +7918,14 @@
 
         function copiarConfigAdmin() {
             const codigo = codigoConfigAdmin();
-            const listo = () => showNotification('¡Copiado! Reemplaza los bloques PRECIOS_DEFECTO y TIENDA_DEFECTO del archivo index.html por este texto');
+            // Tambien queda guardado en ESTE computador (igual que "Guardar
+            // en MI computador"): presionar cualquier boton de guardar tras
+            // escribir valores ya nunca pierde lo tipeado al cerrar el panel.
+            try {
+                localStorage.setItem(PRECIOS_KEY, JSON.stringify(PRECIOS));
+                localStorage.setItem(TIENDA_KEY, JSON.stringify(TIENDA));
+            } catch (e) {}
+            const listo = () => showNotification('📋 ¡Copiado y guardado acá! Reemplaza los bloques PRECIOS_DEFECTO y TIENDA_DEFECTO del archivo index.html por este texto');
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(codigo).then(listo).catch(function () {
                     window.prompt('Copia este texto y reemplaza los bloques PRECIOS_DEFECTO y TIENDA_DEFECTO del archivo index.html:', codigo);
