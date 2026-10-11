@@ -6576,10 +6576,33 @@
         function compareDetal(p) {
             if (!p.comparePrice || p.comparePrice <= p.price) return 0;
             const fijado = PRECIOS.preciosPersonalizados[p.id];
+            let antes;
             if (typeof fijado === 'number' && fijado > 0) {
-                return redondearPrecio(fijado * (p.comparePrice / p.price));
+                antes = redondearPrecio(fijado * (p.comparePrice / p.price));
+            } else {
+                antes = redondearPrecio(p.comparePrice * PRECIOS.multiplicadorBase * (1 + margenDeCategoria(p.category, p)));
             }
-            return redondearPrecio(p.comparePrice * PRECIOS.multiplicadorBase * (1 + margenDeCategoria(p.category, p)));
+            // Badge moderado y creible: el descuento mostrado queda entre
+            // 20% y 30%. El "antes" real (Precio2 sugerido de POSGold) se
+            // respeta cuando cae en ese rango; si implicaba mas de 30% se
+            // acota (un -45% en el badge sonaba a truco) y si implicaba
+            // menos de 20% se sube al piso. Los costos no participan.
+            const precio = precioDetal(p);
+            let antesFinal = redondearPrecio(
+                Math.min(Math.max(antes, precio / (1 - 0.20)), precio / (1 - 0.30)));
+            // El redondeo a $100 desplaza el % en precios pequenos: se
+            // corrige en pasos del redondeo activo hasta volver al rango.
+            const paso = PRECIOS.redondeo;
+            if (paso > 0) {
+                let vueltas = 0;
+                while (vueltas++ < 12 && (antesFinal - precio) / antesFinal > 0.30) antesFinal -= paso;
+                while (vueltas++ < 24 && (antesFinal - precio) / antesFinal < 0.20) antesFinal += paso;
+                // precios tan pequenos que el redondeo no puede expresar un
+                // 20-30% (p. ej. $200 con pasos de $100): mejor sin badge
+                const pctFinal = (antesFinal - precio) / antesFinal;
+                if (pctFinal < 0.18 || pctFinal > 0.32) return 0;
+            }
+            return antesFinal;
         }
 
         // Genera el catálogo con precios al detal aplicados (grid, carrusel,
