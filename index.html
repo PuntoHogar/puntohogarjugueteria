@@ -866,10 +866,6 @@
             position: relative;
             z-index: 1;
         }
-        /* Sin producto destacado (se oculta desde el panel de admin):
-           el texto del hero ocupa todo el ancho. */
-        .hero-content.sin-destacado { grid-template-columns: 1fr; }
-        .hero-content.sin-destacado .hero-text { max-width: 760px; }
         .hero-text {
             animation: slideInLeft 1s ease-out;
         }
@@ -6059,7 +6055,7 @@
 
                 <h4 class="admin-sub">🛍️ Producto en tendencia del inicio (héroe) <small>(el juguete grande que abre la tienda)</small></h4>
                 <div class="admin-grid">
-                    <label class="admin-check"><input type="checkbox" id="adminHeroVisible" checked> Mostrar el producto destacado del inicio <small>(desmárcalo para ocultar la sección completa)</small></label>
+                    <label class="admin-check"><input type="checkbox" id="adminHeroVisible" checked> Mostrar la sección de bienvenida del inicio <small>(desmárcala para ocultar la sección COMPLETA: título, beneficios, botones y la tarjeta del producto en tendencia)</small></label>
                 </div>
                 <input type="text" class="admin-buscar" id="adminBuscarHero" placeholder="Busca el juguete que quieres destacar… ej: mesa futbol, dron, peluche" oninput="buscarProductoHero()">
                 <div class="admin-resultados" id="adminHeroResultados"></div>
@@ -6920,13 +6916,15 @@
         // botones salen del producto configurado (antes todo estaba fijo en el
         // HTML). Se llama al arrancar y al recalcular precios.
         function actualizarHeroDestacado() {
-            // Visibilidad de la sección completa (configurable desde el
-            // panel: "Mostrar el producto destacado del inicio").
-            const heroCard = document.querySelector('.hero-product-card');
-            const heroContent = document.querySelector('.hero-content');
+            // Visibilidad de la SECCIÓN COMPLETA del héroe (configurable
+            // desde el panel): al desmarcar desaparece todo el bloque de
+            // bienvenida — título, beneficios, botones y la tarjeta del
+            // producto en tendencia — y la página arranca directo en las
+            // categorías. (Antes solo se ocultaba la tarjeta y el texto
+            // del héroe seguía visible.)
+            const heroSeccion = document.querySelector('.hero');
             const visible = TIENDA.heroDestacadoVisible !== false;
-            if (heroCard) heroCard.style.display = visible ? '' : 'none';
-            if (heroContent) heroContent.classList.toggle('sin-destacado', !visible);
+            if (heroSeccion) heroSeccion.style.display = visible ? '' : 'none';
 
             const p = products.find(x => x.id === TIENDA.productoDestacado);
             if (!p) return;
@@ -7594,13 +7592,11 @@
             const p = products.find(x => x.id === id);
             if (!p) return;
             TIENDA.productoDestacado = id;
-            TIENDA.heroDestacadoVisible = true;   // elegir un producto reenciende la sección
+            TIENDA.heroDestacadoVisible = true;   // elegir un producto reenciende la seccion
             const inp = document.getElementById('adminProductoDestacado');
             if (inp) inp.value = id;
             const chk = document.getElementById('adminHeroVisible');
             if (chk) chk.checked = true;
-            const heroCard = document.querySelector('.hero-product-card');
-            if (heroCard) heroCard.style.display = '';
             actualizarHeroDestacado();
             showNotification('"' + p.name + '" es el nuevo producto en tendencia del inicio', 'success');
             const res = document.getElementById('adminHeroResultados');
