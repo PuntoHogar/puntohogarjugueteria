@@ -3688,18 +3688,13 @@
             color: var(--text-light);
         }
         .cod-footer-cuota {
-            text-align: center;
-            font-size: 0.8rem;
+            font-size: 0.72rem;
             font-weight: 600;
             color: var(--primary-color);
-            margin: 0 0 6px;
-        }
-        .cod-footer-nota {
-            text-align: center;
-            font-size: 0.74rem;
-            color: var(--text-light);
-            margin: 0 0 10px;
-            line-height: 1.4;
+            margin: -2px 0 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .order-summary-line.cuota-resumen {
             color: var(--primary-color);
@@ -4691,7 +4686,7 @@
             font-size: 0.85rem;
             padding: 18px 6px;
         }
-        .cod-summary .order-summary-line { font-size: 0.82rem; }
+        .cod-summary .order-summary-line { font-size: 0.82rem; padding: 5px 0; }
         .cod-summary .order-summary-line.total { font-size: 1.1rem; }
         .cod-discount { color: #1E7A34; font-weight: 700; }
         .cod-missing { color: var(--primary-color); font-weight: 600; }
@@ -4740,10 +4735,15 @@
         }
         .cod-store-info i { color: #1B8A4C; margin-top: 2px; }
 
-        /* Pie fijo: el total y el boton de confirmar nunca salen de pantalla */
+        /* Pie fijo: el total y el boton de confirmar nunca salen de pantalla.
+           COMPACTO A PROPOSITO: antes su nota de envio y su linea de
+           privacidad lo volvian tan alto que tapaban el formulario — el
+           cliente veia el "Total a pagar" pero no los datos que debia
+           diligenciar. La nota de envio vive en el resumen (fase 1) y el
+           aviso de privacidad acompana los datos (fase 2). */
         .cod-footer {
             flex-shrink: 0;
-            padding: 14px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+            padding: 10px 16px calc(12px + env(safe-area-inset-bottom, 0px));
             background: var(--white);
             border-top: 1px solid var(--border-color);
         }
@@ -4751,21 +4751,21 @@
             display: flex;
             justify-content: space-between;
             align-items: baseline;
-            margin-bottom: 10px;
+            gap: 12px;
+            margin-bottom: 8px;
         }
         .cod-footer-total span { font-size: 0.8rem; font-weight: 600; color: var(--text-light); }
-        .cod-footer-total strong { font-size: 1.35rem; font-weight: 800; color: var(--primary-color); }
-        .cod-trust {
-            margin: 10px 0 0;
-            text-align: center;
-            font-size: 0.72rem;
-            color: var(--text-light);
+        .cod-footer-total strong { font-size: 1.25rem; font-weight: 800; color: var(--primary-color); white-space: nowrap; }
+        .cod-datos-trust {
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 6px;
+            font-size: 0.72rem;
+            color: var(--text-light);
+            margin: -8px 0 12px;
+            line-height: 1.4;
         }
-        .cod-trust i { color: var(--success-color); }
+        .cod-datos-trust i { color: var(--success-color); }
 
         /* Boton de confirmar: gris deshabilitado, verde WhatsApp cuando todo es valido */
         .whatsapp-btn {
@@ -4807,7 +4807,24 @@
             .cod-header { padding: 14px 16px; }
             .cod-body { padding: 14px 14px 6px; }
             .cod-section { padding: 14px; }
-            .cod-footer { padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px)); }
+            .cod-footer { padding: 10px 14px calc(12px + env(safe-area-inset-bottom, 0px)); }
+            /* Pantallas chicas: la franja de confianza se comprime para que
+               los campos del formulario entren en la primera vista. */
+            .cod-reassurance { margin-bottom: 10px; }
+            .cod-reassurance span { padding: 5px 10px; font-size: 0.68rem; }
+        }
+        /* Telefonos muy pequenos: cada bloque cede un poco de aire para que
+           los campos del formulario alcancen la primera vista (la confianza
+           ya vive en el encabezado del modal y en el FAQ). */
+        @media (max-width: 380px) {
+            .cod-reassurance { display: none; }
+            .cod-section { padding: 12px; }
+            .cod-summary .order-summary-row { padding: 7px 0; }
+            .cod-summary .order-summary-row img { width: 40px; height: 50px; }
+            .cod-summary .order-summary-row-stepper { margin-top: 4px; }
+            .cod-upsell-toggle { padding: 6px 8px; font-size: 0.68rem; }
+            .cod-upsell-toggle-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .cod-footer-cuota { display: none; }
         }
 
         /* ==================================================================
@@ -4830,23 +4847,131 @@
         }
 
         /* Bundles dentro del checkout: sugeridos con "+ Agregar" para sumar
-           unidades (y llegar al precio por mayor) sin salir del modal. */
+           unidades (y llegar al precio por mayor) sin salir del modal.
+           TIRA HORIZONTAL COMPACTA: antes las tres sugerencias apiladas
+           median ~300px y empujaban "Tus datos" fuera de la pantalla — el
+           cliente no veia que debia diligenciar. En una sola fila deslizable
+           suman alto fijo y los campos quedan a la vista. */
         .cod-upsell {
             margin-top: 12px;
-            padding-top: 12px;
+            padding-top: 10px;
             border-top: 1px dashed #E3E3E9;
         }
-        .cod-upsell-title {
+        /* Gatillo plegado de los sugeridos: una sola linea (~40px). El
+           formulario del cliente manda — los sugeridos se despliegan
+           solo si le interesan (mismo patron del simulador de cuotas). */
+        .cod-upsell-toggle {
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-size: 0.78rem;
-            font-weight: 700;
-            color: var(--primary-color);
-            margin-bottom: 8px;
+            justify-content: space-between;
+            gap: 8px;
+            width: 100%;
+            padding: 8px 10px;
+            border: 1.5px dashed #B2EBF2;
+            border-radius: 10px;
+            background: #F2FAFC;
+            font-family: inherit;
+            font-size: 0.74rem;
+            line-height: 1.3;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            text-align: left;
+            transition: background 0.2s ease, border-color 0.2s ease;
         }
-        .cod-upsell .cart-upsell-item { background: #F2FAFC; margin-bottom: 8px; }
-        .cod-upsell .cart-upsell-add { background: var(--primary-color); color: #fff; }
+        .cod-upsell-toggle:hover { background: #E0F7FA; border-color: var(--primary-light); }
+        .cod-upsell-toggle .chev { font-size: 0.62rem; transition: transform 0.2s ease; }
+        .cod-upsell-toggle.abierta .chev { transform: rotate(180deg); }
+        .cod-upsell-toggle-chip {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--primary-color);
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .cod-upsell-track {
+            margin-top: 8px;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            overscroll-behavior-x: contain;
+            scroll-snap-type: x proximity;
+            -webkit-overflow-scrolling: touch;
+            padding: 2px 1px 4px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 188, 212, 0.4) transparent;
+        }
+        .cod-upsell-track::-webkit-scrollbar { height: 5px; }
+        .cod-upsell-track::-webkit-scrollbar-track { background: transparent; }
+        .cod-upsell-track::-webkit-scrollbar-thumb { background: rgba(0, 188, 212, 0.4); border-radius: 8px; }
+        .cod-upsell-card {
+            position: relative;
+            flex: 0 0 136px;
+            scroll-snap-align: start;
+            background: #F2FAFC;
+            border: 1px solid #D6EEF3;
+            border-radius: 12px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .cod-upsell-card img {
+            width: 100%;
+            /* height:auto pisa el hint presentacional del atributo height="400"
+               (sin esto la foto quedaba de 400px y la tarjeta de 484 de alto) */
+            height: auto;
+            aspect-ratio: 1 / 1;
+            object-fit: contain;
+            border-radius: 8px;
+            background: var(--white);
+        }
+        .cod-upsell-card-name {
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            line-height: 1.2;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            /* altura fija de ~2 lineas: las tarjetas quedan parejas */
+            min-height: 2.4em;
+        }
+        .cod-upsell-card-pie {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            margin-top: auto;
+        }
+        .cod-upsell-card-price {
+            color: var(--primary-color);
+            font-weight: 800;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .cod-upsell-add {
+            flex-shrink: 0;
+            width: 30px;
+            height: 30px;
+            border: none;
+            border-radius: 9px;
+            background: var(--primary-color);
+            color: #fff;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.15s ease;
+        }
+        .cod-upsell-add:hover { transform: scale(1.08); }
+        .cod-upsell-add:active { transform: scale(0.94); }
 
         /* ==================================================================
            PANEL DE PRECIOS DEL ADMINISTRADOR (?admin=1 o Ctrl+Shift+A)
@@ -5737,6 +5862,7 @@
 
                     <div class="cod-section" data-fase="2">
                         <div class="cod-section-title"><span class="step-num">2</span> Tus datos</div>
+                        <p class="cod-datos-trust"><i class="fas fa-lock"></i> Tus datos solo se usan para preparar tu pedido. Nunca los compartimos.</p>
                         <div class="form-group">
                             <label for="customerFullName">Nombre completo *</label>
                             <input type="text" id="customerFullName" name="customerFullName" autocomplete="name" placeholder="Ej. Laura Gómez" required>
@@ -5884,12 +6010,10 @@
                     <strong id="codFooterTotal">$0</strong>
                 </div>
                 <p class="cod-footer-cuota" id="codFooterCuota" hidden></p>
-                <p class="cod-footer-nota">🚚 El envío se cotiza según tu ciudad y lo confirmamos por WhatsApp con cariño cuando armemos tu pedido.</p>
                 <button type="button" class="whatsapp-btn" id="whatsappBtn" onclick="sendWhatsAppOrder()">
                     <i class="fab fa-whatsapp"></i>
                     <span id="whatsappBtnLabel">Confirmar pedido por WhatsApp</span>
                 </button>
-                <p class="cod-trust"><i class="fas fa-lock"></i> Tus datos solo se usan para preparar tu pedido. Nunca los compartimos.</p>
             </div>
         </div>
     </div>
@@ -9038,6 +9162,20 @@
             updateCartUI();
             updateCartCount();
 
+            // Si el checkout ya estaba abierto (el cliente agrego un sugerido
+            // desde el propio formulario), el resumen crece y empujaba los
+            // campos hacia abajo: se re-ancla el scroll a la tira de sugeridos
+            // para que conserve el contexto y siga viendo el formulario.
+            const modalPedido = document.getElementById('orderModal');
+            if (modalPedido && modalPedido.classList.contains('show')) {
+                const upsell = document.querySelector('#orderSummary .cod-upsell');
+                const codBody = document.querySelector('#orderModal .cod-body');
+                if (upsell && codBody) {
+                    const top = upsell.getBoundingClientRect().top - codBody.getBoundingClientRect().top + codBody.scrollTop - 12;
+                    codBody.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+                }
+            }
+
             track('AddToCart', {
                 content_ids: [product.id],
                 content_name: product.name,
@@ -9566,6 +9704,19 @@
             updateSubmitAvailability();
             const codBody = document.querySelector('#orderModal .cod-body');
             if (!yaAbierto && codBody) codBody.scrollTop = 0;
+            // Empujon minimo: si el CAMPO de nombre queda apenas debajo del
+            // pliegue (pedidos de pocos productos), se desliza lo justo para
+            // que asome y el cliente vea de inmediato que debe diligenciar.
+            // Con pedidos largos no se salta el resumen del pedido.
+            if (!yaAbierto && codBody) {
+                const campoNombre = document.getElementById('customerFullName');
+                if (campoNombre) {
+                    const falta = campoNombre.getBoundingClientRect().top - codBody.getBoundingClientRect().bottom;
+                    if (falta > 0 && falta <= 220) {
+                        codBody.scrollTo({ top: codBody.scrollTop + falta + 8, behavior: 'smooth' });
+                    }
+                }
+            }
 
             if (!yaAbierto) {
                 const s = getCartSummary();
@@ -9777,6 +9928,25 @@
             renderCreditoPlazos();
         }
 
+        // Sugeridos del checkout: nacen PLEGADOS (mismo patron del simulador
+        // de cuotas) — los datos del cliente mandan y los sugeridos no deben
+        // empujarlos fuera de la pantalla.
+        let upsellCheckoutAbierto = false;
+
+        function toggleUpsellCheckout() {
+            upsellCheckoutAbierto = !upsellCheckoutAbierto;
+            renderOrderSummary();
+            if (upsellCheckoutAbierto) {
+                // al desplegar, la tira queda a la vista de inmediato
+                const upsell = document.querySelector('#orderSummary .cod-upsell');
+                const codBody = document.querySelector('#orderModal .cod-body');
+                if (upsell && codBody) {
+                    const top = upsell.getBoundingClientRect().top - codBody.getBoundingClientRect().top + codBody.scrollTop - 12;
+                    codBody.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+                }
+            }
+        }
+
         // Renderizar el resumen del pedido dentro del formulario.
         // Estilo COD (Releasit): las cantidades se editan aqui mismo con
         // steppers, y el total vive en el pie, siempre visible.
@@ -9807,50 +9977,58 @@
                             <div class="order-summary-row-price">${cop(item.price * item.quantity)}</div>
                         </div>`;
                     }).join('')}
-                    <div class="order-summary-line"><span>Subtotal</span><span>${cop(summary.total)}</span></div>
-                    <div class="order-summary-line"><span>Envío</span><span>Se cotiza según tu ciudad y se confirma por WhatsApp 🙂</span></div>
-                    <div class="order-summary-line"><span>Entrega</span><span>${esTienda ? 'Retiro en tienda (' + ((CONFIG.empresa && CONFIG.empresa.direccion) || 'CC Taiwan L-27') + ')' : 'Se confirma por WhatsApp'}</span></div>
-                    <div class="order-summary-line total"><span>Total</span><span>${cop(summary.total)}</span></div>
+                    <div class="order-summary-line"><span>Envío y entrega</span><span>${esTienda ? 'Retiro en tienda · sin costo de envío' : 'Envío pagado: se cotiza según tu ciudad y se confirma por WhatsApp 🙂'}</span></div>
                     ${creditoDisponiblePara(summary.total) ? `<div class="order-summary-line cuota-resumen"><span>💳 Paga a cuotas con ${esc(CONFIG.credito.aliados.join(' o '))}</span><span>${(plazoCarrito && plazosCredito().includes(plazoCarrito)) ? `${cop(cuotaMensual(summary.total, plazoCarrito))}/mes × ${plazoCarrito} (elegidas)` : textoDesdeCuota(summary.total)}</span></div>` : ''}
                 `;
 
                 // Bundles dentro del checkout: 3 sugeridos por ticket (bajo,
-                // medio y alto) con "+ Agregar" para sumar unidades sin
-                // salir del modal. Nunca ofrece lo que ya está en el pedido.
+                // medio y alto), PLEGADOS tras un gatillo de una linea — una
+                // tira de 247px no puede tapar los datos del cliente. Al
+                // desplegar muestra la fila horizontal deslizable y nunca
+                // ofrece lo que ya esta en el pedido.
                 const enCarrito = new Set(cart.map(i => i.productId));
                 const sugeridos = sugeridosPorTicket(enCarrito);
                 if (sugeridos.length) {
+                    const desdeSugeridos = Math.min(...sugeridos.map(({ p }) => Math.min(...flattenSizeOptions(p).map(o => o.price))));
                     summaryEl.innerHTML += `
                         <div class="cod-upsell">
-                            <div class="cod-upsell-title">
-                                <i class="fas fa-gift"></i> Sube el total de tu pedido
-                            </div>
-                            ${sugeridos.map(({ p, tier }) => {
-                                const desde = Math.min(...flattenSizeOptions(p).map(o => o.price));
-                                return `
-                                <div class="cart-upsell-item">
-                                    <span class="cart-upsell-tier tier-${tier}">${tier === 'bajo' ? 'Económico' : tier === 'medio' ? 'Precio medio' : 'Premium'}</span>
-                                    <img src="${esc(p.image)}" alt="${esc(p.name)}" width="400" height="500" loading="lazy" onerror="imgOnError(this)">
-                                    <div class="cart-upsell-item-info">
-                                        <div class="cart-upsell-item-name">${esc(p.name)}</div>
-                                        <div class="cart-upsell-item-price">${cop(desde)}</div>
-                                    </div>
-                                    <button type="button" class="cart-upsell-add" onclick="event.stopPropagation(); quickAddDefault('${escJs(p.id)}')">+ Agregar</button>
-                                </div>`;
-                            }).join('')}
+                            <button type="button" class="cod-upsell-toggle${upsellCheckoutAbierto ? ' abierta' : ''}" onclick="toggleUpsellCheckout()" aria-expanded="${upsellCheckoutAbierto}">
+                                <span class="cod-upsell-toggle-text">🎁 Súbelo a tu pedido: ${sugeridos.length} sugeridos desde ${cop(desdeSugeridos)}</span>
+                                <span class="cod-upsell-toggle-chip">${upsellCheckoutAbierto ? 'Ocultar' : 'Ver'} <i class="fas fa-chevron-down chev" aria-hidden="true"></i></span>
+                            </button>
+                            ${upsellCheckoutAbierto ? `
+                            <div class="cod-upsell-track">
+                                ${sugeridos.map(({ p, tier }) => {
+                                    const desde = Math.min(...flattenSizeOptions(p).map(o => o.price));
+                                    return `
+                                    <div class="cod-upsell-card">
+                                        <span class="cart-upsell-tier tier-${tier}">${tier === 'bajo' ? 'Económico' : tier === 'medio' ? 'Precio medio' : 'Premium'}</span>
+                                        <img src="${esc(p.image)}" alt="${esc(p.name)}" width="400" height="400" loading="lazy" onerror="imgOnError(this)">
+                                        <div class="cod-upsell-card-name">${esc(p.name)}</div>
+                                        <div class="cod-upsell-card-pie">
+                                            <span class="cod-upsell-card-price">${cop(desde)}</span>
+                                            <button type="button" class="cod-upsell-add" onclick="event.stopPropagation(); quickAddDefault('${escJs(p.id)}')" aria-label="Agregar ${esc(p.name)} al pedido" title="Agregar ${esc(p.name)} al pedido"><i class="fas fa-plus"></i></button>
+                                        </div>
+                                    </div>`;
+                                }).join('')}
+                            </div>` : ''}
                         </div>`;
                 }
             }
 
             const footerTotal = document.getElementById('codFooterTotal');
             if (footerTotal) footerTotal.textContent = cop(summary.total);
-            // Ventaja de cuotas junto al total del checkout (solo con crédito activo)
+            // Ventaja de cuotas junto al total del checkout (solo con credito
+            // activo). Texto de UNA linea compacta: el pie debe seguir siendo
+            // bajo para no tapar el formulario. El detalle completo de las
+            // cuotas vive en la linea "cuota-resumen" del resumen de arriba.
             const footerCuota = document.getElementById('codFooterCuota');
             if (footerCuota) {
+                const elegidoPlazo = (plazoCarrito && plazosCredito().includes(plazoCarrito)) ? plazoCarrito : null;
                 const textoFooterCuota = creditoDisponiblePara(summary.total)
-                    ? `💳 Paga a cuotas: ${(plazoCarrito && plazosCredito().includes(plazoCarrito))
-                        ? `${cop(cuotaMensual(summary.total, plazoCarrito))}/mes × ${plazoCarrito} meses (tu elección)`
-                        : textoDesdeCuota(summary.total)} con ${CONFIG.credito.aliados.join(' o ')} · Valor estimado`
+                    ? (elegidoPlazo
+                        ? `💳 ${elegidoPlazo} cuotas de ${cop(cuotaMensual(summary.total, elegidoPlazo))}/mes · Valor estimado`
+                        : `💳 ${textoDesdeCuota(summary.total)} · Valor estimado`)
                     : '';
                 footerCuota.hidden = !textoFooterCuota;
                 footerCuota.textContent = textoFooterCuota;
