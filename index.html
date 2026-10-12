@@ -4989,6 +4989,13 @@
             margin-bottom: 18px;
         }
         .admin-help-mini { font-size: 0.74rem; margin: -8px 0 14px; color: var(--text-light); }
+        /* Aviso de costos desactualizados: mismo tono ambar de .admin-nota */
+        .admin-help-mini.aviso {
+            background: #FFF9E6;
+            border: 1px dashed #E8D48A;
+            color: #8A6A1B;
+            font-weight: 600;
+        }
         .admin-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -6177,6 +6184,7 @@
                      no requiere Python ni ningun computador preparado. -->
                 <h4 class="admin-sub">💰 Actualizar costos <small>(exporta el Excel de POSGold y súbelo aquí, desde cualquier dispositivo)</small></h4>
                 <p class="admin-help admin-help-mini">El archivo se cifra <strong>en tu navegador</strong> con la llave del proyecto y queda en el repo para el cron. La próxima sincronización (o el botón de arriba) aplica los costos nuevos al ranking.</p>
+                <p class="admin-help admin-help-mini" id="adminCostosEstado">Consultando la antigüedad de los costos…</p>
                 <div class="admin-grid">
                     <label>Archivo Excel de POSGold (PRODUCTOS…xlsx)
                         <input type="file" id="adminCostosFile" accept=".xlsx">
@@ -7305,6 +7313,8 @@
             document.getElementById('adminModal').classList.add('show');
             // estado de la sincronizacion en vivo (API publica, sin token)
             pintarEstadoSync();
+            // antiguedad del archivo de costos (avisa si toca reexportar)
+            pintarEstadoCostos();
             const tkn = document.getElementById('adminSyncToken');
             if (tkn) tkn.value = leerTokenSync();
             // llave y token de costos (localStorage propios, nunca exportados)
@@ -7358,6 +7368,45 @@
                 el.innerHTML = icono + ' · catálogo activo: <strong>' + products.length + '</strong> productos.';
             } catch (e) {
                 el.innerHTML = 'No pudimos consultar el estado (sin conexión con GitHub).';
+            }
+        }
+
+        /* ------------------------------------------------------------------
+           ANTIGUEDAD DE LOS COSTOS (aviso automatico)
+           La API publica de GitHub dice cuando fue el ultimo commit que
+           toco costos.posgold.enc — y ese archivo solo lo toca quien
+           actualiza costos (el cron diario jamas lo modifica). Si pasan
+           del umbral, el panel avisa con franja ambar para que nadie
+           olvide exportar el Excel de POSGold.
+           ------------------------------------------------------------------ */
+        const COSTOS_UMBRAL_DIAS = 15;
+
+        async function pintarEstadoCostos() {
+            const el = document.getElementById('adminCostosEstado');
+            if (!el) return;
+            try {
+                const r = await fetch(REPO_API + '/commits?path=costos.posgold.enc&per_page=1',
+                    { headers: { 'Accept': 'application/vnd.github+json' } });
+                const d = await r.json();
+                const commit = Array.isArray(d) && d[0];
+                if (!commit) {
+                    el.textContent = 'Todavía no hay archivo de costos en el repo — sube el primer export de PRODUCTOS de POSGold.';
+                    el.classList.remove('aviso');
+                    return;
+                }
+                const fecha = new Date(commit.commit.committer.date);
+                const dias = Math.floor((Date.now() - fecha.getTime()) / 86400000);
+                const cuando = dias <= 0 ? 'hoy mismo' : `hace ${dias} ${dias === 1 ? 'día' : 'días'}`;
+                if (dias > COSTOS_UMBRAL_DIAS) {
+                    el.innerHTML = `⚠️ Costos desactualizados: el último archivo se subió ${cuando}. Exporta el Excel de <strong>PRODUCTOS</strong> desde POSGold (completo, sin filtros) y súbelo aquí para refrescar el ranking.`;
+                    el.classList.add('aviso');
+                } else {
+                    el.textContent = `✅ Costos al día: último archivo subido ${cuando}.`;
+                    el.classList.remove('aviso');
+                }
+            } catch (e) {
+                el.textContent = 'No pudimos consultar la antigüedad de los costos (sin conexión con GitHub).';
+                el.classList.remove('aviso');
             }
         }
 
@@ -7607,6 +7656,8 @@
                 if (r2.status === 200 || r2.status === 201) {
                     showNotification('✅ Costos cifrados y subidos — la próxima sincronización los aplica', 'success');
                     if (fileInput) fileInput.value = '';
+                    // el aviso de antiguedad se refresca al instante ("hoy mismo")
+                    pintarEstadoCostos();
                 } else if (r2.status === 401 || r2.status === 403) {
                     showNotification('El token no tiene permiso Contents — créalo de nuevo con la guía', 'error');
                 } else {
