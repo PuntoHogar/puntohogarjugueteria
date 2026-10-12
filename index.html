@@ -9829,18 +9829,24 @@
             updateSubmitAvailability();
             const codBody = document.querySelector('#orderModal .cod-body');
             if (!yaAbierto && codBody) codBody.scrollTop = 0;
-            // Empujon minimo: si el CAMPO de nombre queda apenas debajo del
-            // pliegue (pedidos de pocos productos), se desliza lo justo para
-            // que asome y el cliente vea de inmediato que debe diligenciar.
-            // Con pedidos largos no se salta el resumen del pedido.
+            // Empujon minimo: con los sugeridos visibles por defecto, se
+            // desliza lo justo para que el titulo "Tus datos" asome junto a
+            // la tira — el cliente ve el pedido, los sugeridos Y que debe
+            // diligenciar. Con pedidos largos no se salta el resumen.
+            // Se espera a que termine la animacion de apertura del modal:
+            // mientras escala (0.8 -> 1) los rectangulos mienten y el
+            // calculo del empujon quedaba corto.
             if (!yaAbierto && codBody) {
-                const campoNombre = document.getElementById('customerFullName');
-                if (campoNombre) {
-                    const falta = campoNombre.getBoundingClientRect().top - codBody.getBoundingClientRect().bottom;
-                    if (falta > 0 && falta <= 220) {
-                        codBody.scrollTo({ top: codBody.scrollTop + falta + 8, behavior: 'smooth' });
+                setTimeout(() => {
+                    const faseDatos = document.querySelector('#orderForm .cod-section[data-fase="2"]');
+                    if (!faseDatos) return;
+                    const falta = faseDatos.getBoundingClientRect().top - codBody.getBoundingClientRect().bottom;
+                    if (falta > 0 && falta <= 260) {
+                        // +40: asoma el titulo completo (unos 24px) y un
+                        // poco mas, sin recortar la tira de sugeridos
+                        codBody.scrollTo({ top: codBody.scrollTop + falta + 40, behavior: 'smooth' });
                     }
-                }
+                }, 380);
             }
 
             if (!yaAbierto) {
@@ -10053,10 +10059,11 @@
             renderCreditoPlazos();
         }
 
-        // Sugeridos del checkout: nacen PLEGADOS (mismo patron del simulador
-        // de cuotas) — los datos del cliente mandan y los sugeridos no deben
-        // empujarlos fuera de la pantalla.
-        let upsellCheckoutAbierto = false;
+        // Sugeridos del checkout: VISIBLES POR DEFECTO (tira horizontal
+        // compacta, plegable con el gatillo). El empujon de openOrderForm
+        // asegura que el campo de nombre tambien asome, y en pantallas
+        // pequenas el cliente puede plegarlos con "Ocultar".
+        let upsellCheckoutAbierto = true;
 
         function toggleUpsellCheckout() {
             upsellCheckoutAbierto = !upsellCheckoutAbierto;
@@ -10107,10 +10114,11 @@
                 `;
 
                 // Bundles dentro del checkout: 3 sugeridos por ticket (bajo,
-                // medio y alto), PLEGADOS tras un gatillo de una linea — una
-                // tira de 247px no puede tapar los datos del cliente. Al
-                // desplegar muestra la fila horizontal deslizable y nunca
-                // ofrece lo que ya esta en el pedido.
+                // medio y alto) en tira horizontal VISIBLE POR DEFECTO y
+                // plegable con el gatillo — en una sola fila no empujan los
+                // datos del cliente fuera de la pantalla y el empujon de
+                // openOrderForm mantiene el nombre a la vista. Nunca ofrece
+                // lo que ya esta en el pedido.
                 const enCarrito = new Set(cart.map(i => i.productId));
                 const sugeridos = sugeridosPorTicket(enCarrito);
                 if (sugeridos.length) {
