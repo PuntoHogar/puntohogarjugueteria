@@ -5743,7 +5743,7 @@
                 </div>
                 <div class="faq-answer">
                     <div class="faq-answer-content">
-                        Pago contra entrega, transferencia<span data-solo-credito> y crédito en cuotas (Addi o Sistecrédito)</span>. Confirmas tu pedido por WhatsApp y el pago se acuerda según tu ciudad.
+                        Puedes pagar<span data-solo-contra-entrega> contra entrega,</span> por transferencia<span data-solo-credito> o a crédito en cuotas (Addi o Sistecrédito)</span>. Confirmas tu pedido por WhatsApp y el pago se acuerda según tu ciudad.
                     </div>
                 </div>
             </div>
@@ -6138,6 +6138,7 @@
 
                 <h4 class="admin-sub">⚙️ Comportamiento de la tienda</h4>
                 <div class="admin-grid">
+                    <label class="admin-check"><input type="checkbox" id="adminContraEntrega"> Ofrecer <strong>pago contra entrega</strong> (el cliente paga al recibir). Desmárcala y en el checkout solo quedarán Transferencia y Crédito en cuotas</label>
                     <label class="admin-check"><input type="checkbox" id="adminVaciar"> Vaciar el carrito después de enviar el pedido (evita pedidos duplicados)</label>
                     <label class="admin-check"><input type="checkbox" id="adminSonido"> Sonido al agregar al carrito</label>
                     <label>Clave de este panel (vacío = no cambiar)
@@ -6410,6 +6411,12 @@
             // envío gratis mientras esta bandera esté activa.
             envioPagado: true,
 
+            // Pago contra entrega (opción de la fase 4 del checkout y FAQ):
+            // se enciende y se apaga desde el panel de administración. Con
+            // false la opción desaparece del formulario y el pedido arranca
+            // en Transferencia (o en Crédito si es lo único disponible).
+            pagoContraEntrega: true,
+
             // Pago a crédito con aliados (Addi / Sistecrédito): aviso en el
             // carrito y opción de pago en el checkout. Pon activo: false y
             // todo lo de crédito desaparece sin dejar rastro.
@@ -6503,6 +6510,9 @@
             tasaMensual: 0,           // 0 = cuota simple (total / plazo)
             montoMinimo: 0,           // compra mínima para pagar a cuotas
 
+            // Métodos de pago: el contra entrega se apaga desde el panel
+            pagoContraEntrega: true,
+
             // Comportamiento
             vaciarCarritoTrasPedido: true,
             sonidoAlAgregar: true,
@@ -6540,6 +6550,7 @@
                 plazos: texto(guardados.plazos, TIENDA_DEFECTO.plazos),
                 tasaMensual: numero(guardados.tasaMensual, TIENDA_DEFECTO.tasaMensual),
                 montoMinimo: numero(guardados.montoMinimo, TIENDA_DEFECTO.montoMinimo),
+                pagoContraEntrega: si(guardados.pagoContraEntrega, TIENDA_DEFECTO.pagoContraEntrega),
                 vaciarCarritoTrasPedido: si(guardados.vaciarCarritoTrasPedido, TIENDA_DEFECTO.vaciarCarritoTrasPedido),
                 sonidoAlAgregar: si(guardados.sonidoAlAgregar, TIENDA_DEFECTO.sonidoAlAgregar),
                 claveAdmin: texto(guardados.claveAdmin, TIENDA_DEFECTO.claveAdmin)
@@ -6567,6 +6578,7 @@
             CONFIG.credito.plazos = plazos.length ? plazos : [12];
             CONFIG.credito.tasaMensual = TIENDA.tasaMensual;
             CONFIG.credito.montoMinimo = TIENDA.montoMinimo;
+            CONFIG.pagoContraEntrega = TIENDA.pagoContraEntrega;
             CONFIG.empresa = {
                 nombre: TIENDA.nombre,
                 logo: TIENDA.logo,
@@ -7651,6 +7663,7 @@
             const check = (id, v) => { const el = document.getElementById(id); if (el) el.checked = !!v; };
             check('adminCreditoActivo', TIENDA.creditoActivo);
             check('adminSimulador', TIENDA.simuladorEnTarjetas);
+            check('adminContraEntrega', TIENDA.pagoContraEntrega);
             check('adminVaciar', TIENDA.vaciarCarritoTrasPedido);
             check('adminSonido', TIENDA.sonidoAlAgregar);
             // Vista previa del logo
@@ -7693,6 +7706,7 @@
             TIENDA.aliados = val('adminAliados') || TIENDA_DEFECTO.aliados;
             TIENDA.plazos = val('adminPlazos') || TIENDA_DEFECTO.plazos;
             TIENDA.montoMinimo = Math.max(0, parseFloat(val('adminMontoMin')) || 0);
+            TIENDA.pagoContraEntrega = check('adminContraEntrega');
             TIENDA.vaciarCarritoTrasPedido = check('adminVaciar');
             TIENDA.sonidoAlAgregar = check('adminSonido');
             const claveNueva = val('adminClaveNueva');
@@ -7778,16 +7792,31 @@
                             'https://www.instagram.com/' + (emp.instagram || 'jugueteriataiwan'),
                             'https://www.tiktok.com/@' + (emp.tiktok || 'jugueteria.taiwan')
                         ];
+                        // Métodos de pago publicados a los buscadores: reflejan
+                        // el contra entrega (configurable desde el panel) y el
+                        // crédito en cuotas. Se reconstruyen en cada corrida
+                        // para que encender/apagar sea siempre reversible.
+                        const metodosPago = [];
+                        if (contraEntregaActiva()) metodosPago.push('Contra entrega');
+                        metodosPago.push('Transferencia');
+                        if (creditoActivo()) metodosPago.push('Crédito en cuotas');
+                        data.paymentAccepted = 'Efectivo, ' + metodosPago.join(', ');
                         s.textContent = JSON.stringify(data);
                     } else if (data && data['@type'] === 'FAQPage') {
                         // El FAQ en formato para buscadores lleva los mismos
-                        // números y dirección que la página visible.
-                        let txt = s.textContent;
+                        // números y dirección que la página visible, y solo
+                        // ofrece los métodos de pago activos (contra entrega y
+                        // crédito son configurables). Se parte del texto
+                        // original para que encender/apagar no acumule cambios.
+                        if (!s.dataset.faqOriginal) s.dataset.faqOriginal = s.textContent;
+                        let txt = s.dataset.faqOriginal;
                         [['+57 310 698 8465', fmtTelefono(TIENDA.whatsappPedidos)],
                          ['+57 313 878 6096', fmtTelefono(TIENDA.whatsappContacto)],
                          [TIENDA_DEFECTO.direccion, TIENDA.direccion]].forEach(par => {
                             if (par[0] && par[1] && par[0] !== par[1]) txt = txt.split(par[0]).join(par[1]);
                         });
+                        if (!contraEntregaActiva()) txt = txt.split('Pago contra entrega, transferencia').join('Transferencia');
+                        if (!creditoActivo()) txt = txt.split(' y crédito en cuotas con Addi o Sistecrédito').join('');
                         s.textContent = txt;
                     }
                 } catch (e) { /* un bloque mal formado no debe romper la página */ }
@@ -8184,6 +8213,7 @@
             aplicarAnalitica();
             aplicarIdentidad();
             aplicarEstadoCredito();
+            aplicarEstadoContraEntrega();
             recalcularPrecios();
             // Tambien persiste: nada de lo escrito se pierde al cerrar el
             // panel (antes solo "Guardar en MI computador" escribia en
@@ -8207,6 +8237,7 @@
             aplicarAnalitica();
             aplicarIdentidad();
             aplicarEstadoCredito();
+            aplicarEstadoContraEntrega();
             recalcularPrecios();
             pintarPanelAdmin();
             showNotification('Guardado en este computador (solo tú los verás)');
@@ -8222,6 +8253,7 @@
             aplicarTiendaSobreConfig();
             aplicarIdentidad();
             aplicarEstadoCredito();
+            aplicarEstadoContraEntrega();
             recalcularPrecios();
             pintarPanelAdmin();
             showNotification('Volvimos a los valores guardados en el archivo');
@@ -8304,6 +8336,7 @@
             L.push('            plazos: ' + JSON.stringify(TIENDA.plazos) + ',');
             L.push('            tasaMensual: ' + TIENDA.tasaMensual + ',');
             L.push('            montoMinimo: ' + TIENDA.montoMinimo + ',');
+            L.push('            pagoContraEntrega: ' + (TIENDA.pagoContraEntrega ? 'true' : 'false') + ',');
             L.push('            vaciarCarritoTrasPedido: ' + (TIENDA.vaciarCarritoTrasPedido ? 'true' : 'false') + ',');
             L.push('            sonidoAlAgregar: ' + (TIENDA.sonidoAlAgregar ? 'true' : 'false') + ',');
             L.push('            claveAdmin: ' + JSON.stringify(TIENDA.claveAdmin));
@@ -8329,6 +8362,7 @@
             aplicarAnalitica();
             aplicarIdentidad();
             aplicarEstadoCredito();
+            aplicarEstadoContraEntrega();
             recalcularPrecios();
             pintarPanelAdmin();
             const listo = () => showNotification('📋 ¡Copiado, guardado y aplicado! Reemplaza los bloques PRECIOS_DEFECTO y TIENDA_DEFECTO del archivo index.html por este texto');
@@ -8389,6 +8423,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             aplicarIdentidad();      // nombre, logo, WhatsApp y redes (configurables)
             aplicarEstadoCredito();
+            aplicarEstadoContraEntrega();
             track('PageView');       // línea base para Meta y GA4 (antes no se disparaba)
             loadProducts();
             updateCartUI();
@@ -9279,6 +9314,45 @@
             document.querySelectorAll('.payment-method-toggle').forEach(el => {
                 el.classList.toggle('con-credito', activo);
             });
+        }
+
+        // ¿Se ofrece pago contra entrega? (configurable en el panel de
+        // administración; el respaldo vive en CONFIG.pagoContraEntrega)
+        function contraEntregaActiva() {
+            return CONFIG.pagoContraEntrega !== false;
+        }
+
+        /* ------------------------------------------------------------------
+           PAGO CONTRA ENTREGA ON/OFF (panel de administración)
+           Con TIENDA.pagoContraEntrega en false:
+           - la opción desaparece de la fase 4 del checkout y el método
+             marcado pasa al primero disponible (Transferencia, o Crédito
+             si la transferencia llegara a ocultarse también);
+           - el FAQ deja de ofrecerlo ([data-solo-contra-entrega]);
+           - los datos estructurados (SEO) lo reflejan (sincronizarJsonLd).
+           ------------------------------------------------------------------ */
+        function aplicarEstadoContraEntrega() {
+            const activa = contraEntregaActiva();
+
+            document.querySelectorAll('[data-solo-contra-entrega]').forEach(el => {
+                el.style.display = activa ? '' : 'none';
+            });
+
+            const opcion = document.querySelector('input[name="paymentMethod"][value="contra-entrega"]');
+            if (!opcion) return;
+            const etiqueta = opcion.closest('.payment-option');
+            if (etiqueta) etiqueta.style.display = activa ? '' : 'none';
+            if (!activa && opcion.checked) {
+                // El pedido arranca en el primer método de pago visible
+                const disponible = [...document.querySelectorAll('input[name="paymentMethod"]')].find(r => {
+                    const op = r.closest('.payment-option');
+                    return r.value !== 'contra-entrega' && (!op || op.style.display !== 'none');
+                });
+                if (disponible) {
+                    disponible.checked = true;
+                    updatePaymentSelection();
+                }
+            }
         }
 
         /* ------------------------------------------------------------------
