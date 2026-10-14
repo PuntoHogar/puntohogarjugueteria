@@ -1,5 +1,5 @@
 // ==================================================================
-// CATALOGO DE JUGUETERIA TAIWAN — generado automaticamente el 2026-10-14 01:44
+// CATALOGO DE JUGUETERIA TAIWAN — generado automaticamente el 2026-10-14 12:57
 // por sync_posgold.py (cron). Todo el inventario elegible de
 // POSGold que cumple la regla de la tienda: activo + existencias
 // en bodega + foto real. El producto que deja de cumplir se
