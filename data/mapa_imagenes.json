@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-10-15T14:30:32",
+ "actualizado": "2026-10-16T00:55:45",
  "por_codigo": {
   "6922982299125": {
    "slug": "animales-pq-en-bolsa-1",
@@ -10043,6 +10043,10 @@
    "imagen": null
   },
   "04789": {
+   "slug": null,
+   "imagen": null
+  },
+  "04802": {
    "slug": null,
    "imagen": null
   }
