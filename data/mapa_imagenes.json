@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-10-16T13:53:39",
+ "actualizado": "2026-10-17T00:58:12",
  "por_codigo": {
   "6922982299125": {
    "slug": "animales-pq-en-bolsa-1",
@@ -10049,6 +10049,21 @@
   "04802": {
    "slug": null,
    "imagen": null
+  },
+  "04950": {
+   "slug": "carro-deportivo-x5-und",
+   "imagen": "https://jugueteriataiwan.com/storage/products/25784/thumb/891c72c5-8b1c-4360-a71b-1ad55ec6c3fb.webp",
+   "nombre": "CARRO DEPORTIVO X5 UND"
+  },
+  "7702202563309": {
+   "slug": "set-maquillaje-infantil-caja-222018cm",
+   "imagen": "https://jugueteriataiwan.com/storage/products/27596/thumb/211402b1-c452-4359-bf9a-05fbc5823981.webp",
+   "nombre": "SET MAQUILLAJE INFANTIL CAJA 22*20*18CM"
+  },
+  "7702202571403": {
+   "slug": "set-maquillaje-maleta-caja-201614cm",
+   "imagen": "https://jugueteriataiwan.com/storage/products/27602/thumb/f88b1969-3a8c-4af8-9d8d-bf5915bcda82.webp",
+   "nombre": "SET MAQUILLAJE MALETA CAJA 20*16*14CM"
   }
  }
 }
