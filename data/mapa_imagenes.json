@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-10-17T13:42:55",
+ "actualizado": "2026-10-18T00:58:32",
  "por_codigo": {
   "6922982299125": {
    "slug": "animales-pq-en-bolsa-1",
@@ -10064,6 +10064,36 @@
    "slug": "set-maquillaje-maleta-caja-201614cm",
    "imagen": "https://jugueteriataiwan.com/storage/products/27602/thumb/f88b1969-3a8c-4af8-9d8d-bf5915bcda82.webp",
    "nombre": "SET MAQUILLAJE MALETA CAJA 20*16*14CM"
+  },
+  "7120251151078": {
+   "slug": "table-multifunciones-con-marimba",
+   "imagen": "https://jugueteriataiwan.com/storage/products/29068/thumb/48618282-4397-43c3-b674-85bc7c0264b9.webp",
+   "nombre": "TABLE MULTIFUNCIONES CON MARIMBA"
+  },
+  "7020241100607": {
+   "slug": "torre-columna-laberinto",
+   "imagen": "https://jugueteriataiwan.com/storage/products/26985/thumb/2ce13a28-8420-4b17-9c84-e26c34016a2f.webp",
+   "nombre": "TORRE COLUMNA LABERINTO"
+  },
+  "7020241100577": {
+   "slug": "juego-de-gestos-estuche-plastico",
+   "imagen": "https://jugueteriataiwan.com/storage/products/26984/thumb/0989e68a-3498-40ff-96ac-38352aea3cd1.webp",
+   "nombre": "JUEGO DE GESTOS ESTUCHE PLASTICO"
+  },
+  "7120251150767": {
+   "slug": "juego-de-ortografia",
+   "imagen": "https://jugueteriataiwan.com/storage/products/29067/thumb/aadad660-b759-41a7-bc34-a3d23170c119.webp",
+   "nombre": "JUEGO DE ORTOGRAFIA"
+  },
+  "6920225108555": {
+   "slug": "laberinto-alambre-caja-1",
+   "imagen": "https://jugueteriataiwan.com/storage/products/26477/thumb/d38476f6-80a7-4ea6-bb3e-0fec1392246e.webp",
+   "nombre": "LABERINTO ALAMBRE CAJA"
+  },
+  "04561": {
+   "slug": "tabla-encajable-con-reloj-y-tablero-surtido",
+   "imagen": "https://jugueteriataiwan.com/storage/products/25580/thumb/c8cffef9-1535-4c84-8e3f-59b2e7223167.webp",
+   "nombre": "TABLA ENCAJABLE CON RELOJ Y TABLERO SURTIDO"
   }
  }
 }
