@@ -25,10 +25,12 @@ catálogo se sincroniza solo, 4 veces al día, desde el sistema POSGold de la ti
 | `assets/` (favicon, og) | Iconos de la marca |
 
 Archivos **locales** (excluidos del repo por `.gitignore`): `.env` (credenciales
-POSGold y llave de cifrado), `*.xlsx` (exportes con costos), `qa_e2e.py` (suite QA),
+POSGold y llave de cifrado), `*.xlsx` (exportes con costos), `qa_e2e.py` (suite QA
+completa; contiene la clave del panel en su escenario de admin),
 `reportes/` (CSVs con costos y márgenes) y `generar_enlace_config.py` (arma el
 enlace de configuración de un solo toque para cargar llave y tokens en el
-navegador de la administración).
+navegador de la administración). `qa_carrito.py` sí vive en el repo: no toca
+el panel y no lleva secretos.
 
 ## El catálogo automático
 
@@ -51,9 +53,59 @@ Los pedidos no tienen backend: el checkout arma el mensaje de WhatsApp con la
 referencia de cada producto y su enlace directo a la ficha en esta misma tienda
 (`?producto={slug}`), que al abrirse resalta el juguete con su panel de cantidades.
 
+### Productos nuevos: qué entra solo y qué necesita la tienda
+
+Un juguete recién creado en POSGold entra **solo** en la próxima corrida si
+cumple los filtros: el cron le genera automáticamente la miniatura WebP, el
+slug, la categoría web, el precio con margen y redondeo a $1.000, el tachado
+y el enlace de ficha. Lo único que el cron no puede inventar es el **costo**:
+un producto sin costo en el Excel queda oculto con el motivo
+"sin costo en Excel" hasta que alguien refresque los costos (abajo).
+
+La vitrina no tiene tope práctico de productos: el grid pagina de 60 en 60
+con scroll infinito y los carruseles muestran máximo 32 por categoría, así
+que el inventario puede crecer sin congelar el navegador. Lo que sí crece es
+el peso: `catalogo.js` (~0,5 KB por producto) y las miniaturas (~25 KB por
+foto) viven en el repo.
+
+### Costos: por qué van por Excel y no por API
+
+El API de POSGold **no expone los costos** (verificado contra
+`GetProduct_V6`: 34 campos y ninguno de costos; su login web tiene captcha),
+y este repo es público: el Excel con costos y márgenes nunca puede subir en
+claro. Por eso el flujo es: exportar → cifrar → commitear cifrado
+(`costos.posgold.enc`, solo 4 columnas, ~115 KB).
+
+El formato es **el que POSGold genera tal cual** (una hoja "Productos",
+86 columnas, 6.000+ filas, encabezados en minúscula: `productoid`, `costo`,
+`costopromedio`, `costoultimo`): exportar y subir, sin prepararlo. Y es a
+prueba de error:
+
+- El **panel** valida el archivo antes de cifrarlo: rechaza uno incompleto,
+  sin columnas de costo o con menos de 1.000 filas (export filtrado).
+- `actualizar_costos.py` verifica el roundtrip SHA-256 antes de commitear.
+- El **cron** lee por nombre de columna (el orden y las otras 82 columnas no
+  importan). Si POSGold renombrara un encabezado en el futuro, el script
+  aborta **antes de tocar `catalogo.js`**: la tienda publicada queda
+  intacta con los costos anteriores hasta corregir. Un producto sin costo
+  válido queda oculto, nunca rompe la vitrina.
+
+La frecuencia correcta es semanal o mensual: los costos solo cambian cuando
+compran inventario; stock, precios y fotos se refrescan solos en cada
+corrida. El panel avisa "⚠️ Costos desactualizados" cuando el archivo pasa
+de 15 días. Si POSGold algún día agrega el campo de costo al API, el
+workflow documenta cómo retirar la dependencia del Excel.
+
 ## Características de la tienda
 
 - Vitrina con grid paginado, carruseles por categoría y lightbox tipo Amazon.
+- Precios calculados con margen y **redondeados a múltiplos de $1.000**
+  (1000, 2000, 3000…): configurable desde el panel ("Sin redondeo" a
+  "1.000").
+- Efecto de compra: al agregar al carrito, la foto del juguete vuela hasta
+  el icono y el contador rebota (dopamina visual sin librerías: reusa la
+  miniatura en cache, respeta `prefers-reduced-motion` y se omite si el
+  checkout ya está abierto).
 - Checkout por WhatsApp estilo COD en 5 fases (pedido → datos → entrega → pago → notas).
 - Pago a crédito en cuotas (Addi / Sistecrédito) con simulador en tarjetas,
   carrito y checkout — configurable desde el panel.
@@ -109,6 +161,11 @@ media corrida), no es un error: la siguiente corrida lo publica todo.
 # suite QA completa (Playwright): 42 pruebas en Chrome y WebKit/Safari,
 # escritorio y móvil — debe pasar 42/42 antes de publicar
 python qa_e2e.py
+
+# suite del carrito (36/36): identidad de los productos agregados,
+# aritmetica exacta (totales, cantidades, fusion de lineas, persistencia),
+# mensaje de WhatsApp y efecto de vuelo — sin secretos, vive en el repo
+python qa_carrito.py
 
 # sincronización de prueba (no toca catalogo.js ni publica)
 python sync_posgold.py --dry-run

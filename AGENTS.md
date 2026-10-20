@@ -19,7 +19,8 @@ arquitectura completa.
    commitea `catalogo.js`, `data/mapa_imagenes.json` y `assets/fotos`.
 4. Textos de la tienda: español de Colombia, tuteo, tono cálido. Los mensajes
    de commit del repo no llevan tildes (estilo histórico).
-5. Nunca commitear sin que pase el QA (regla 42/42, abajo).
+5. Nunca commitear sin que pase el QA (regla 42/42 de `qa_e2e.py` y 36/36 de
+   `qa_carrito.py`, abajo).
 
 ## Comandos de verificación
 
@@ -64,6 +65,20 @@ es rechazado, el cron movió el remoto: `git pull --rebase origin main` y de nue
   (`TIENDA.categoriasOcultas` / `productosOcultos`); el panel siempre ve
   `CATALOGO_BASE` completo. La clave `"navidad"` esconde la sección de
   temporada, no sus productos.
+- **Precios**: `precioDetal()` = base × multiplicador × (1+margen) y
+  `redondearPrecio()` al múltiplo de `PRECIOS.redondeo` (**1000** hoy: la
+  fábrica en `PRECIOS_DEFECTO` y lo publicado en `data/configuracion.js`
+  deben llevar el mismo valor o lo publicado tapa a la fábrica). El
+  tachado (`compareDetal`) se acota a un descuento creíble de 20–30%.
+- **Carrito**: `cart` fusiona líneas por `lineId` (`id::talla`), el total
+  sale de `getCartSummary()` (Σ precio×cantidad) y `qa_carrito.py` (36/36)
+  vigila identidad de líneas, aritmética exacta hasta el mensaje de
+  WhatsApp, persistencia y vuelo.
+- **Vuelo al carrito**: `volarAlCarrito(product)` clona la miniatura de la
+  tarjeta (`.jt-fly`) y la anima con Web Animations hasta el icono; abre el
+  checkout ~300 ms después para que el ojo siga el recorrido. Guardas: no
+  vuela con el checkout abierto (sugeridos), con
+  `prefers-reduced-motion`, sin Web Animations ni sin foto cargada.
 - **ScrollLock**: congela el scroll del body conservando la posición (menú,
   carrito, lightbox y checkout). Toda pantalla completa debe usarlo, nunca
   toggles directos de `body-no-scroll`.
@@ -92,3 +107,19 @@ es rechazado, el cron movió el remoto: `git pull --rebase origin main` y de nue
 - QA de WebKit: tocar una foto del lightbox solo cuando la miniatura de la
   tarjeta ya cargó (nadie toca una foto que no ve); si el QA de WebKit móvil
   falla por tiempo, revisar primero si es la red, no el código.
+- **El API de POSGold no trae costos** (verificado contra `GetProduct_V6`:
+  34 campos, ninguno de costo; el login web tiene captcha): no intentar
+  automatizar el refresco de costos. El plan B si POSGold algún día expone
+  el campo está documentado en `.github/workflows/sync-top300.yml`.
+- **El Excel de costos es un contrato de formato**: el export de PRODUCTOS
+  de POSGold trae 86 columnas y encabezados en minúscula
+  (`productoid`, `costo`, `costopromedio`, `costoultimo`); el pipeline lee
+  por NOMBRE de columna (el orden y las columnas extra no importan) y falla
+  seguro: el panel rechaza el archivo antes de cifrar (columnas faltantes o
+  <1.000 filas = export filtrado) y el cron aborta antes de tocar
+  `catalogo.js` si los encabezados cambian. Un producto nuevo sin costo en
+  el Excel queda oculto ("sin costo en Excel"): no es un bug, es la regla.
+- Un producto nuevo en POSGold entra solo en la próxima corrida si cumple
+  los filtros (activo + existencias + foto + precio + costo + rentabilidad);
+  fotos, slug, categoría y precios son automáticos. Temporada navideña y
+  destacados del héroe se curan a mano (panel / workflow).
