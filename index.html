@@ -3005,6 +3005,27 @@
             justify-content: center;
         }
         .floating-cart .cart-count.bump { animation: badgeBump 0.35s ease; }
+        /* VUELO AL CARRITO: al agregar un juguete, su foto vuela desde la
+           tarjeta hasta el icono del carrito (dopamina visual: confirma
+           QUE producto entra y DONDE queda). El clon es la propia
+           miniatura (ya en cache: no descarga nada) y vive solo ~0.5s. */
+        .jt-fly {
+            position: fixed;
+            z-index: 99999;
+            pointer-events: none;
+            border-radius: 10px;
+            object-fit: cover;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+        }
+        /* Badge con rebote elastico (overshoot): mas jugoso que el bump
+           plano. La regla por id gana a las de clase de arriba. */
+        #cartCount.bump,
+        #floatingCartCount.bump {
+            animation: badgeBump 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .jt-fly { display: none; }
+        }
         .floating-whatsapp {
             background: #25D366;
             color: var(--white);
@@ -6781,7 +6802,7 @@
             multiplicadorBase: 1,
 
             // Redondeo de precios finales al múltiplo de... (0 = sin redondeo)
-            redondeo: 100,
+            redondeo: 1000,
 
             // Margen por categoría: SOBREESCRIBE el global. En decimales
             // (0.30 = +30%). Borrar la línea para volver al global.
@@ -9640,6 +9661,61 @@
             addSizesToCart(productId);
         }
 
+        // VUELO AL CARRITO: la miniatura de la tarjeta vuela hasta el icono
+        // del carrito en ~0.5s con un arco suave. Usa Web Animations (todos
+        // los navegadores modernos) y reusa la miniatura en cache (cero
+        // descargas). Devuelve true si animo, para que quien llame decida
+        // si espera a que aterrice antes de abrir el checkout.
+        // Se omite (false) si: el checkout ya esta abierto (agregar un
+        // sugerido desde el propio pedido), el usuario prefiere menos
+        // movimiento, la tarjeta no esta en pantalla o su foto no cargo.
+        function volarAlCarrito(product) {
+            try {
+                const modal = document.getElementById('orderModal');
+                if (modal && modal.classList.contains('show')) return false;
+                if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+                if (!document.body.animate) return false;
+                const card = document.getElementById('gal-' + product.id);
+                const img = card ? card.querySelector('img') : null;
+                if (!img || !img.complete || !img.naturalWidth) return false;
+                // Objetivo: el carrito flotante si esta en pantalla; si no,
+                // el badge del header (escritorio).
+                let destino = document.getElementById('floatingCartCount');
+                let dr = destino ? destino.getBoundingClientRect() : null;
+                if (!dr || !dr.width || dr.bottom < 0 || dr.top > window.innerHeight) {
+                    destino = document.getElementById('cartCount');
+                    dr = destino ? destino.getBoundingClientRect() : null;
+                }
+                if (!destino || !dr.width) return false;
+                const ir = img.getBoundingClientRect();
+                const clon = img.cloneNode(false);
+                clon.className = 'jt-fly';
+                clon.removeAttribute('id');
+                clon.removeAttribute('width');
+                clon.removeAttribute('height');
+                clon.removeAttribute('loading');
+                clon.removeAttribute('decoding');
+                clon.style.left = ir.left + 'px';
+                clon.style.top = ir.top + 'px';
+                clon.style.width = ir.width + 'px';
+                clon.style.height = ir.height + 'px';
+                document.body.appendChild(clon);
+                const dx = (dr.left + dr.width / 2) - (ir.left + ir.width / 2);
+                const dy = (dr.top + dr.height / 2) - (ir.top + ir.height / 2);
+                const anim = clon.animate([
+                    { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+                    { transform: `translate(${dx * 0.5}px, ${dy * 0.5 - 70}px) scale(0.65)`, opacity: 1, offset: 0.45 },
+                    { transform: `translate(${dx}px, ${dy}px) scale(0.12)`, opacity: 0.55 },
+                ], { duration: 520, easing: 'cubic-bezier(0.5, 0, 0.75, 0)' });
+                const limpiar = () => { if (clon.parentNode) clon.remove(); };
+                anim.onfinish = limpiar;
+                anim.oncancel = limpiar;
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
         // Agregar al carrito todas las cantidades seleccionadas (> 0)
         function addSizesToCart(productId) {
             const product = products.find(p => p.id === productId);
@@ -9729,9 +9805,15 @@
 
             // Flujo tipo Releasit: sin modal de confirmacion intermedio.
             // Agregar un producto abre DIRECTO el formulario de pedido, que
-            // va revelando la entrega, el pago y las notas por fases.
+            // va revelando la entrega, el pago y las notas por fases. Si la
+            // foto esta volando al carrito, se le deja aterrizar (~0.3s)
+            // para que el ojo siga el recorrido y DESPUES abre el checkout.
             showNotification(`✓ ${unidadesAgregadas} producto${unidadesAgregadas > 1 ? 's' : ''} agregado${unidadesAgregadas > 1 ? 's' : ''}. Completa tu pedido`);
-            openOrderForm();
+            if (volarAlCarrito(product)) {
+                setTimeout(openOrderForm, 300);
+            } else {
+                openOrderForm();
+            }
         }
 
         /* ------------------------------------------------------------------

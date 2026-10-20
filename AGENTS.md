@@ -25,6 +25,7 @@ arquitectura completa.
 
 ```bash
 python qa_e2e.py            # suite completa: 42/42 esperado (Playwright + WebKit)
+python qa_carrito.py        # carrito: identidad, aritmetica exacta, mensaje WhatsApp y vuelo (36/36)
 python sync_posgold.py --dry-run   # sync de prueba sin tocar catalogo.js
 python sync_posgold.py --verificar-todas   # auditar/regenerar miniaturas
 python generar_enlace_config.py    # enlace de config (llave+tokens) para un navegador

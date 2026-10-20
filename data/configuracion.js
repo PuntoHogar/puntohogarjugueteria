@@ -34,7 +34,7 @@ window.CONFIG_PUBLICADA = {
   "precios": {
     "margenGlobal": 0.25,
     "multiplicadorBase": 1,
-    "redondeo": 100,
+    "redondeo": 1000,
     "margenesPorCategoria": {
       "temporada": 0.35
     },
