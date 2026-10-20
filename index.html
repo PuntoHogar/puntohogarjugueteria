@@ -38,6 +38,10 @@
     <link rel="shortcut icon" type="image/png" href="assets/favicon-32.png">
     <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <!-- Las fotos de producto viven en POSGold (Files/Images): preconexion
+         para que Safari/iPhone abra las ~6 conexiones disponibles desde el
+         primer milisegundo (el servidor es HTTP/1.1 y encola peticiones). -->
+    <link rel="preconnect" href="https://jugueteriataiwan.goldpos.com.co">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- (El preload de la foto del héroe se quitó: pre-descargaba el
          producto de fábrica aunque el panel hubiera elegido otro. La foto
@@ -53,7 +57,7 @@
       "@type": "ToyStore",
       "name": "Juguetería Taiwan",
       "description": "Tu tienda de confianza en juguetería, piñatería, tecnología, escolar y mucho más. Compra al detal online en toda Colombia.",
-      "image": "https://jugueteriataiwan.com/storage/products/30533/thumb/e1e78f2f-8d84-458a-8f73-afdac0a201e3.webp",
+      "image": "https://jugueteriataiwan.goldpos.com.co/Files/Images/2026888805337-1.jpeg",
       "logo": "https://jugueteriataiwan.com/storage/branding/70TI84WCuEegX1pJk5ttvppyKKn2sCze24oHDKoi.png",
       "url": "https://jugueteriataiwan.com",
       "telephone": "+573106988465",
@@ -5616,8 +5620,8 @@
                      tarjeta del producto (no a un lightbox), para llevar
                      directo a la compra. -->
                 <div class="testimonial-card" data-fav-slot="0" style="visibility: hidden;">
-                    <div class="testimonial-image-container square" data-links-to-product="mesa-futbol-de-madera" style="--img:url('https://jugueteriataiwan.com/storage/products/30385/thumb/3b4c8612-2e7b-44d0-9d68-fa32e9efe45e.webp')" onclick="scrollToProduct('mesa-futbol-de-madera')" role="button" tabindex="0" aria-label="Ver Mesa Fútbol de Madera y comprar" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();scrollToProduct('mesa-futbol-de-madera');}">
-                        <img src="https://jugueteriataiwan.com/storage/products/30385/thumb/3b4c8612-2e7b-44d0-9d68-fa32e9efe45e.webp" alt="Mesa Fútbol de Madera — Juguetería Taiwan" loading="lazy" onerror="imgOnError(this)">
+                    <div class="testimonial-image-container square" data-links-to-product="mesa-futbol-de-madera" style="--img:url('https://jugueteriataiwan.goldpos.com.co/Files/Images/6603888929247-1.jpeg')" onclick="scrollToProduct('mesa-futbol-de-madera')" role="button" tabindex="0" aria-label="Ver Mesa Fútbol de Madera y comprar" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();scrollToProduct('mesa-futbol-de-madera');}">
+                        <img src="https://jugueteriataiwan.goldpos.com.co/Files/Images/6603888929247-1.jpeg" alt="Mesa Fútbol de Madera — Juguetería Taiwan" loading="lazy" onerror="imgOnError(this)">
                     </div>
                     <div class="testimonial-content">
                         <p class="testimonial-text">Mesa Fútbol de Madera, el clásico futbolín para compartir en familia.</p>
@@ -5628,8 +5632,8 @@
                 </div>
 
                 <div class="testimonial-card" data-fav-slot="1" style="visibility: hidden;">
-                    <div class="testimonial-image-container square" data-links-to-product="pista-neon-carro-pila-luz-con-numero" style="--img:url('https://jugueteriataiwan.com/storage/products/30533/thumb/e1e78f2f-8d84-458a-8f73-afdac0a201e3.webp')" onclick="scrollToProduct('pista-neon-carro-pila-luz-con-numero')" role="button" tabindex="0" aria-label="Ver Pista Neón Carro Pila Luz y comprar" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();scrollToProduct('pista-neon-carro-pila-luz-con-numero');}">
-                        <img src="https://jugueteriataiwan.com/storage/products/30533/thumb/e1e78f2f-8d84-458a-8f73-afdac0a201e3.webp" alt="Pista Neón Carro con pila y luz, incluye número" loading="lazy" onerror="imgOnError(this)">
+                    <div class="testimonial-image-container square" data-links-to-product="pista-neon-carro-pila-luz-con-numero" style="--img:url('https://jugueteriataiwan.goldpos.com.co/Files/Images/2026888805337-1.jpeg')" onclick="scrollToProduct('pista-neon-carro-pila-luz-con-numero')" role="button" tabindex="0" aria-label="Ver Pista Neón Carro Pila Luz y comprar" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();scrollToProduct('pista-neon-carro-pila-luz-con-numero');}">
+                        <img src="https://jugueteriataiwan.goldpos.com.co/Files/Images/2026888805337-1.jpeg" alt="Pista Neón Carro con pila y luz, incluye número" loading="lazy" onerror="imgOnError(this)">
                     </div>
                     <div class="testimonial-content">
                         <p class="testimonial-text">Pista Neón Carro con pila y luz, incluye número.</p>
@@ -5640,8 +5644,8 @@
                 </div>
 
                 <div class="testimonial-card" data-fav-slot="2" style="visibility: hidden;">
-                    <div class="testimonial-image-container square" data-links-to-product="burbujero-mil-burbujas-pilas-cj-bubble-gun-4-motivos" style="--img:url('https://jugueteriataiwan.com/storage/products/30523/thumb/fe6f444a-ebca-4fea-bc42-198023f51e3a.webp')" onclick="scrollToProduct('burbujero-mil-burbujas-pilas-cj-bubble-gun-4-motivos')" role="button" tabindex="0" aria-label="Ver Burbujero Mil Burbujas y comprar" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();scrollToProduct('burbujero-mil-burbujas-pilas-cj-bubble-gun-4-motivos');}">
-                        <img src="https://jugueteriataiwan.com/storage/products/30523/thumb/fe6f444a-ebca-4fea-bc42-198023f51e3a.webp" alt="Burbujero Mil Burbujas con pilas, modelo CJ Bubble Gun" loading="lazy" onerror="imgOnError(this)">
+                    <div class="testimonial-image-container square" data-links-to-product="burbujero-mil-burbujas-pilas-cj-bubble-gun-4-motivos" style="--img:url('https://jugueteriataiwan.goldpos.com.co/Files/Images/2026888800936-1.jpeg')" onclick="scrollToProduct('burbujero-mil-burbujas-pilas-cj-bubble-gun-4-motivos')" role="button" tabindex="0" aria-label="Ver Burbujero Mil Burbujas y comprar" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();scrollToProduct('burbujero-mil-burbujas-pilas-cj-bubble-gun-4-motivos');}">
+                        <img src="https://jugueteriataiwan.goldpos.com.co/Files/Images/2026888800936-1.jpeg" alt="Burbujero Mil Burbujas con pilas, modelo CJ Bubble Gun" loading="lazy" onerror="imgOnError(this)">
                     </div>
                     <div class="testimonial-content">
                         <p class="testimonial-text">Burbujero Mil Burbujas con pilas, modelo CJ Bubble Gun en 4 motivos.</p>
@@ -7073,13 +7077,11 @@
         // haber una foto. En cuanto Valeria les suba la foto real al
         // catálogo, reaparecen solos, sin tocar nada más. El panel de
         // administración los sigue viendo porque usa CATALOGO_BASE.
-        // IMAGENES_ROTAS_EN_SERVIDOR: referencias cuya foto da 404 en el
-        // servidor (verificado el 09-10-2026). Se ocultan igual que las sin
-        // foto: al arreglarlas en el sitio, quitar el id de esta lista.
-        const IMAGENES_ROTAS_EN_SERVIDOR = [
-            'agenda-2027-lineas-14524cm-2',        // escolar — foto 404 (producto 30041)
-            'bolas-de-hidrogel-unicolor-x20000-cjx5xcol', // slime — foto 404 (producto 30067)
-        ];
+        // IMAGENES_ROTAS_EN_SERVIDOR: fotos que se sepan rotas en el
+        // servidor se ocultan igual (el cron de POSGold verifica cada
+        // imagen antes de publicar, así que la lista queda vacía; si
+        // alguna foto llegara a romperse, agrega aquí el id del producto).
+        const IMAGENES_ROTAS_EN_SERVIDOR = [];
         function soloConFotoReal(lista) {
             return lista.filter(p =>
                 !(p.image || '').startsWith('data:image/svg') &&
@@ -8696,6 +8698,15 @@
             actualizarPrecioHero();
             actualizarHeroDestacado();
             renderFavoritos();
+
+            // Enlace directo a un producto (?producto=slug): llega de los
+            // pedidos de WhatsApp y de enlaces compartidos — abre la ficha
+            // exacta: quita el filtro si hace falta, expande la página del
+            // grid donde vive y resalta la tarjeta con su panel abierto.
+            try {
+                const objetivo = new URLSearchParams(window.location.search).get('producto');
+                if (objetivo) setTimeout(() => scrollToProduct(objetivo), 600);
+            } catch (e) {}
 
             // Panel de precios del administrador: enlace "Administración" del
             // pie de página, ?admin=1 o Ctrl+Shift+A. Todos piden clave.
@@ -10942,9 +10953,13 @@
             cart.forEach(item => {
                 message += `• ${item.name}\n`;
                 if (item.sku) message += `  SKU: ${item.sku}\n`;
-                // Enlace a la ficha del producto en la tienda: quien atiende el
-                // pedido ve la foto y la referencia sin adivinar por el nombre.
-                if (item.url) message += `  🔗 ${item.url}\n`;
+                // Enlace a la ficha en ESTA tienda al detal (?producto=slug):
+                // se prefiere el url vivo del catálogo — los carritos viejos
+                // guardados antes del cambio traían el enlace de la página
+                // de mayoristas.
+                const prodVivo = products.find(x => x.id === item.productId);
+                const enlace = (prodVivo && prodVivo.url) || item.url;
+                if (enlace) message += `  🔗 ${enlace}\n`;
                 message += `  ${item.quantity} x ${cop(item.price)} = ${cop(item.price * item.quantity)}\n\n`;
             });
 

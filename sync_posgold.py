@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 """
 sync_posgold.py — Carga automatica de los 300 productos mas rentables de
-POSGold al index.html de Jugueteria Taiwan (jugueteriataiwan.com).
+POSGold al catalogo.js de Jugueteria Taiwan (saldosjugueteriataiwan.com).
 
-Como funciona (cron: programar_tarea.ps1 / Task Scheduler de Windows):
+Como funciona (cron: .github/workflows/sync-top300.yml):
   1. Carga credenciales de .env — JAMAS van al repo de GitHub
   2. Genera JWT fresco: POST /apiGold/Login_Api/LoginJWTToken
   3. Descarga productos: GET /apiGold/ProductoApi/GetProduct_V6
@@ -18,18 +18,23 @@ Como funciona (cron: programar_tarea.ps1 / Task Scheduler de Windows):
        margen_precio = (precio_base_sin_iva - costo) / precio_base_sin_iva
        utilidad      = precio_base_sin_iva - costo
   7. Toma el TOP N (los destacados que cumplen entran primero si
-     INCLUIR_DESTACADOS=true) y resuelve foto + pagina de cada uno
-     (cache data/mapa_imagenes.json + busqueda en la web, verificando
-     que el SKU de la pagina sea el codigo de POSGold)
-  8. Reemplaza el bloque /*__TOP300:INICIO__*/ ... /*__TOP300:FIN__*/
-     del index.html — el producto que deja de cumplir se oculta solo
+     INCLUIR_DESTACADOS=true). TODO sale de POSGold — la web mayorista
+     ya no participa:
+       - slug (id): el conocido del cache data/mapa_imagenes.json o, para
+         productos nuevos, el derivado del nombre en POSGold
+       - fotos: {POSGOLD_BASE}/Files/Images/{archivo}, verificadas por
+         HTTP (muestra diaria; --verificar-todas para auditar todo), con
+         la foto vieja del cache como respaldo si alguna falla
+  8. Genera catalogo.js: el enlace del pedido apunta a ESTA tienda al
+     detal ({DETAL_URL}/?producto={slug}), no a la web de mayoristas
   9. Reporte local en reportes/ (contiene costos: NO publicar)
  10. Con --publicar: git commit + push -> GitHub Pages republica solo
 
 Uso:
-  python sync_posgold.py --dry-run     (prueba sin tocar el index)
-  python sync_posgold.py               (carga el index, sin publicar)
+  python sync_posgold.py --dry-run     (prueba sin tocar el catalogo)
+  python sync_posgold.py               (carga el catalogo, sin publicar)
   python sync_posgold.py --publicar    (carga y publica en GitHub)
+  python sync_posgold.py --verificar-todas   (audita todas las fotos)
 """
 
 import argparse
@@ -437,8 +442,10 @@ def sembrar_cache_desde_dropi(cache):
             if "/full/" in url:
                 url = url.replace("/full/", "/thumb/")
             ent = por_codigo.setdefault(sku, {})
-            if not ent.get("imagen"):
-                ent["imagen"] = url
+            # La foto de la web mayorista queda como RESPALDO (imagen_web):
+            # la principal (imagen) ahora sale de Files/Images de POSGold.
+            if not ent.get("imagen_web"):
+                ent["imagen_web"] = url
                 nuevos += 1
         wb.close()
         return nuevos
@@ -448,120 +455,34 @@ def sembrar_cache_desde_dropi(cache):
 
 
 # ------------------------------------------------------------------
-# Resolucion web: slug + foto verificando que el SKU coincida
+# Slug y fotos DIRECTOS de POSGold (la web mayorista ya no participa)
 # ------------------------------------------------------------------
 
 
-def buscar_slugs_web(env, nombre):
-    for consulta in (nombre, " ".join((nombre or "").split()[:3])):
-        if not consulta:
-            continue
-        url = f"{env['WEB_TIENDA']}/catalogo?q={urllib.parse.quote(consulta)}"
-        try:
-            codigo, html = http_texto(url, timeout=60)
-        except Exception:
-            continue
-        if codigo != 200:
-            continue
-        slugs = re.findall(r'href="https?://' + re.escape(urllib.parse.urlparse(env["WEB_TIENDA"]).netloc) +
-                           r'/producto/([^"#?]+)"', html)
-        unicos = list(dict.fromkeys(slugs))[:10]
-        if unicos:
-            return unicos
-        time.sleep(0.12)
-    return []
+def slug_posgold(nombre):
+    """Slug determinista derivado del nombre del producto en POSGold:
+    minusculas, sin acentos, separado por guiones. Para productos nuevos
+    reemplaza el slug que antes se raspaba de la web mayorista; para los
+    que ya estan en el cache se conserva el slug conocido (favoritos,
+    temporada y destacado dependen de que no cambie)."""
+    txt = unicodedata.normalize("NFD", nombre or "")
+    txt = "".join(c for c in txt if unicodedata.category(c) != "Mn")
+    txt = re.sub(r"[^a-z0-9]+", "-", txt.lower()).strip("-")
+    return txt[:120].strip("-") or None
 
 
-def pagina_producto_web(env, slug):
-    url = f"{env['WEB_TIENDA']}/producto/{urllib.parse.quote(slug)}"
-    codigo, html = http_texto(url, timeout=60)
-    if codigo != 200:
-        return None, None, None
-    sku = re.search(r"SKU:\s*([A-Za-z0-9%\-\.]+)", html)
-    # La foto PROPIA del producto es el primer URL storage del documento
-    # (og/JSON-LD/galeria principal aparecen antes de los carruseles de
-    # relacionados, que solo traen thumbs de OTROS productos). Antes este
-    # regex buscaba el primer /thumb/ y capturaba productos relacionados.
-    titulo = re.search(r"<title>([^<]+)</title>", html)
-    nombre_pag = titulo.group(1).split(" - ")[0].strip() if titulo else None
-    imagen = None
-    m = re.search(r'storage/products/(\d+)/(full|thumb)/([^"\'\s)]+)', html)
-    if m:
-        pid_f, tamano, archivo = m.groups()
-        if tamano == "thumb":
-            imagen = f"{env['WEB_TIENDA']}/storage/products/{pid_f}/thumb/{archivo}"
-        else:
-            thumb = f"{env['WEB_TIENDA']}/storage/products/{pid_f}/thumb/{archivo}"
-            ok_thumb, _ = imagen_responde(thumb)
-            imagen = thumb if ok_thumb else \
-                f"{env['WEB_TIENDA']}/storage/products/{pid_f}/full/{archivo}"
-    return (sku.group(1).strip() if sku else None), imagen, nombre_pag
-
-
-def resolver_por_codigo(env, cache, producto, usar_web=True, forzar=False):
-    """Devuelve (slug, imagen, origen) para un producto POSGold o None."""
-    codigo = producto["codigo"]
-    por_codigo = cache.setdefault("por_codigo", {})
-    ent = por_codigo.get(codigo) or {}
-    if not forzar and ent.get("slug") and ent.get("imagen"):
-        return ent["slug"], ent["imagen"], "cache"
-    if not usar_web:
-        if ent.get("imagen") and ent.get("slug"):
-            return ent["slug"], ent["imagen"], "cache"
-        return None
-    # Imagen ya conocida (DROPI) pero sin slug: basta una busqueda; si hay
-    # un unico resultado no hace falta descargar la pagina completa.
-    if not forzar and ent.get("imagen") and not ent.get("slug"):
-        slugs = buscar_slugs_web(env, producto["nombre"])
-        if len(slugs) == 1:
-            por_codigo[codigo] = {**ent, "slug": slugs[0]}
-            return slugs[0], ent["imagen"], "cache+busqueda"
-        if slugs:
-            for slug in slugs:
-                sku_pag, imagen, _ = pagina_producto_web(env, slug)
-                time.sleep(0.08)
-                if imagen and sku_pag == codigo:
-                    por_codigo[codigo] = {"slug": slug, "imagen": ent["imagen"],
-                                          "nombre": producto["nombre"]}
-                    return slug, ent["imagen"], "cache+busqueda"
-        return None
-    slugs = buscar_slugs_web(env, producto["nombre"])
-    if not slugs:
-        por_codigo[codigo] = {**ent, "slug": ent.get("slug"), "imagen": ent.get("imagen")}
-        return None
-    # Validar cada candidato: la pagina debe publicar el mismo SKU de POSGold
-    # (o, si es unico resultado, al menos el mismo nombre exacto)
-    primera = None
-    for slug in slugs:
-        sku_pag, imagen, nombre_pag = pagina_producto_web(env, slug)
-        time.sleep(0.08)
-        if not imagen:
-            continue
-        if primera is None:
-            primera = (slug, imagen, nombre_pag)
-        if sku_pag == codigo:
-            por_codigo[codigo] = {"slug": slug, "imagen": imagen, "nombre": producto["nombre"]}
-            return slug, imagen, "web"
-    if len(slugs) == 1 and primera:
-        slug, imagen, nombre_pag = primera
-        if nombre_pag and sin_acentos(nombre_pag) == sin_acentos(producto["nombre"]):
-            por_codigo[codigo] = {"slug": slug, "imagen": imagen, "nombre": producto["nombre"]}
-            return slug, imagen, "web"
-    return None
-
-
-def resolver_slug_conocido(env, cache, slug, producto):
-    """Para destacados: el slug ya lo conocemos, falta la foto."""
-    por_codigo = cache.setdefault("por_codigo", {})
-    ent = por_codigo.get(producto["codigo"]) or {}
-    if ent.get("imagen"):
-        return ent["imagen"], "cache"
-    sku_pag, imagen, _ = pagina_producto_web(env, slug)
-    if imagen:
-        por_codigo[producto["codigo"]] = {"slug": slug, "imagen": imagen,
-                                           "nombre": producto["nombre"]}
-        return imagen, "web"
-    return None, None
+def imagenes_posgold(env, item):
+    """URLs publicas de las fotos del producto en POSGold:
+    {POSGOLD_BASE}/Files/Images/{archivo} por cada foto registrada en el
+    inventario (se descarta el placeholder 'Imagen-no-disponible.jpg').
+    El servidor responde con el original (~100 KB, certificado valido)."""
+    base = env["POSGOLD_BASE"].rstrip("/") + "/Files/Images/"
+    archivos = []
+    for x in (item.get("Imagenes") or []):
+        a = str(x).strip()
+        if a and PLACEHOLDER_POSGOLD not in a.lower() and a not in archivos:
+            archivos.append(a)
+    return [base + urllib.parse.quote(a) for a in archivos]
 
 
 # ------------------------------------------------------------------
@@ -577,8 +498,14 @@ def generar_catalogo_js(env, seleccion, cantidad):
     """Contenido completo de catalogo.js (archivo independiente, indentacion
     desde columna 0). El index.html lo carga con <script src=catalogo.js>:
     el navegador lo cachea aparte y el index se mantiene liviano aunque el
-    inventario completo entre al catalogo."""
+    inventario completo entre al catalogo.
+
+    El slug (id) de cada producto viene de POSGold — el conocido del cache
+    o, para productos nuevos, el derivado del nombre en POSGold — y el
+    enlace del pedido apunta a ESTA tienda al detal con ese slug
+    (?producto=...), no a la pagina de mayoristas."""
     fecha = dt.datetime.now().strftime("%Y-%m-%d %H:%M")
+    detal = (env.get("DETAL_URL") or "https://saldosjugueteriataiwan.com").rstrip("/")
     L = []
     L.append("// ==================================================================")
     L.append(f"// CATALOGO DE JUGUETERIA TAIWAN — generado automaticamente el {fecha}")
@@ -596,12 +523,13 @@ def generar_catalogo_js(env, seleccion, cantidad):
     for p in seleccion:
         precio = p["precio"]
         compare = p["compare"]
+        galeria = p.get("imagenes") or [p["imagen"]]
         L.append(
             f"{{id:{js_texto(p['slug'])},name:{js_texto(p['nombre'])},"
             f"description:{js_texto('SKU: ' + p['codigo'])},"
-            f"image:{js_texto(p['imagen'])},images:[{js_texto(p['imagen'])}],"
+            f"image:{js_texto(p['imagen'])},images:[{','.join(js_texto(x) for x in galeria)}],"
             f"category:{js_texto(p['categoria_web'])},sku:{js_texto(p['codigo'])},"
-            f"url:{js_texto(env['WEB_TIENDA'] + '/producto/' + p['slug'])},"
+            f"url:{js_texto(detal + '/?producto=' + p['slug'])},"
             f"price:{precio},comparePrice:{compare},"
             f"sizeGroups:[{{key:'unidad',label:'Unidades',options:["
             f"{{id:'unidad',label:'Unidad',price:{precio}}}]}}]}},"
@@ -743,9 +671,14 @@ def main():
     ap.add_argument("--publicar", action="store_true", help="git commit + push tras cargar")
     ap.add_argument("--costos", help="ruta del Excel de costos (default: PRODUCTOS*.xlsx mas reciente)")
     ap.add_argument("--limite", type=int, help="cantidad de productos (default: .env TOP300_CANTIDAD)")
-    ap.add_argument("--sin-online", action="store_true", help="resolver fotos solo con la cache local")
+    ap.add_argument("--sin-online", action="store_true",
+                    help="obsoleto (antes raspeaba la web mayorista): ahora equivale a --sin-verificar-fotos")
     ap.add_argument("--sin-verificar-fotos", action="store_true", help="saltar la verificacion HTTP de fotos")
+    ap.add_argument("--verificar-todas", action="store_true",
+                    help="verificar con HTTP TODAS las fotos de POSGold (primera corrida o auditorias)")
     args = ap.parse_args()
+    if args.sin_online:
+        args.sin_verificar_fotos = True
 
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -758,10 +691,9 @@ def main():
     criterio = env.get("RANKING", "margen_costo")
     incluir_destacados = env.get("INCLUIR_DESTACADOS", "true").lower() == "true"
     destacados_ids = [s.strip() for s in env.get("DESTACADOS_IDS", "").split(",") if s.strip()]
-    usar_web = not args.sin_online
 
     log("=" * 66)
-    log("SYNC POSGOLD -> index.html | " + dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    log("SYNC POSGOLD -> catalogo.js | " + dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     log("=" * 66)
 
     # --- costos ---
@@ -858,11 +790,12 @@ def main():
     seleccion = []
     slugs_usados = {}
 
-    # Cortacircuitos: si la web mayorista cae o bloquea al runner, TODAS
-    # las verificaciones de foto fallan seguidas. Antes el script se
-    # arrastraba por horas (re-resolucion producto por producto con
-    # reintentos) hasta que el timeout del workflow lo mataba. Ahora:
-    # 25 fallos seguidos = aborto limpio en minutos con diagnostico.
+    # Cortacircuitos: si POSGold cae o bloquea al runner, TODAS las
+    # verificaciones de foto fallan seguidas (errores de red o 5xx; los
+    # 404 de fotos que faltan NO cuentan). Antes el script se arrastraba
+    # por horas (re-resolucion producto por producto con reintentos)
+    # hasta que el timeout del workflow lo mataba. Ahora: 25 fallos
+    # seguidos = aborto limpio en minutos con diagnostico.
     verificacion = {"fallos_seguidos": 0, "motivos": {}, "muestras": []}
     FALLOS_ABORTAR = 25
 
@@ -878,7 +811,7 @@ def main():
         log("")
         log(f"ABORTADO ({contexto}): {verificacion['fallos_seguidos']} intentos "
             f"SEGUIDOS sin poder verificar o encontrar fotos.")
-        log("La web mayorista no esta respondiendo desde este entorno")
+        log("El servidor de POSGold no esta respondiendo desde este entorno")
         log("(sitio caido, en mantenimiento o bloqueando la IP del runner).")
         resumen = ", ".join(f"{m} x{n}" for m, n in
                             sorted(verificacion["motivos"].items(), key=lambda kv: -kv[1]))
@@ -891,80 +824,112 @@ def main():
         escribir_reporte(analisis)
         sys.exit(1)
 
-    def resolver_y_verificar(fila, forzar=False, slug_fijo=None, verificar_cache=True):
-        """Resuelve foto+slug y verifica que la foto responda.
-        Solo hace IO: no toca seleccion. Devuelve (slug, imagen, origen)
-        o (None, None, motivo).
+    def resolver_producto(fila, slug_fijo=None, verificar=True):
+        """Resuelve slug y fotos de un candidato usando SOLO POSGold y el
+        cache local — la web mayorista ya no participa.
+        - Slug: el conocido del cache (estable: favoritos, temporada y
+          producto destacado dependen de que no cambie) o, para productos
+          nuevos, el derivado del nombre en POSGold (slug_posgold).
+        - Foto: la ruta publica Files/Images de POSGold; si ninguna
+          responde, se respalda con la foto vieja del cache (imagen_web).
+        Devuelve (slug, imagen, origen) o (None, None, motivo).
+        Solo hace IO: no toca la seleccion.
 
-        verificar_cache: con el inventario completo ya no se hace HEAD a
-        TODAS las fotos en TODAS las corridas (serian miles de peticiones
-        diarias al propio sitio). Las fotos recien resueltas de la web se
-        verifican SIEMPRE; las que vienen de cache solo cuando el producto
-        cae en la muestra aleatoria del dia (VERIFICACION_MUESTRA en .env)
-        — cada foto queda re-verificada al menos cada ~2 dias."""
+        verificar: los HEAD a Files/Images son la unica parte "online"
+        del flujo. Con el inventario completo no se verifican TODAS las
+        fotos en TODAS las corridas: el producto cae en la muestra
+        aleatoria del dia (VERIFICACION_MUESTRA en .env) o se fuerza con
+        --verificar-todas."""
         try:
-            # cortacircuitos ya disparado: no iniciar trabajo web nuevo
+            # cortacircuitos ya disparado: no iniciar trabajo nuevo
             if verificacion["fallos_seguidos"] >= FALLOS_ABORTAR and not slug_fijo:
-                return None, None, "omitido (web caida)"
-            if slug_fijo:
-                ent = cache.setdefault("por_codigo", {}).get(fila["codigo"]) or {}
-                if ent.get("imagen") and not forzar:
-                    imagen, origen = ent["imagen"], "cache"
-                else:
-                    res_img = resolver_slug_conocido(env, cache, slug_fijo, fila)
-                    imagen, origen = (res_img if res_img else (None, None))
+                return None, None, "omitido (POSGold caido)"
+            it = por_codigo_api.get(fila["codigo"]) or {}
+            por_codigo = cache.setdefault("por_codigo", {})
+            ent = por_codigo.get(fila["codigo"]) or {}
+
+            # --- slug: el conocido, o el derivado del nombre de POSGold ---
+            slug = slug_fijo or ent.get("slug")
+            if not slug:
+                slug = slug_posgold(fila["nombre"])
+            if not slug:
+                return None, None, "sin nombre para derivar el slug"
+            if not slug_fijo and slug in slugs_usados:
+                base = slug_posgold(fila["nombre"]) or slug
+                n = 1
+                while slug in slugs_usados and n < 60:
+                    n += 1
+                    slug = f"{base}-{n}"
+                if slug in slugs_usados:
+                    return None, None, "id duplicado (mismo nombre)"
+
+            # --- fotos: Files/Images de POSGold (verificadas por muestra) ---
+            fotos = imagenes_posgold(env, it)
+            imagen = None
+            if not verificar or args.sin_verificar_fotos:
+                # se confia en el inventario de POSGold (cron: muestra del dia)
+                imagen = fotos[0] if fotos else None
                 if not imagen:
-                    return None, None, "foto sin pagina en la web"
-                if not args.sin_verificar_fotos:
-                    ok_img, st = imagen_responde(imagen)
-                    if not ok_img:
-                        return None, None, f"foto rota (HTTP {st})"
-                return slug_fijo, imagen, origen
-            res = resolver_por_codigo(env, cache, fila, usar_web=usar_web, forzar=forzar)
-            if not res:
-                return None, None, "foto sin pagina en la web"
-            slug, imagen, origen = res
-            es_cache = origen == "cache"
-            if not args.sin_verificar_fotos and (not es_cache or verificar_cache):
-                ok_img, st = imagen_responde(imagen)
-                if not ok_img:
-                    if not forzar and usar_web and verificacion["fallos_seguidos"] < FALLOS_ABORTAR:
-                        return resolver_y_verificar(fila, forzar=True)
-                    return None, None, f"foto rota (HTTP {st})"
-            return slug, imagen, origen
+                    imagen = ent.get("imagen_web") or ent.get("imagen")
+                fila["imagenes"] = fotos if imagen in fotos else ([imagen] if imagen else [])
+                if not imagen:
+                    return None, None, "sin foto en POSGold"
+            else:
+                for url in fotos:
+                    ok_img, st = imagen_responde(url)
+                    if ok_img:
+                        imagen = url
+                        break
+                    if st == 0 or st >= 500:
+                        # servidor caido o error grave: cuenta para el cortacircuitos
+                        nota_fallo(f"foto rota en POSGold (HTTP {st})",
+                                   f"HTTP {st} | {fila['nombre'][:36]}")
+                        abortar_si_web_caida("fotos de POSGold")
+                    # 404/403: foto que falta, se intenta la siguiente
+                if not imagen and ent.get("imagen_web"):
+                    ok_img, st = imagen_responde(ent["imagen_web"])
+                    if ok_img:
+                        imagen = ent["imagen_web"]
+                    elif st == 0 or st >= 500:
+                        nota_fallo(f"respaldo caido (HTTP {st})", f"{fila['nombre'][:36]}")
+                        abortar_si_web_caida("respaldo de fotos")
+                fila["imagenes"] = fotos if imagen in fotos else ([imagen] if imagen else [])
+                if not imagen:
+                    return None, None, "foto rota en POSGold (sin respaldo)"
+
+            # --- cache: la foto activa es la de POSGold; la vieja queda
+            #    como respaldo por si un dia falta en el servidor ---
+            nueva = {"slug": slug, "imagen": imagen, "nombre": fila["nombre"]}
+            respaldo = ent.get("imagen_web") or (
+                ent.get("imagen") if "jugueteriataiwan.com" in (ent.get("imagen") or "") else None)
+            if respaldo and respaldo != imagen:
+                nueva["imagen_web"] = respaldo
+            por_codigo[fila["codigo"]] = nueva
+            return slug, imagen, ("posgold" if "goldpos" in imagen else "cache-respaldo")
         except Exception as e:
             return None, None, "error de red: " + type(e).__name__
 
     # destacados primero (si cumplen las mismas reglas)
     if incluir_destacados and destacados_ids:
         slug_a_codigo = {}
-        slug_a_nombre = {}
         for k, v in cache.get("por_codigo", {}).items():
             if v.get("slug"):
                 slug_a_codigo[v["slug"]] = k
-                if v.get("nombre"):
-                    slug_a_nombre[v["slug"]] = v["nombre"]
+        codigos_candidatos = {f["codigo"] for f in candidatos}
         for slug_dest in destacados_ids:
             fila_dest = None
             codigo_dest = slug_a_codigo.get(slug_dest)
-            if codigo_dest and codigo_dest in {f["codigo"] for f in candidatos}:
+            if codigo_dest and codigo_dest in codigos_candidatos:
                 fila_dest = next(f for f in candidatos if f["codigo"] == codigo_dest)
             else:
-                sku_pag, imagen, nombre_pag = pagina_producto_web(env, slug_dest) if usar_web else (None, None, None)
-                if sku_pag and sku_pag in {f["codigo"] for f in candidatos}:
-                    fila_dest = next(f for f in candidatos if f["codigo"] == sku_pag)
-                elif nombre_pag:
-                    fila_dest = next((f for f in candidatos
-                                      if sin_acentos(f["nombre"]) == sin_acentos(nombre_pag)), None)
-                elif slug_dest in slug_a_nombre:
-                    fila_dest = next((f for f in candidatos
-                                      if sin_acentos(f["nombre"]) == sin_acentos(slug_a_nombre[slug_dest])), None)
-                if fila_dest and imagen:
-                    cache.setdefault("por_codigo", {}).setdefault(fila_dest["codigo"], {})["imagen"] = imagen
+                # productos nuevos: el slug se deriva del nombre de POSGold
+                fila_dest = next((f for f in candidatos if f.get("estado") == "CANDIDATO"
+                                  and (cache.get("por_codigo", {}).get(f["codigo"], {}).get("slug")
+                                       or slug_posgold(f["nombre"])) == slug_dest), None)
             if not fila_dest:
                 log(f"  destacado fuera: {slug_dest} (no cumple o no esta en POSGold)")
                 continue
-            slug, imagen, motivo = resolver_y_verificar(fila_dest, slug_fijo=slug_dest)
+            slug, imagen, motivo = resolver_producto(fila_dest, slug_fijo=slug_dest)
             if slug:
                 verificacion["fallos_seguidos"] = 0
                 fila_dest.update({"estado": "ENTRA", "motivo": "", "slug": slug,
@@ -976,18 +941,21 @@ def main():
             else:
                 nota_fallo(motivo, f"{motivo} | {fila_dest['nombre'][:36]}")
                 abortar_si_web_caida("destacados")
-                log(f"  destacado fuera: {slug_dest} ({imagen or motivo})")
+                log(f"  destacado fuera: {slug_dest} ({motivo})")
         guardar_cache(cache)
 
     # Muestra del dia: que posiciones del ranking se verifican con HEAD
-    # aunque vengan de cache (VERIFICACION_MUESTRA en .env; 0 = todas).
+    # contra Files/Images de POSGold (VERIFICACION_MUESTRA en .env;
+    # --verificar-todas = todas, para la primera corrida del cambio).
     tamano_muestra = int(env.get("VERIFICACION_MUESTRA", "250"))
+    if getattr(args, "verificar_todas", False):
+        tamano_muestra = 0
     if tamano_muestra <= 0 or tamano_muestra >= len(candidatos):
         muestra_pos = set(range(len(candidatos)))
     else:
         muestra_pos = set(random.sample(range(len(candidatos)), tamano_muestra))
-    log(f"      verificacion de fotos cacheadas: {len(muestra_pos)} de "
-        f"{len(candidatos)} candidatos (muestra aleatoria)")
+    log(f"      verificacion de fotos POSGold: {len(muestra_pos)} de "
+        f"{len(candidatos)} candidatos (muestra aleatoria del dia)")
 
     # resto por rentabilidad, en lotes con hilos (el orden del ranking se
     # respeta: los resultados se consumen en el mismo orden en que salieron).
@@ -1004,21 +972,18 @@ def main():
                 continue
             # submit + consumo en orden: los fallos se cuentan en vivo y
             # el cortacircuitos puede abortar a mitad del lote
-            futuros = [pool.submit(resolver_y_verificar, f, False, None, pos in muestra_pos)
+            futuros = [pool.submit(resolver_producto, f, None, pos in muestra_pos)
                        for pos, f in lote]
             for (pos, fila), fut in zip(lote, futuros):
                 slug, imagen, extra = fut.result()
                 if len(seleccion) >= cantidad:
                     break
                 if not slug:
-                    fila.update({"estado": "OCULTO", "motivo": extra or "foto sin pagina en la web"})
-                    nota_fallo(extra or "foto sin pagina en la web",
-                               f"{extra} | {fila['nombre'][:36]}")
-                    abortar_si_web_caida(f"lote {i // 40}")
+                    fila.update({"estado": "OCULTO", "motivo": extra or "sin foto en POSGold"})
                     continue
                 verificacion["fallos_seguidos"] = 0
                 if slug in slugs_usados:
-                    fila.update({"estado": "OCULTO", "motivo": "id duplicado (misma pagina web)"})
+                    fila.update({"estado": "OCULTO", "motivo": "id duplicado (mismo nombre en POSGold)"})
                     continue
                 fila.update({"estado": "ENTRA", "motivo": "", "slug": slug,
                              "imagen": imagen, "origen_imagen": extra})
@@ -1053,7 +1018,7 @@ def main():
     log(f"\n      seleccion final: {len(seleccion)} productos")
     if len(seleccion) < cantidad:
         log(f"      AVISO: quedaron {cantidad - len(seleccion)} cupos sin llenar "
-            f"(productos ocultos por foto/pagina web). Revisa el reporte.")
+            f"(productos ocultos por foto rota o duplicada). Revisa el reporte.")
 
     # --- generacion y escritura ---
     log("\n[6/6] Generando catalogo.js...")
@@ -1101,10 +1066,11 @@ def main():
     for f in seleccion[:10]:
         mc = f["margen_costo_pct"] or 0
         log(f"    {mc:6.1f}% margen | ${f['precio_detal_con_iva']:>9,} | {f['nombre'][:42]}")
-    sin_foto_web = [f for f in analisis if f.get("motivo") == "foto sin pagina en la web"]
-    if sin_foto_web:
-        log(f"\n  PENDIENTES: {len(sin_foto_web)} con foto en POSGold pero sin pagina/foto en la web")
-        log("  (los primeros 5): " + " | ".join(f["nombre"][:30] for f in sin_foto_web[:5]))
+    fotos_rotas = [f for f in analisis if (f.get("motivo") or "").startswith("foto rota")]
+    if fotos_rotas:
+        log(f"\n  FOTOS ROTAS: {len(fotos_rotas)} sin foto utilizable en POSGold "
+            f"(ni respaldo en cache) — quedan ocultas hasta que POSGold las tenga:")
+        log("  (los primeros 5): " + " | ".join(f["nombre"][:30] for f in fotos_rotas[:5]))
     log("\nListo.")
 
 

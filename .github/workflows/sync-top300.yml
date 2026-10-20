@@ -69,7 +69,7 @@ jobs:
           printf 'POSGOLD_TOKEN_USER=%s\n' "$POSGOLD_TOKEN_USER" >> .env
           printf 'POSGOLD_TOKEN_PASS=%s\n' "$POSGOLD_TOKEN_PASS" >> .env
           printf 'POSGOLD_EMPRESAID=1\nPOSGOLD_USUARIOID=1\nPOSGOLD_BODEGAID=2\n' >> .env
-          printf 'WEB_TIENDA=https://jugueteriataiwan.com\n' >> .env
+          printf 'DETAL_URL=https://saldosjugueteriataiwan.com\n' >> .env
           printf 'TOP300_CANTIDAD=99999\nRANKING=margen_costo\nCOSTO_CAMPO=costopromedio\n' >> .env
           printf 'VERIFICACION_MUESTRA=400\n' >> .env
           printf 'INCLUIR_DESTACADOS=true\n' >> .env
