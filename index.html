@@ -39,16 +39,22 @@
     <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <!-- Las fotos de producto viven en POSGold (Files/Images): preconexion
-         para que Safari/iPhone abra las ~6 conexiones disponibles desde el
-         primer milisegundo (el servidor es HTTP/1.1 y encola peticiones). -->
+         para que el lightbox suba a la foto original sin negociar TLS desde
+         cero (la vitrina usa las miniaturas del propio repo). -->
     <link rel="preconnect" href="https://jugueteriataiwan.goldpos.com.co">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Tipografias e iconos NO bloquean el primer render: se aplican en
+         cuanto llegan (media="print" + onload). Antes, un CDN de fuentes
+         lento detenia TODO el arranque de la pagina (10s+ medidos en
+         redes lentas); ahora la tienda se pinta de inmediato. -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
     <!-- (El preload de la foto del héroe se quitó: pre-descargaba el
          producto de fábrica aunque el panel hubiera elegido otro. La foto
          correcta la pide actualizarHeroDestacado con fetchpriority high.) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 
     <!-- Datos estructurados: negocio + FAQ (SEO / rich results) -->
     <script type="application/ld+json">
@@ -57,7 +63,7 @@
       "@type": "ToyStore",
       "name": "Juguetería Taiwan",
       "description": "Tu tienda de confianza en juguetería, piñatería, tecnología, escolar y mucho más. Compra al detal online en toda Colombia.",
-      "image": "https://jugueteriataiwan.goldpos.com.co/Files/Images/2026888805337-1.jpeg",
+      "image": "https://saldosjugueteriataiwan.com/assets/fotos/2026888805337-1.webp",
       "logo": "https://jugueteriataiwan.com/storage/branding/70TI84WCuEegX1pJk5ttvppyKKn2sCze24oHDKoi.png",
       "url": "https://jugueteriataiwan.com",
       "telephone": "+573106988465",
@@ -5620,8 +5626,8 @@
                      tarjeta del producto (no a un lightbox), para llevar
                      directo a la compra. -->
                 <div class="testimonial-card" data-fav-slot="0" style="visibility: hidden;">
-                    <div class="testimonial-image-container square" data-links-to-product="mesa-futbol-de-madera" style="--img:url('https://jugueteriataiwan.goldpos.com.co/Files/Images/6603888929247-1.jpeg')" onclick="scrollToProduct('mesa-futbol-de-madera')" role="button" tabindex="0" aria-label="Ver Mesa Fútbol de Madera y comprar" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();scrollToProduct('mesa-futbol-de-madera');}">
-                        <img src="https://jugueteriataiwan.goldpos.com.co/Files/Images/6603888929247-1.jpeg" alt="Mesa Fútbol de Madera — Juguetería Taiwan" loading="lazy" onerror="imgOnError(this)">
+                    <div class="testimonial-image-container square" data-links-to-product="mesa-futbol-de-madera" style="--img:url('assets/fotos/6603888929247-1.webp')" onclick="scrollToProduct('mesa-futbol-de-madera')" role="button" tabindex="0" aria-label="Ver Mesa Fútbol de Madera y comprar" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();scrollToProduct('mesa-futbol-de-madera');}">
+                        <img src="assets/fotos/6603888929247-1.webp" alt="Mesa Fútbol de Madera — Juguetería Taiwan" loading="lazy" onerror="imgOnError(this)">
                     </div>
                     <div class="testimonial-content">
                         <p class="testimonial-text">Mesa Fútbol de Madera, el clásico futbolín para compartir en familia.</p>
@@ -5632,8 +5638,8 @@
                 </div>
 
                 <div class="testimonial-card" data-fav-slot="1" style="visibility: hidden;">
-                    <div class="testimonial-image-container square" data-links-to-product="pista-neon-carro-pila-luz-con-numero" style="--img:url('https://jugueteriataiwan.goldpos.com.co/Files/Images/2026888805337-1.jpeg')" onclick="scrollToProduct('pista-neon-carro-pila-luz-con-numero')" role="button" tabindex="0" aria-label="Ver Pista Neón Carro Pila Luz y comprar" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();scrollToProduct('pista-neon-carro-pila-luz-con-numero');}">
-                        <img src="https://jugueteriataiwan.goldpos.com.co/Files/Images/2026888805337-1.jpeg" alt="Pista Neón Carro con pila y luz, incluye número" loading="lazy" onerror="imgOnError(this)">
+                    <div class="testimonial-image-container square" data-links-to-product="pista-neon-carro-pila-luz-con-numero" style="--img:url('assets/fotos/2026888805337-1.webp')" onclick="scrollToProduct('pista-neon-carro-pila-luz-con-numero')" role="button" tabindex="0" aria-label="Ver Pista Neón Carro Pila Luz y comprar" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();scrollToProduct('pista-neon-carro-pila-luz-con-numero');}">
+                        <img src="assets/fotos/2026888805337-1.webp" alt="Pista Neón Carro con pila y luz, incluye número" loading="lazy" onerror="imgOnError(this)">
                     </div>
                     <div class="testimonial-content">
                         <p class="testimonial-text">Pista Neón Carro con pila y luz, incluye número.</p>
@@ -5644,8 +5650,8 @@
                 </div>
 
                 <div class="testimonial-card" data-fav-slot="2" style="visibility: hidden;">
-                    <div class="testimonial-image-container square" data-links-to-product="burbujero-mil-burbujas-pilas-cj-bubble-gun-4-motivos" style="--img:url('https://jugueteriataiwan.goldpos.com.co/Files/Images/2026888800936-1.jpeg')" onclick="scrollToProduct('burbujero-mil-burbujas-pilas-cj-bubble-gun-4-motivos')" role="button" tabindex="0" aria-label="Ver Burbujero Mil Burbujas y comprar" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();scrollToProduct('burbujero-mil-burbujas-pilas-cj-bubble-gun-4-motivos');}">
-                        <img src="https://jugueteriataiwan.goldpos.com.co/Files/Images/2026888800936-1.jpeg" alt="Burbujero Mil Burbujas con pilas, modelo CJ Bubble Gun" loading="lazy" onerror="imgOnError(this)">
+                    <div class="testimonial-image-container square" data-links-to-product="burbujero-mil-burbujas-pilas-cj-bubble-gun-4-motivos" style="--img:url('assets/fotos/2026888800936-1.webp')" onclick="scrollToProduct('burbujero-mil-burbujas-pilas-cj-bubble-gun-4-motivos')" role="button" tabindex="0" aria-label="Ver Burbujero Mil Burbujas y comprar" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();scrollToProduct('burbujero-mil-burbujas-pilas-cj-bubble-gun-4-motivos');}">
+                        <img src="assets/fotos/2026888800936-1.webp" alt="Burbujero Mil Burbujas con pilas, modelo CJ Bubble Gun" loading="lazy" onerror="imgOnError(this)">
                     </div>
                     <div class="testimonial-content">
                         <p class="testimonial-text">Burbujero Mil Burbujas con pilas, modelo CJ Bubble Gun en 4 motivos.</p>
@@ -8670,11 +8676,20 @@
             return validas.length ? validas : [PLACEHOLDER_IMG];
         }
 
-        // Versión en ALTA RESOLUCIÓN de una foto del catálogo: el servidor
-        // publica cada imagen en /thumb/ (144px, para miniaturas) y en
-        // /full/ (1080px). El visor de fotos usa /full/ para que la imagen
-        // principal no se vea borrosa; cualquier otra URL se devuelve igual.
+        // Versión en ALTA RESOLUCIÓN de una foto del catálogo. El catálogo
+        // carga miniaturas servidas por el propio repo (assets/fotos —
+        // el servidor de POSGold es lento y la vitrina necesita ser
+        // instantánea); sus originales viajan en fulls[] con el mismo
+        // índice. El visor de fotos sube al original bajo demanda: la
+        // miniatura ya en caché se ve al instante y la foto grande la
+        // reemplaza en cuanto llega. Para URLs que no son del catálogo se
+        // devuelve igual.
         function imgFullUrl(src) {
+            const p = products.find(x => x.id === galeriaProductId);
+            if (p && Array.isArray(p.fulls) && Array.isArray(p.images)) {
+                const i = p.images.indexOf(src);
+                if (i >= 0 && p.fulls[i]) return p.fulls[i];
+            }
             return String(src || '').replace('/thumb/', '/full/');
         }
         // Initialize page

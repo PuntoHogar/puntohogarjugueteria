@@ -204,29 +204,6 @@ def http_texto(url, headers=None, timeout=90, metodo="GET", datos=None, reintent
     raise RuntimeError("http_texto fallo: " + str(ultimo_error))
 
 
-def imagen_responde(url):
-    """HEAD con respaldo GET-Range: confirma que la foto existe en la web.
-    Devuelve (ok, codigo_http). Codigo 0 = error de red o timeout."""
-    req = urllib.request.Request(url, method="HEAD", headers={"User-Agent": UA})
-    try:
-        with urllib.request.urlopen(req, timeout=25, context=CTX) as r:
-            return r.status == 200, r.status
-    except urllib.error.HTTPError as e:
-        if e.code in (403, 405, 501):  # servidor sin HEAD -> GET parcial
-            req = urllib.request.Request(url, method="GET",
-                                        headers={"User-Agent": UA, "Range": "bytes=0-1"})
-            try:
-                with urllib.request.urlopen(req, timeout=25, context=CTX) as r:
-                    return r.status in (200, 206), r.status
-            except urllib.error.HTTPError as e2:
-                return False, e2.code
-            except Exception:
-                return False, 0
-        return False, e.code
-    except Exception:
-        return False, 0
-
-
 # ------------------------------------------------------------------
 # PASO 1-2: JWT fresco
 # ------------------------------------------------------------------
@@ -456,7 +433,18 @@ def sembrar_cache_desde_dropi(cache):
 
 # ------------------------------------------------------------------
 # Slug y fotos DIRECTOS de POSGold (la web mayorista ya no participa)
+#
+# La vitrina NO usa las fotos originales de POSGold: ese servidor tarda
+# ~2 segundos por foto (y varias a la vez lo saturan: 129 descargas
+# simultaneas demoraban el heroe 12s). La corrida genera UNA VEZ una
+# miniatura WebP por foto y la publica en el repo (assets/fotos/):
+# GitHub Pages las sirve por CDN en milisegundos y pesan ~8 veces menos.
+# El lightbox sube a la foto original de POSGold bajo demanda (fulls[]).
 # ------------------------------------------------------------------
+
+DIR_MINIATURAS = os.path.join(BASE_DIR, "assets", "fotos")
+MINI_TAMANO = (640, 640)   # lado mayor de la miniatura, en pixeles
+MINI_CALIDAD = 72          # calidad WebP de la miniatura
 
 
 def slug_posgold(nombre):
@@ -471,18 +459,75 @@ def slug_posgold(nombre):
     return txt[:120].strip("-") or None
 
 
-def imagenes_posgold(env, item):
-    """URLs publicas de las fotos del producto en POSGold:
-    {POSGOLD_BASE}/Files/Images/{archivo} por cada foto registrada en el
-    inventario (se descarta el placeholder 'Imagen-no-disponible.jpg').
-    El servidor responde con el original (~100 KB, certificado valido)."""
+def http_binario(url, timeout=90):
+    """GET binario (descarga de fotos) con un reintento de red."""
+    req = urllib.request.Request(url, headers={"User-Agent": UA})
+    for intento in range(2):
+        try:
+            with urllib.request.urlopen(req, timeout=timeout, context=CTX) as r:
+                return r.read()
+        except urllib.error.HTTPError:
+            raise          # 404/403: la foto no existe; no es una caida
+        except Exception:
+            if intento:
+                raise
+            time.sleep(1)
+    return b""
+
+
+def miniatura_webp(url, archivo, refrescar=False):
+    """Miniatura WebP servida por el repo para la foto {archivo} de POSGold.
+    La genera UNA VEZ (si no existe) y devuelve (ruta_publica, fallo_red):
+    - ruta 'assets/fotos/xxx.webp' lista para el catalogo, o None si la
+      foto no se pudo descargar y no habia miniatura vieja.
+    - fallo_red=True cuando el servidor no respondio (cuenta para el
+      cortacircuitos); si ya existia miniatura, se conserva y no es fallo.
+    Con refrescar=True la regenera (muestra diaria / --verificar-todas):
+    si la descarga falla, conserva la ultima version buena."""
+    base = re.sub(r"[^A-Za-z0-9._-]", "_", os.path.splitext(os.path.basename(archivo))[0])
+    destino = os.path.join(DIR_MINIATURAS, base + ".webp")
+    publica = "assets/fotos/" + base + ".webp"
+    if os.path.exists(destino) and not refrescar:
+        return publica, False
+    try:
+        from PIL import Image
+        cuerpo = http_binario(url, timeout=60)
+        im = Image.open(io.BytesIO(cuerpo))
+        if im.mode not in ("RGB", "L"):
+            im = im.convert("RGB")
+        im.thumbnail(MINI_TAMANO, Image.LANCZOS)
+        os.makedirs(DIR_MINIATURAS, exist_ok=True)
+        tmp = destino + ".tmp"
+        im.save(tmp, "WEBP", quality=MINI_CALIDAD, method=6)
+        os.replace(tmp, destino)   # nunca deja una miniatura a medias
+        return publica, False
+    except urllib.error.HTTPError:
+        return (publica, False) if os.path.exists(destino) else (None, False)
+    except Exception:
+        return (publica, False) if os.path.exists(destino) else (None, True)
+
+
+def fotos_del_producto(env, item, refrescar=False):
+    """(miniaturas, originales, fallo_red) de las fotos del producto:
+    se descarta el placeholder 'Imagen-no-disponible.jpg' y las repetidas.
+    miniaturas[i] es la URL servida por el repo (lista para el catalogo)
+    y originales[i] la de POSGold para el lightbox (mismo indice)."""
     base = env["POSGOLD_BASE"].rstrip("/") + "/Files/Images/"
-    archivos = []
+    minis, origs, fallo = [], [], False
+    vistos = set()
     for x in (item.get("Imagenes") or []):
         a = str(x).strip()
-        if a and PLACEHOLDER_POSGOLD not in a.lower() and a not in archivos:
-            archivos.append(a)
-    return [base + urllib.parse.quote(a) for a in archivos]
+        if not a or PLACEHOLDER_POSGOLD in a.lower() or a in vistos:
+            continue
+        vistos.add(a)
+        url = base + urllib.parse.quote(a)
+        mini, red = miniatura_webp(url, a, refrescar)
+        if red:
+            fallo = True
+        if mini:
+            minis.append(mini)
+            origs.append(url)
+    return minis, origs, fallo
 
 
 # ------------------------------------------------------------------
@@ -524,10 +569,14 @@ def generar_catalogo_js(env, seleccion, cantidad):
         precio = p["precio"]
         compare = p["compare"]
         galeria = p.get("imagenes") or [p["imagen"]]
+        # Originales de POSGold para el lightbox (fulls), mismo indice que
+        # la galeria de miniaturas; si faltara, el frente cae a la miniura
+        originales = p.get("fulls") or list(galeria)
         L.append(
             f"{{id:{js_texto(p['slug'])},name:{js_texto(p['nombre'])},"
             f"description:{js_texto('SKU: ' + p['codigo'])},"
             f"image:{js_texto(p['imagen'])},images:[{','.join(js_texto(x) for x in galeria)}],"
+            f"fulls:[{','.join(js_texto(x) for x in originales)}],"
             f"category:{js_texto(p['categoria_web'])},sku:{js_texto(p['codigo'])},"
             f"url:{js_texto(detal + '/?producto=' + p['slug'])},"
             f"price:{precio},comparePrice:{compare},"
@@ -644,6 +693,7 @@ def publicar_git(env, cantidad):
         ["git", "add", "index.html"],
         ["git", "add", "catalogo.js"],
         ["git", "add", "data/mapa_imagenes.json"],
+        ["git", "add", "assets/fotos"],
         ["git", "commit", "-m", f"sync: catalogo de POSGold ({len_x} productos, {stamp})"],
     ):
         r = subprocess.run(cmd, cwd=BASE_DIR, capture_output=True, text=True)
@@ -673,9 +723,10 @@ def main():
     ap.add_argument("--limite", type=int, help="cantidad de productos (default: .env TOP300_CANTIDAD)")
     ap.add_argument("--sin-online", action="store_true",
                     help="obsoleto (antes raspeaba la web mayorista): ahora equivale a --sin-verificar-fotos")
-    ap.add_argument("--sin-verificar-fotos", action="store_true", help="saltar la verificacion HTTP de fotos")
+    ap.add_argument("--sin-verificar-fotos", action="store_true",
+                    help="saltar el refresco diario de miniaturas (solo genera las faltantes)")
     ap.add_argument("--verificar-todas", action="store_true",
-                    help="verificar con HTTP TODAS las fotos de POSGold (primera corrida o auditorias)")
+                    help="regenerar TODAS las miniaturas desde POSGold (migraciones y auditorias)")
     args = ap.parse_args()
     if args.sin_online:
         args.sin_verificar_fotos = True
@@ -824,22 +875,18 @@ def main():
         escribir_reporte(analisis)
         sys.exit(1)
 
-    def resolver_producto(fila, slug_fijo=None, verificar=True):
+    def resolver_producto(fila, slug_fijo=None, refrescar=False):
         """Resuelve slug y fotos de un candidato usando SOLO POSGold y el
         cache local — la web mayorista ya no participa.
         - Slug: el conocido del cache (estable: favoritos, temporada y
           producto destacado dependen de que no cambie) o, para productos
           nuevos, el derivado del nombre en POSGold (slug_posgold).
-        - Foto: la ruta publica Files/Images de POSGold; si ninguna
-          responde, se respalda con la foto vieja del cache (imagen_web).
+        - Fotos: miniaturas WebP servidas por el propio repo (assets/fotos,
+          generadas UNA VEZ desde POSGold; el original viaja en fulls[]
+          para que el lightbox suba a la version grande bajo demanda).
+          La descarga ES la verificacion: la foto que no existe no entra.
         Devuelve (slug, imagen, origen) o (None, None, motivo).
-        Solo hace IO: no toca la seleccion.
-
-        verificar: los HEAD a Files/Images son la unica parte "online"
-        del flujo. Con el inventario completo no se verifican TODAS las
-        fotos en TODAS las corridas: el producto cae en la muestra
-        aleatoria del dia (VERIFICACION_MUESTRA en .env) o se fuerza con
-        --verificar-todas."""
+        Solo hace IO: no toca la seleccion."""
         try:
             # cortacircuitos ya disparado: no iniciar trabajo nuevo
             if verificacion["fallos_seguidos"] >= FALLOS_ABORTAR and not slug_fijo:
@@ -861,51 +908,22 @@ def main():
                     n += 1
                     slug = f"{base}-{n}"
                 if slug in slugs_usados:
-                    return None, None, "id duplicado (mismo nombre)"
+                    return None, None, "id duplicado (mismo nombre en POSGold)"
 
-            # --- fotos: Files/Images de POSGold (verificadas por muestra) ---
-            fotos = imagenes_posgold(env, it)
-            imagen = None
-            if not verificar or args.sin_verificar_fotos:
-                # se confia en el inventario de POSGold (cron: muestra del dia)
-                imagen = fotos[0] if fotos else None
-                if not imagen:
-                    imagen = ent.get("imagen_web") or ent.get("imagen")
-                fila["imagenes"] = fotos if imagen in fotos else ([imagen] if imagen else [])
-                if not imagen:
-                    return None, None, "sin foto en POSGold"
-            else:
-                for url in fotos:
-                    ok_img, st = imagen_responde(url)
-                    if ok_img:
-                        imagen = url
-                        break
-                    if st == 0 or st >= 500:
-                        # servidor caido o error grave: cuenta para el cortacircuitos
-                        nota_fallo(f"foto rota en POSGold (HTTP {st})",
-                                   f"HTTP {st} | {fila['nombre'][:36]}")
-                        abortar_si_web_caida("fotos de POSGold")
-                    # 404/403: foto que falta, se intenta la siguiente
-                if not imagen and ent.get("imagen_web"):
-                    ok_img, st = imagen_responde(ent["imagen_web"])
-                    if ok_img:
-                        imagen = ent["imagen_web"]
-                    elif st == 0 or st >= 500:
-                        nota_fallo(f"respaldo caido (HTTP {st})", f"{fila['nombre'][:36]}")
-                        abortar_si_web_caida("respaldo de fotos")
-                fila["imagenes"] = fotos if imagen in fotos else ([imagen] if imagen else [])
-                if not imagen:
-                    return None, None, "foto rota en POSGold (sin respaldo)"
+            # --- fotos: miniaturas del repo, originales para el lightbox ---
+            minis, origs, fallo_red = fotos_del_producto(env, it, refrescar)
+            if fallo_red:
+                nota_fallo("descarga de foto fallida (POSGold no responde)",
+                           f"{fila['nombre'][:36]}")
+                abortar_si_web_caida("descarga de fotos")
+            if not minis:
+                return None, None, "sin foto utilizable en POSGold"
 
-            # --- cache: la foto activa es la de POSGold; la vieja queda
-            #    como respaldo por si un dia falta en el servidor ---
-            nueva = {"slug": slug, "imagen": imagen, "nombre": fila["nombre"]}
-            respaldo = ent.get("imagen_web") or (
-                ent.get("imagen") if "jugueteriataiwan.com" in (ent.get("imagen") or "") else None)
-            if respaldo and respaldo != imagen:
-                nueva["imagen_web"] = respaldo
-            por_codigo[fila["codigo"]] = nueva
-            return slug, imagen, ("posgold" if "goldpos" in imagen else "cache-respaldo")
+            por_codigo[fila["codigo"]] = {"slug": slug, "imagen": origs[0],
+                                         "nombre": fila["nombre"]}
+            fila["imagenes"] = minis
+            fila["fulls"] = origs
+            return slug, minis[0], "miniatura-repo"
         except Exception as e:
             return None, None, "error de red: " + type(e).__name__
 
@@ -944,18 +962,20 @@ def main():
                 log(f"  destacado fuera: {slug_dest} ({motivo})")
         guardar_cache(cache)
 
-    # Muestra del dia: que posiciones del ranking se verifican con HEAD
-    # contra Files/Images de POSGold (VERIFICACION_MUESTRA en .env;
-    # --verificar-todas = todas, para la primera corrida del cambio).
-    tamano_muestra = int(env.get("VERIFICACION_MUESTRA", "250"))
-    if getattr(args, "verificar_todas", False):
+    # Refresco diario de miniaturas: una muestra aleatoria re-descarga sus
+    # originales de POSGold y regenera las miniaturas — asi una foto que
+    # cambiara con el mismo nombre se actualiza sola en unas semanas.
+    # --verificar-todas refresca TODO (migraciones y auditorias);
+    # --sin-verificar-fotos salta el refresco (solo genera las faltantes).
+    tamano_muestra = 0 if getattr(args, "verificar_todas", False) else int(env.get("REFRESCO_MINIATURAS", "40"))
+    if args.sin_verificar_fotos:
         tamano_muestra = 0
     if tamano_muestra <= 0 or tamano_muestra >= len(candidatos):
-        muestra_pos = set(range(len(candidatos)))
+        muestra_pos = set(range(len(candidatos))) if tamano_muestra == 0 else set()
     else:
         muestra_pos = set(random.sample(range(len(candidatos)), tamano_muestra))
-    log(f"      verificacion de fotos POSGold: {len(muestra_pos)} de "
-        f"{len(candidatos)} candidatos (muestra aleatoria del dia)")
+    log(f"      miniaturas: faltantes se generan; refresco del dia: {len(muestra_pos)} de "
+        f"{len(candidatos)} candidatos" + (" (TODAS)" if args.verificar_todas else ""))
 
     # resto por rentabilidad, en lotes con hilos (el orden del ranking se
     # respeta: los resultados se consumen en el mismo orden en que salieron).
