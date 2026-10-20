@@ -27,6 +27,7 @@ arquitectura completa.
 python qa_e2e.py            # suite completa: 42/42 esperado (Playwright + WebKit)
 python sync_posgold.py --dry-run   # sync de prueba sin tocar catalogo.js
 python sync_posgold.py --verificar-todas   # auditar/regenerar miniaturas
+python generar_enlace_config.py    # enlace de config (llave+tokens) para un navegador
 ```
 
 Verificación de sintaxis JS del index (los dos primeros `<script>` son JSON-LD,
@@ -50,6 +51,11 @@ es rechazado, el cron movió el remoto: `git pull --rebase origin main` y de nue
   computador" queda en localStorage del navegador (con marca de versión
   `jt_config_base`: lo publicado más nuevo lo reemplaza al recargar).
   `CONFIG` → valores de fábrica en ejecución.
+- **Publicación del panel**: `publicarConfigNavegador()` sube TIENDA+PRECIOS a
+  `data/configuracion.js` con versión siempre creciente (`Math.max(Date.now(),
+  publicada+1)`) y SIN `claveAdmin` (la clave nunca se publica). La absorción
+  vive arriba de `cargarTienda` (`CONFIG_PUBLICA`, `TIENDA_FABRICA`,
+  `PRECIOS_FABRICA`, `BASE_CONFIG_KEY`).
 - **Panel de administración**: login con `TIENDA_DEFECTO.claveAdmin`, abre con
   el enlace del pie, `?admin=1` o Ctrl+Shift+A. Sus secciones se pintan desde
   funciones `pintar*Admin()`.
@@ -77,7 +83,11 @@ es rechazado, el cron movió el remoto: `git pull --rebase origin main` y de nue
 - Los carruseles muestran máximo 32 productos por fila: renderizar más avalancha
   peticiones (pasamos de 562 `<img>` a 72 y el arranque bajó de 12 s a ~2 s).
 - El filtro de categorías del panel se guarda por navegador (localStorage);
-  los valores de fábrica se publican editando `TIENDA_DEFECTO`.
+  para que lo vean TODOS, la administración usa "Publicar para todos" (o se
+  edita `data/configuracion.js`, nunca a mano: se publica desde el panel).
+- El push del cron puede ser rechazado si el panel publicó algo a media
+  corrida (el remoto se movió entre el checkout y el push del runner): la
+  corrida avisa "AVISO git push" y la siguiente lo publica todo. No es error.
 - QA de WebKit: tocar una foto del lightbox solo cuando la miniatura de la
   tarjeta ya cargó (nadie toca una foto que no ve); si el QA de WebKit móvil
   falla por tiempo, revisar primero si es la red, no el código.

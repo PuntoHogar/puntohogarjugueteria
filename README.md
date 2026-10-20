@@ -26,7 +26,9 @@ catálogo se sincroniza solo, 4 veces al día, desde el sistema POSGold de la ti
 
 Archivos **locales** (excluidos del repo por `.gitignore`): `.env` (credenciales
 POSGold y llave de cifrado), `*.xlsx` (exportes con costos), `qa_e2e.py` (suite QA),
-`reportes/` (CSVs con costos y márgenes), scripts de la persona de confianza.
+`reportes/` (CSVs con costos y márgenes) y `generar_enlace_config.py` (arma el
+enlace de configuración de un solo toque para cargar llave y tokens en el
+navegador de la administración).
 
 ## El catálogo automático
 
@@ -70,6 +72,28 @@ referencia de cada producto y su enlace directo a la ficha en esta misma tienda
 - Ocultamiento reversible de categorías y productos individuales.
 - Analítica con píxeles activables por ID, sin código adicional.
 
+## Panel de administración (el día a día de la tienda)
+
+Se abre con el enlace "Administración" del pie, `?admin=1` o Ctrl+Shift+A
+(clave de `TIENDA_DEFECTO.claveAdmin`).
+
+- **Una sola vez**: la persona de confianza corre `python generar_enlace_config.py`
+  y envía por WhatsApp el enlace de configuración; al abrirlo, la llave de cifrado
+  y los tokens de GitHub quedan cargados en ese navegador para siempre (nunca van
+  escritos en el archivo de la página: el repo es público).
+- **Guardar en MI computador** — previsualiza solo en ese navegador.
+- **Publicar para todos** — sube la configuración al proyecto (API de GitHub) y
+  todos los visitantes la ven en ~1 minuto. Es el botón normal: nadie edita
+  archivos ni publica por ella.
+- **Actualizar costos** — exporta el Excel de PRODUCTOS de POSGold (todo el
+  inventario, sin filtros) y súbelo en el panel: se cifra en el navegador y el
+  cron lo aplica al ranking.
+- **Sincronizar ahora** — lanza la corrida del catálogo al instante (o espera al
+  cron de las 07:15, 08:15, 19:15 y 20:15).
+
+Si una corrida del cron termina con "AVISO git push" (el panel publicó algo a
+media corrida), no es un error: la siguiente corrida lo publica todo.
+
 ## Seguridad
 
 - El repositorio es **público**: las credenciales viven en `.env` (local) y en
@@ -91,6 +115,9 @@ python sync_posgold.py --dry-run
 
 # regenerar TODAS las miniaturas desde POSGold (migraciones / auditorías)
 python sync_posgold.py --verificar-todas
+
+# enlace de configuración de un solo toque (llave + tokens para un navegador)
+python generar_enlace_config.py
 
 # verificar sintaxis JS del index (bloques <script> sin src)
 node -e "const h=require('fs').readFileSync('index.html','utf8');const re=/<script(?![^>]*\bsrc=)(?![^>]*ld\+json)[^>]*>([\s\S]*?)<\/script>/gi;let m;while((m=re.exec(h))!==null){if(m[1].trim())new Function(m[1]);}console.log('OK')"
