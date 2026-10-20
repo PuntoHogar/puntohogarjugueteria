@@ -270,7 +270,11 @@ async def main():
             window.open = (u) => { window.__captura = u; return null; };
         }""")
         await page.evaluate("() => document.getElementById('whatsappBtn').click()")
-        await page.wait_for_timeout(1200)
+        await page.wait_for_timeout(300)
+        confeti_vivo = await page.evaluate(
+            "() => document.querySelectorAll('.jt-confeti').length")
+        ok(3, "el pedido enviado celebra con confeti", confeti_vivo > 20, str(confeti_vivo))
+        await page.wait_for_timeout(900)
         enlace = await page.evaluate("() => window.__captura")
         ok(3, "se genera el enlace del pedido", bool(enlace and "wa.me" in enlace),
            (enlace or "")[:50])
@@ -308,7 +312,16 @@ async def main():
            unidades_msg == 6, str(unidades_msg))
 
         # despues del pedido: el carrito se vacia solo (CONFIG.vaciarCarritoTrasPedido)
-        await page.wait_for_timeout(1500)
+        # y el confeti termina de caer y desaparece
+        limpio = False
+        for _ in range(14):
+            n_confeti = await page.evaluate(
+                "() => document.querySelectorAll('.jt-confeti').length")
+            if n_confeti == 0:
+                limpio = True
+                break
+            await page.wait_for_timeout(250)
+        ok(3, "el confeti se autolimpia al caer", limpio, str(n_confeti))
         m7 = await page.evaluate("() => ({ n: cart.length, ls: localStorage.getItem('taiwanCart') })")
         ok(3, "tras enviar el pedido el carrito se reinicia", m7["n"] == 0,
            f"carrito={m7['n']} ls={m7['ls']}")

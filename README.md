@@ -103,9 +103,9 @@ workflow documenta cómo retirar la dependencia del Excel.
   (1000, 2000, 3000…): configurable desde el panel ("Sin redondeo" a
   "1.000").
 - Efecto de compra: al agregar al carrito, la foto del juguete vuela hasta
-  el icono y el contador rebota (dopamina visual sin librerías: reusa la
-  miniatura en cache, respeta `prefers-reduced-motion` y se omite si el
-  checkout ya está abierto).
+  el icono y el contador rebota; al enviar el pedido, un confeti breve
+  celebra el cierre (sin librerías: reusa la miniatura en cache, respeta
+  `prefers-reduced-motion` y se omite si el checkout ya está abierto).
 - Checkout por WhatsApp estilo COD en 5 fases (pedido → datos → entrega → pago → notas).
 - Pago a crédito en cuotas (Addi / Sistecrédito) con simulador en tarjetas,
   carrito y checkout — configurable desde el panel.
@@ -162,9 +162,9 @@ media corrida), no es un error: la siguiente corrida lo publica todo.
 # escritorio y móvil — debe pasar 42/42 antes de publicar
 python qa_e2e.py
 
-# suite del carrito (36/36): identidad de los productos agregados,
+# suite del carrito (38/38): identidad de los productos agregados,
 # aritmetica exacta (totales, cantidades, fusion de lineas, persistencia),
-# mensaje de WhatsApp y efecto de vuelo — sin secretos, vive en el repo
+# mensaje de WhatsApp, vuelo al carrito y confeti — sin secretos, vive en el repo
 python qa_carrito.py
 
 # sincronización de prueba (no toca catalogo.js ni publica)

@@ -3017,6 +3017,14 @@
             object-fit: cover;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
         }
+        /* CONFETI DEL PEDIDO: estallido breve al enviar el pedido por
+           WhatsApp — el momento de recompensa del loop (agregar vuela,
+           enviar celebra). Particulas puras de CSS/JS, sin librerias. */
+        .jt-confeti {
+            position: fixed;
+            z-index: 99998;
+            pointer-events: none;
+        }
         /* Badge con rebote elastico (overshoot): mas jugoso que el bump
            plano. La regla por id gana a las de clase de arriba. */
         #cartCount.bump,
@@ -3025,6 +3033,7 @@
         }
         @media (prefers-reduced-motion: reduce) {
             .jt-fly { display: none; }
+            .jt-confeti { display: none; }
         }
         .floating-whatsapp {
             background: #25D366;
@@ -9716,6 +9725,48 @@
             }
         }
 
+        // CONFETI DEL PEDIDO: celebra el envio con un estallido breve de
+        // ~70 particulas en los colores de la marca (el pago emocional del
+        // loop: agregar vuela, enviar celebra). Puro Web Animations, sin
+        // librerias ni descargas: cada particula se autolimpia al caer.
+        // Se omite con "reduce motion" o sin Web Animations, y NUNCA puede
+        // romper el pedido (todo va envuelto en try/catch).
+        function lanzarConfeti() {
+            try {
+                if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+                if (!document.body.animate) return;
+                const colores = ['#00bcd4', '#e91e63', '#ffc107', '#ff6b6b', '#ffffff'];
+                const vw = window.innerWidth;
+                const vh = window.innerHeight;
+                const origenX = vw / 2;
+                const origenY = vh * 0.45;
+                for (let i = 0; i < 70; i++) {
+                    const p = document.createElement('div');
+                    p.className = 'jt-confeti';
+                    const w = 5 + Math.random() * 5;
+                    p.style.width = w + 'px';
+                    p.style.height = (w * (1 + Math.random())) + 'px';
+                    p.style.left = origenX + 'px';
+                    p.style.top = origenY + 'px';
+                    p.style.background = colores[i % colores.length];
+                    p.style.borderRadius = Math.random() < 0.3 ? '50%' : '2px';
+                    document.body.appendChild(p);
+                    const dx = (Math.random() - 0.5) * vw * 0.9;
+                    const subida = -(vh * (0.18 + Math.random() * 0.22));
+                    const dxPico = dx * (0.55 + Math.random() * 0.2);
+                    const giro = 360 + Math.random() * 540;
+                    const anim = p.animate([
+                        { transform: 'translate(0, 0) rotate(0deg)', opacity: 1 },
+                        { transform: `translate(${dxPico}px, ${subida}px) rotate(${giro / 2}deg)`, opacity: 1, offset: 0.4 },
+                        { transform: `translate(${dx}px, ${subida + vh * 0.5}px) rotate(${giro}deg)`, opacity: 0 },
+                    ], { duration: 1100 + Math.random() * 500, easing: 'cubic-bezier(0.2, 0.7, 0.5, 1)' });
+                    const limpiar = () => { if (p.parentNode) p.remove(); };
+                    anim.onfinish = limpiar;
+                    anim.oncancel = limpiar;
+                }
+            } catch (e) { /* la fiesta nunca debe romper el pedido */ }
+        }
+
         // Agregar al carrito todas las cantidades seleccionadas (> 0)
         function addSizesToCart(productId) {
             const product = products.find(p => p.id === productId);
@@ -11241,6 +11292,7 @@
 
             closeOrderForm();
             showNotification('¡Pedido enviado! Termina la confirmación por WhatsApp');
+            lanzarConfeti();
 
             // Vaciar el carrito evita que el mismo pedido se mande 2 y 3 veces
             if (CONFIG.vaciarCarritoTrasPedido) {

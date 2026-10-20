@@ -19,14 +19,14 @@ arquitectura completa.
    commitea `catalogo.js`, `data/mapa_imagenes.json` y `assets/fotos`.
 4. Textos de la tienda: español de Colombia, tuteo, tono cálido. Los mensajes
    de commit del repo no llevan tildes (estilo histórico).
-5. Nunca commitear sin que pase el QA (regla 42/42 de `qa_e2e.py` y 36/36 de
+5. Nunca commitear sin que pase el QA (regla 42/42 de `qa_e2e.py` y 38/38 de
    `qa_carrito.py`, abajo).
 
 ## Comandos de verificación
 
 ```bash
 python qa_e2e.py            # suite completa: 42/42 esperado (Playwright + WebKit)
-python qa_carrito.py        # carrito: identidad, aritmetica exacta, mensaje WhatsApp y vuelo (36/36)
+python qa_carrito.py        # carrito: identidad, aritmetica exacta, mensaje WhatsApp, vuelo y confeti (38/38)
 python sync_posgold.py --dry-run   # sync de prueba sin tocar catalogo.js
 python sync_posgold.py --verificar-todas   # auditar/regenerar miniaturas
 python generar_enlace_config.py    # enlace de config (llave+tokens) para un navegador
@@ -79,6 +79,9 @@ es rechazado, el cron movió el remoto: `git pull --rebase origin main` y de nue
   checkout ~300 ms después para que el ojo siga el recorrido. Guardas: no
   vuela con el checkout abierto (sugeridos), con
   `prefers-reduced-motion`, sin Web Animations ni sin foto cargada.
+- **Confeti del pedido**: `lanzarConfeti()` celebra el envío del pedido
+  (`.jt-confeti`, ~70 partículas, ~1,4 s) con las mismas guardas; NUNCA debe
+  romper el pedido (try/catch total).
 - **ScrollLock**: congela el scroll del body conservando la posición (menú,
   carrito, lightbox y checkout). Toda pantalla completa debe usarlo, nunca
   toggles directos de `body-no-scroll`.
