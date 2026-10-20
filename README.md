@@ -181,3 +181,17 @@ node -e "const h=require('fs').readFileSync('index.html','utf8');const re=/<scri
 ```
 
 Publicar = `git push origin main` (GitHub Pages reconstruye en ~1 minuto).
+
+## Checkpoint — octubre de 2026
+
+Estado del proyecto tras la última tanda de mejoras (20 de octubre de 2026):
+
+| Área | Estado |
+|---|---|
+| Precios | Redondeados a múltiplos de **$1.000** (fábrica en `PRECIOS_DEFECTO` y publicado en `data/configuracion.js`, sincronizados) |
+| Efecto de compra | **Vuelo al carrito** + pop del badge al agregar; **confeti** al enviar el pedido — sin librerías, respetan `prefers-reduced-motion` |
+| QA | `qa_e2e.py` **42/42** y `qa_carrito.py` **38/38** (verde antes de publicar) |
+| Costos | Documentado: el API de POSGold no trae costos (verificado); el Excel de PRODUCTOS es el contrato de formato y el pipeline falla seguro en cada etapa |
+| Catálogo | 1.911 productos publicados; los nuevos de POSGold entran solos en la próxima corrida si cumplen los filtros (incluido costo en el Excel) |
+| Panel | Publica configuración y costos solo (API de GitHub); nada se edita a mano |
+| Dopamina descartada | Urgencia artificial y metas falsas: probadas/evaluadas y rechazadas (la urgencia ya costó pedidos una vez) |
