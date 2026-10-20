@@ -6110,7 +6110,7 @@
                         <input type="text" id="adminAliados" placeholder="Addi, Sistecrédito">
                     </label>
                     <label>Plazos en meses (con comas)
-                        <input type="text" id="adminPlazos" placeholder="3, 6, 12">
+                        <input type="text" id="adminPlazos" placeholder="3, 6">
                     </label>
                     <label>Compra mínima para cuotas ($)
                         <input type="number" id="adminMontoMin" min="0" step="1000" placeholder="0">
@@ -6133,7 +6133,7 @@
                 <h4 class="admin-sub">🔄 Sincronización con POSGold</h4>
                 <p class="admin-help admin-help-mini" id="adminSyncEstado">Consultando la última sincronización…</p>
                 <div class="admin-grid">
-                    <label>Token de GitHub para sincronizar <small>(solo se pide una vez; véase la ayuda de abajo)</small>
+                    <label>Token de GitHub para sincronizar <small>(se pide una sola vez — o llega solo al abrir el enlace de configuración)</small>
                         <input type="password" id="adminSyncToken" autocomplete="off" onchange="guardarTokenSync()" placeholder="github_pat_… (se guarda solo en este computador)">
                     </label>
                 </div>
@@ -6156,14 +6156,20 @@
                      (WebCrypto, formato openssl compatible con el cron) y se
                      commitea directo al repo por API. Asi refrescar costos
                      no requiere Python ni ningun computador preparado. -->
-                <h4 class="admin-sub">💰 Actualizar costos <small>(exporta el Excel de POSGold y súbelo aquí, desde cualquier dispositivo)</small></h4>
-                <p class="admin-help admin-help-mini">El archivo se cifra <strong>en tu navegador</strong> con la llave del proyecto y queda en el repo para el cron. La próxima sincronización (o el botón de arriba) aplica los costos nuevos al ranking.</p>
+                <h4 class="admin-sub">💰 Actualizar costos <small>(el Excel de POSGold, en 3 pasos)</small></h4>
+                <div class="admin-help">
+                    <strong>Subir los costos nuevos, paso a paso:</strong><br>
+                    <span class="step-num">1</span> <strong>Exporta en POSGold</strong> — en el computador de la tienda entra a POSGold → <strong>Gestor general de productos</strong> (el listado grande) y exporta a Excel <strong>TODO el inventario, sin ningún filtro activo</strong>. El archivo correcto se llama <strong>PRODUCTOS + fecha.xlsx</strong>, pesa más de 1 MB y trae una sola hoja con más de 6.000 filas (columnas productoid, costo, costopromedio, costoultimo…).<br>
+                    <span class="step-num">2</span> <strong>Súbelo aquí</strong> — pasa el archivo a este celular o computador (WhatsApp, correo o USB), toca «Archivo Excel de POSGold» y elige el archivo exportado. La llave y el token de abajo se piden una sola vez: si ya están cargados, no tienes que escribir nada.<br>
+                    <span class="step-num">3</span> <strong>Aplica los costos</strong> — pulsa <strong>«Cifrar y subir costos»</strong> y espera el aviso ✅. Después toca <strong>«Sincronizar ahora»</strong> en la sección de arriba para que el ranking de la tienda se recalcule al instante (si no, el cron lo aplica solo en su próxima corrida).
+                </div>
+                <p class="admin-help admin-help-mini">El archivo se cifra <strong>en tu navegador</strong> con la llave del proyecto y queda en el repo para el cron. Antes de subirlo, el panel revisa que sea el export completo: si el archivo viene filtrado o no es el export de PRODUCTOS, te avisa y no lo sube (un archivo a medias ocultaría los productos que falten).</p>
                 <p class="admin-help admin-help-mini" id="adminCostosEstado">Consultando la antigüedad de los costos…</p>
                 <div class="admin-grid">
                     <label>Archivo Excel de POSGold (PRODUCTOS…xlsx)
                         <input type="file" id="adminCostosFile" accept=".xlsx">
                     </label>
-                    <label>Llave de cifrado (COSTOS_KEY — solo se pide una vez)
+                    <label>Llave de cifrado (COSTOS_KEY — se pide una sola vez)
                         <input type="password" id="adminCostosKey" autocomplete="off" onchange="guardarCostosClave()" placeholder="la llave generada al configurar el proyecto">
                     </label>
                     <label>Token de GitHub con permiso Contents (Read and write), solo este repo
@@ -6173,6 +6179,7 @@
                 <div class="admin-botones admin-sync-botones">
                     <button class="btn btn-primary" type="button" onclick="subirCostosNavegador()"><i class="fas fa-upload"></i> Cifrar y subir costos</button>
                 </div>
+                <p class="admin-help admin-help-mini">💡 ¿Llave o token vacíos? Pide a tu persona de confianza el <strong>enlace de configuración</strong> (lo genera con el script local del proyecto): al abrirlo una sola vez, la llave y los dos tokens de GitHub quedan cargados para siempre en este navegador y los tres campos nacen llenos. Nunca van escritos dentro del archivo de la página: el repositorio es público y cualquiera podría leerlos.</p>
                 <details class="admin-sync-ayuda">
                     <summary>¿Cómo consigo ese token y esa llave?</summary>
                     <div class="admin-help-mini">
@@ -6425,7 +6432,7 @@
                 activo: true,
                 simuladorEnTarjetas: true,
                 aliados: ['Addi', 'Sistecrédito'],
-                plazos: [3, 6, 12],   // plazos que se ofrecen en cuotas
+                plazos: [3, 6],       // plazos que se ofrecen en cuotas
                 tasaMensual: 0.0,     // 0 = cuota simple (total / plazo)
                 // Compra mínima para ofrecer cuotas (pesos completos): debajo
                 // el aviso desaparece — un crédito de $10.000 no justifica la
@@ -6515,7 +6522,7 @@
             creditoActivo: true,
             simuladorEnTarjetas: true,
             aliados: 'Addi, Sistecrédito',
-            plazos: '3, 6, 12',       // meses, separados por comas
+            plazos: '3, 6',          // meses, separados por comas
             tasaMensual: 0,           // 0 = cuota simple (total / plazo)
             montoMinimo: 100000,      // compra mínima para pagar a cuotas (pesos completos)
 
@@ -6544,6 +6551,12 @@
             // escribe "-" en el campo del panel y se guarda.
             let pixelMeta = (typeof guardados.pixelMeta === 'string') ? guardados.pixelMeta.trim() : TIENDA_DEFECTO.pixelMeta;
             if (!pixelMeta) pixelMeta = TIENDA_DEFECTO.pixelMeta;
+            // Plazos de las cuotas: de fábrica pasaron de "3, 6, 12" a
+            // "3, 6". Los navegadores que guardaron la tienda con el valor
+            // antiguo DE FÁBRICA adoptan el nuevo una sola vez; si la
+            // administración escribió otros plazos, se respetan.
+            let plazos = texto(guardados.plazos, TIENDA_DEFECTO.plazos);
+            if (plazos.replace(/\s+/g, '') === '3,6,12') plazos = TIENDA_DEFECTO.plazos;
             return {
                 nombre: texto(guardados.nombre, TIENDA_DEFECTO.nombre),
                 logo: (typeof guardados.logo === 'string') ? guardados.logo.trim() : TIENDA_DEFECTO.logo,
@@ -6568,7 +6581,7 @@
                 creditoActivo: si(guardados.creditoActivo, TIENDA_DEFECTO.creditoActivo),
                 simuladorEnTarjetas: si(guardados.simuladorEnTarjetas, TIENDA_DEFECTO.simuladorEnTarjetas),
                 aliados: texto(guardados.aliados, TIENDA_DEFECTO.aliados),
-                plazos: texto(guardados.plazos, TIENDA_DEFECTO.plazos),
+                plazos: plazos,
                 tasaMensual: numero(guardados.tasaMensual, TIENDA_DEFECTO.tasaMensual),
                 montoMinimo: numero(guardados.montoMinimo, TIENDA_DEFECTO.montoMinimo),
                 pagoContraEntrega: si(guardados.pagoContraEntrega, TIENDA_DEFECTO.pagoContraEntrega),
@@ -7546,6 +7559,34 @@
             try { localStorage.setItem(COSTOS_TOKEN_KEY, inp.value.trim()); } catch (e) {}
             showNotification(inp.value.trim() ? 'Token de costos guardado en este navegador' : 'Token borrado', 'success');
         }
+
+        /* ------------------------------------------------------------------
+           ENLACE DE CONFIGURACIÓN (llave y tokens de un solo toque)
+           La llave de cifrado y los tokens de GitHub JAMÁS se escriben en
+           este archivo (el repo es público: cualquiera que leyera la
+           página podría tomar el control del catálogo o descifrar los
+           costos). En su lugar, la persona de confianza genera con el
+           script local "generar_enlace_config.py" un enlace que los trae
+           en el #fragmento de la URL — el fragmento NUNCA viaja al
+           servidor — y con abrirlo UNA VEZ quedan guardados para siempre
+           en este navegador (los campos del panel nacen llenos). El
+           enlace se borra de la barra de direcciones y del historial al
+           instante: no se comparte por accidente al reenviar la página.
+           ------------------------------------------------------------------ */
+        function absorberEnlaceConfig() {
+            const m = /[#&]config=([^&]+)/.exec(window.location.hash || '');
+            if (!m) return false;
+            try {
+                const datos = JSON.parse(atob(decodeURIComponent(m[1])));
+                if (datos.syncToken) try { localStorage.setItem(SYNC_TOKEN_KEY, String(datos.syncToken)); } catch (e) {}
+                if (datos.costosLlave) try { localStorage.setItem(COSTOS_LLAVE_KEY, String(datos.costosLlave)); } catch (e) {}
+                if (datos.costosToken) try { localStorage.setItem(COSTOS_TOKEN_KEY, String(datos.costosToken)); } catch (e) {}
+            } catch (e) { /* enlace corrupto: se ignora y se limpia igual */ }
+            try { history.replaceState(null, '', window.location.pathname + window.location.search); }
+            catch (e) { window.location.hash = ''; }
+            return true;
+        }
+        window.__configAbsorbida = absorberEnlaceConfig();
 
         function ab64(buffer) {
             const bytes = new Uint8Array(buffer);
@@ -8641,6 +8682,11 @@
             aplicarEstadoContraEntrega();
             aplicarEstadoCategorias();
             track('PageView');       // línea base para Meta y GA4 (antes no se disparaba)
+            // Si llegó por el enlace de configuración, la llave y los tokens
+            // ya quedaron guardados: se le confirma con un aviso amable.
+            if (window.__configAbsorbida) {
+                showNotification('✅ Llave y tokens quedaron cargados en este navegador');
+            }
             loadProducts();
             updateCartUI();
             updateCartCount();
@@ -8799,6 +8845,8 @@
                 if (e.key !== 'Escape') return;
                 const cartSidebar = document.getElementById('cartSidebar');
                 if (cartSidebar && cartSidebar.classList.contains('open')) toggleCart();
+                const mobileMenu = document.getElementById('mobileMenu');
+                if (mobileMenu && mobileMenu.classList.contains('open')) toggleMobileMenu();
                 closeOrderForm();
             });
         });
@@ -9077,27 +9125,48 @@
             const counts = {};
             products.forEach(p => { counts[p.category] = (counts[p.category] || 0) + 1; });
             const cats = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
-            const item = (icono, etiqueta, accion, activa) => `
-                <li><a href="#productos" class="${activa ? 'active' : ''}" onclick="event.preventDefault(); ${accion}"><i class="fas ${icono}"></i>${esc(etiqueta)}</a></li>`;
+
+            // Item del menú con listener de verdad (no onclick inline):
+            // cierra el menú PRIMERO y deja un instante para que el navegador
+            // termine el cierre, y solo entonces aplica el filtro o el scroll.
+            // Sin esa pausa, en móviles el cierre y el scroll competían y la
+            // opción parecía no hacer nada. El menú restaura el lugar del
+            // catálogo donde estabas SIEMPRE que no se elija una opción.
+            const item = (icono, etiqueta, accion, activa) => {
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = '#productos';
+                if (activa) a.className = 'active';
+                a.innerHTML = `<i class="fas ${icono}"></i>${esc(etiqueta)}`;
+                a.addEventListener('click', e => {
+                    e.preventDefault();
+                    toggleMobileMenu(true);            // cierra sin restaurar: la opción navega
+                    setTimeout(accion, 130);           // deja terminar el cierre del menú
+                });
+                li.appendChild(a);
+                return li;
+            };
+
             // Ubicacion de la tienda fisica destacada al tope del menu: es el
             // dato que mas buscan quienes llegan desde anuncios al por mayor.
-            const tienda = `
-                <li>
-                    <a class="mobile-menu-tienda" href="https://www.google.com/maps/dir/?api=1&destination=Centro%20Comercial%20Taiwan%2C%20Cra.%209%20%2313a%20-%2012%2C%20Local%2027%2C%20Colombia" target="_blank" rel="noopener">
-                        <i class="fas fa-store"></i>
-                        <span>Tienda física — CC Taiwan<small data-direccion>Cra. 9 #13a - 12, Local 27 · Ver cómo llegar</small></span>
-                    </a>
-                </li>`;
-            list.innerHTML =
-                tienda +
-                item('fa-th-large', 'Todos los productos', "toggleMobileMenu(); filterProducts('all');", currentFilter === 'all') +
-                (!navidadOculta() && products.some(p => esNavidad(p))
-                    ? item('fa-tree', 'Navidad y Temporada', "toggleMobileMenu(); filterProducts('navidad');", currentFilter === 'navidad')
-                    : '') +
-                cats.map(c => item(categoryIcon(c), `${categoryLabel(c)} (${counts[c]})`,
-                    `toggleMobileMenu(); filterProducts('${escJs(c)}');`, currentFilter === c)).join('') +
-                item('fa-comments', 'Favoritos', "toggleMobileMenu(); scrollToSection('testimonios');") +
-                item('fa-question-circle', 'Preguntas', "toggleMobileMenu(); scrollToSection('preguntas');");
+            const mapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=' +
+                encodeURIComponent((TIENDA.direccion || 'Centro Comercial Taiwan') + ', Colombia');
+            const tienda = document.createElement('li');
+            tienda.innerHTML = `
+                <a class="mobile-menu-tienda" href="${mapsUrl}" target="_blank" rel="noopener">
+                    <i class="fas fa-store"></i>
+                    <span>Tienda física<small>${esc(TIENDA.direccion)} · Ver cómo llegar</small></span>
+                </a>`;
+            list.innerHTML = '';
+            list.appendChild(tienda);
+            list.appendChild(item('fa-th-large', 'Todos los productos', () => filterProducts('all'), currentFilter === 'all'));
+            if (!navidadOculta() && products.some(p => esNavidad(p))) {
+                list.appendChild(item('fa-tree', 'Navidad y Temporada', () => filterProducts('navidad'), currentFilter === 'navidad'));
+            }
+            cats.forEach(c => list.appendChild(item(categoryIcon(c), `${categoryLabel(c)} (${counts[c]})`,
+                () => filterProducts(c), currentFilter === c)));
+            list.appendChild(item('fa-comments', 'Favoritos', () => scrollToSection('testimonios')));
+            list.appendChild(item('fa-question-circle', 'Preguntas', () => scrollToSection('preguntas')));
         }
 
         function scrollSheinSubnav(dir) {
@@ -9174,16 +9243,52 @@
             CategoriaDeriva.activo = true;
         }
 
+        /* ------------------------------------------------------------------
+           SCROLL LOCK (menú, carrito, lightbox y checkout a pantalla
+           completa) — congela el scroll del body GUARDANDO dónde estaba
+           la página. Antes el position:fixed del body colapsaba el
+           documento: al abrir el menú o el carrito la página saltaba
+           ARRIBA y al cerrar quedabas perdido al comienzo del catálogo
+           (y el scroll hacia la sección elegida partía desde cero,
+           cruzando miles de píxeles). Se usa por estado de la clase:
+           abrir dos cosas a la vez solo guarda la posición una vez y
+           cerrar una de ellas no libera mientras la otra siga abierta.
+           ------------------------------------------------------------------ */
+        const ScrollLock = {
+            y: 0,
+            congelar() {
+                if (document.body.classList.contains('body-no-scroll')) return;
+                this.y = window.scrollY;
+                // top negativo = la parte visible de la página sigue
+                // siendo la misma mientras el body esta fijo.
+                document.body.style.top = (-this.y) + 'px';
+                document.body.classList.add('body-no-scroll');
+            },
+            liberar(restaurar) {
+                if (!document.body.classList.contains('body-no-scroll')) return;
+                document.body.classList.remove('body-no-scroll');
+                document.body.style.top = '';
+                if (restaurar !== false) window.scrollTo({ top: this.y, behavior: 'auto' });
+            }
+        };
+
         // Mobile menu functions
-        function toggleMobileMenu() {
+        function toggleMobileMenu(navegar) {
             const mobileMenu = document.getElementById('mobileMenu');
             const overlay = document.getElementById('mobileMenuOverlay');
-            
-            mobileMenu.classList.toggle('open');
-            overlay.classList.toggle('open');
-            
-            // Toggle body scroll
-            document.body.classList.toggle('body-no-scroll');
+
+            const abre = !mobileMenu.classList.contains('open');
+            mobileMenu.classList.toggle('open', abre);
+            overlay.classList.toggle('open', abre);
+
+            if (abre) ScrollLock.congelar();
+            // navegar=true: la opción elegida se encarga del scroll — no se
+            // restaura la posición vieja para no hacer dos saltos seguidos.
+            else ScrollLock.liberar(navegar);
+
+            // El botón hamburguesa anuncia su estado (lectores de pantalla)
+            const btn = document.querySelector('.shein-icons .mobile-menu-btn');
+            if (btn) btn.setAttribute('aria-expanded', String(abre));
         }
 
         // Aplanar todas las opciones de talla de un producto
@@ -9980,19 +10085,17 @@
             updateCartCount();
         }
 
-        // FUNCIÓN TOGGLECART CORREGIDA PARA MÓVILES
+        // FUNCION TOGGLECART CORREGIDA PARA MOVILES
         function toggleCart() {
             const cartSidebar = document.getElementById('cartSidebar');
             if (!cartSidebar) return;
 
             const isOpen = cartSidebar.classList.toggle('open');
 
-            // NUEVA LÓGICA PARA PREVENIR EL SCROLL EN MÓVILES
-            if (isOpen) {
-                document.body.classList.add('body-no-scroll');
-            } else {
-                document.body.classList.remove('body-no-scroll');
-            }
+            // Congelar/liberar el scroll conservando dónde estaba la página
+            // (antes: abrir el carrito saltaba la página arriba)
+            if (isOpen) ScrollLock.congelar();
+            else ScrollLock.liberar();
         }
 
         // Open order form
@@ -10010,7 +10113,7 @@
             const cartSidebar = document.getElementById('cartSidebar');
             if (cartSidebar) cartSidebar.classList.remove('open');
             document.getElementById('orderModal').classList.add('show');
-            document.body.classList.add('body-no-scroll');
+            ScrollLock.congelar();
             // El formulario abre limpio: sin errores marcados de un intento anterior
             document.querySelectorAll('#orderForm .form-group.error').forEach(g => g.classList.remove('error'));
             renderOrderSummary();
@@ -10051,7 +10154,7 @@
         // Close order form
         function closeOrderForm() {
             document.getElementById('orderModal').classList.remove('show');
-            document.body.classList.remove('body-no-scroll');
+            ScrollLock.liberar();
         }
 
         // Alternar entre entrega a domicilio y retiro en tienda
@@ -10541,7 +10644,7 @@
             renderGalleryThumbs();
             renderGalleryUpsell(productId);
             lightbox.classList.add('show');
-            document.body.classList.add('body-no-scroll');
+            ScrollLock.congelar();
             const panel = lightbox.querySelector('.lightbox-panel');
             if (panel) panel.scrollTop = 0;
         }
@@ -10570,7 +10673,7 @@
             const lightbox = document.getElementById('imageLightbox');
             if (!lightbox) return;
             lightbox.classList.remove('show');
-            document.body.classList.remove('body-no-scroll');
+            ScrollLock.liberar();
         }
 
         document.addEventListener('keydown', function(e) {
@@ -11015,7 +11118,17 @@
             const header = document.querySelector('header');
             const offset = (header ? header.getBoundingClientRect().height : 0) + 8;
             const top = section.getBoundingClientRect().top + window.scrollY - offset;
-            window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+            // Destinos lejanos: llegada DIRECTA. El scroll suave cruzando
+            // todo el catalogo (miles de pixeles) tardaba varios segundos y
+            // cualquier toque del dedo lo cancelaba a mitad de camino — el
+            // menu y los enlaces parecian no hacer nada. Los saltos cortos
+            // conservan el deslizamiento suave, que ahi si se disfruta.
+            const distancia = Math.abs(top - window.scrollY);
+            if (distancia > 2500) {
+                window.scrollTo({ top: Math.max(0, top), behavior: 'auto' });
+            } else {
+                window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+            }
         }
 
         // Scroll to top

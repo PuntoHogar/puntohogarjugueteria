@@ -21,6 +21,7 @@
 *.txt
 gen_presentacion.py
 gen_presentacion_vtex.py
+generar_enlace_config.py
 
 # --- Versiones de referencia del index (solo index.html se publica) ---
 index_plantilla.html
