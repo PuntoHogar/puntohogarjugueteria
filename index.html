@@ -5141,6 +5141,17 @@
             padding: 2px 8px;
             white-space: nowrap;
         }
+        /* Badge de producto/categoría oculta en las listas del panel */
+        .admin-badge-oculto {
+            font-size: 0.62rem;
+            font-weight: 800;
+            color: #fff;
+            background: #9CA3AF;
+            border-radius: 999px;
+            padding: 2px 8px;
+            white-space: nowrap;
+        }
+        .admin-prod-fila button[disabled] { opacity: 0.55; cursor: not-allowed; }
 
         /* --- Login de administración --- */
         .admin-login { max-width: 420px; }
@@ -6183,10 +6194,10 @@
                     </div>
                 </details>
 
-                <h4 class="admin-sub">📈 Analítica y píxeles <small>(pega SOLO el ID; vacío = esa etiqueta queda apagada)</small></h4>
+                <h4 class="admin-sub">📈 Analítica y píxeles <small>(pega SOLO el ID; vacío = Pixel de fábrica, las demás quedan apagadas)</small></h4>
                 <div class="admin-grid">
-                    <label>Pixel de Meta (número largo)
-                        <input type="text" id="adminPixelMeta" inputmode="numeric" placeholder="Ej. 123456789012345">
+                    <label>Pixel de Meta (número largo; vacío = el de fábrica, «-» lo apaga)
+                        <input type="text" id="adminPixelMeta" inputmode="numeric" placeholder="3678555472322858">
                     </label>
                     <label>Google Analytics 4 (empieza por G-)
                         <input type="text" id="adminGa4" placeholder="Ej. G-XXXXXXXXXX">
@@ -6195,7 +6206,7 @@
                         <input type="text" id="adminClarity" placeholder="Ej. abcdefabcd">
                     </label>
                 </div>
-                <p class="admin-help admin-help-mini">La página reporta automáticamente: PageView, ver producto, agregar al carrito, iniciar pedido, buscar y compartir catálogo. Al guardar los IDs las etiquetas se activan al instante (Clarity termina de aplicar al recargar la página).</p>
+                <p class="admin-help admin-help-mini">La página reporta automáticamente: PageView, ver producto, agregar al carrito, iniciar pedido, buscar y compartir catálogo. Al guardar los IDs las etiquetas se activan al instante (Clarity termina de aplicar al recargar la página). El Pixel de Meta viene activado de fábrica con el ID de la tienda; escribe «-» en su campo si algún día necesitas apagarlo.</p>
 
                 <h4 class="admin-sub">🛍️ Producto en tendencia del inicio (héroe) <small>(el juguete grande que abre la tienda)</small></h4>
                 <div class="admin-grid">
@@ -6255,6 +6266,18 @@
                 <div class="admin-resultados" id="adminTemporadaResultados"></div>
                 <div class="admin-fijados" id="adminTemporadaLista"></div>
 
+                <h4 class="admin-sub">🙈 Categorías y productos ocultos <small>(desmarca lo que no quieras mostrar en la tienda)</small></h4>
+                <p class="admin-help admin-help-mini">
+                    Los productos de una categoría desmarcada desaparecen del catálogo, los carruseles y el buscador — pero siguen aquí y puedes volver a marcarlos cuando quieras.
+                    <strong>“Navidad y Temporada”</strong> solo esconde esa sección especial: sus juguetes pertenecen a categorías propias y siguen a la venta en ellas.
+                </p>
+                <div class="admin-grid" id="adminCatsVisibles">
+                    <!-- JS: una casilla por categoría con sus productos -->
+                </div>
+                <input type="text" class="admin-buscar" id="adminBuscarOcultar" placeholder="Busca un juguete para ocultarlo o para volver a mostrarlo…" oninput="buscarProductoOcultar()">
+                <div class="admin-resultados" id="adminOcultarResultados"></div>
+                <div class="admin-fijados" id="adminOcultosLista"></div>
+
                 <h4 class="admin-sub">Precio exacto para un juguete <small>(se vende tal cual, sin ganancia extra)</small></h4>
                 <input type="text" class="admin-buscar" id="adminBuscarProd" placeholder="Escribe el nombre del juguete… ej: excavadora" oninput="buscarProductoAdmin()">
                 <div class="admin-resultados" id="adminResultados"></div>
@@ -6302,7 +6325,7 @@
                     <ul>
                         <li><a href="#productos" onclick="event.preventDefault(); filterProducts('all');">Todos los productos</a></li>
                         <li><a href="#categoryShowcase" onclick="event.preventDefault(); scrollToSection('categoryShowcase');">Categorías</a></li>
-                        <li><a href="#productos" onclick="event.preventDefault(); filterProducts('navidad');">🎄 Navidad y Temporada</a></li>
+                        <li data-solo-navidad><a href="#productos" onclick="event.preventDefault(); filterProducts('navidad');">🎄 Navidad y Temporada</a></li>
                         <li><a href="#" onclick="event.preventDefault(); event.stopPropagation(); toggleCart();">Carrito</a></li>
                     </ul>
                 </div>
@@ -6464,10 +6487,11 @@
             tiktok: 'jugueteria.taiwan',
             sitioWeb: 'jugueteriataiwan.com',
 
-            // 📈 Analítica: SOLO el ID de cada etiqueta, vacío = no cargar.
+            // 📈 Analítica: SOLO el ID de cada etiqueta, vacío = no cargar
+            // (el Pixel de Meta viene activado de fábrica: ver cargarTienda).
             // El sitio reporta PageView, ViewContent, AddToCart, InitiateCheckout,
             // Search y Lead a cualquier etiqueta que esté activa (ver track()).
-            pixelMeta: '',      // Pixel de Meta, p. ej. '123456789012345'
+            pixelMeta: '3678555472322858',   // Pixel de Meta de la tienda (activo por defecto; "-" lo apaga)
             ga4: '',            // Google Analytics 4, p. ej. 'G-XXXXXXXXXX'
             clarity: '',        // Microsoft Clarity, p. ej. 'abcd1234ab'
 
@@ -6476,6 +6500,16 @@
             heroDestacadoVisible: true,      // false = se oculta la sección del héroe
             productosFavoritos: 'mesa-futbol-de-madera, pista-neon-carro-pila-luz-con-numero, burbujero-mil-burbujas-pilas-cj-bubble-gun-4-motivos', // sección "Favoritos" (ids separados por comas)
             cantidadProductos: '+22.000',  // el número que se promociona en el héroe, el pie y al compartir
+
+            // 🙈 Visibilidad de la tienda: categorías (slugs separados por
+            // comas) y productos (ids) que NO se muestran. Una categoría real
+            // oculta desaparece del catálogo, los carruseles y el buscador;
+            // la clave "navidad" esconde la sección "Navidad y Temporada"
+            // (sus productos pertenecen a categorías normales y siguen a la
+            // venta en ellas). El panel de administración siempre los ve y
+            // puede volver a mostrarlos.
+            categoriasOcultas: 'navidad, colecciones',
+            productosOcultos: '',
 
             // Crédito en cuotas (Addi / Sistecrédito)
             creditoActivo: true,
@@ -6503,6 +6537,13 @@
             const texto = (v, porDefecto) => (typeof v === 'string' && v.trim()) ? v.trim() : porDefecto;
             const si = (v, porDefecto) => (typeof v === 'boolean') ? v : porDefecto;
             const numero = (v, porDefecto) => (typeof v === 'number' && isFinite(v) && v >= 0) ? v : porDefecto;
+            // Pixel de Meta: el ID viene activado de fábrica. Si este
+            // navegador guardó la tienda cuando el campo estaba vacío (la
+            // época sin pixel), el vacío cae al ID de fábrica en vez de
+            // mantener la etiqueta apagada. Para apagarla a propósito se
+            // escribe "-" en el campo del panel y se guarda.
+            let pixelMeta = (typeof guardados.pixelMeta === 'string') ? guardados.pixelMeta.trim() : TIENDA_DEFECTO.pixelMeta;
+            if (!pixelMeta) pixelMeta = TIENDA_DEFECTO.pixelMeta;
             return {
                 nombre: texto(guardados.nombre, TIENDA_DEFECTO.nombre),
                 logo: (typeof guardados.logo === 'string') ? guardados.logo.trim() : TIENDA_DEFECTO.logo,
@@ -6512,13 +6553,18 @@
                 instagram: texto(guardados.instagram, TIENDA_DEFECTO.instagram),
                 tiktok: texto(guardados.tiktok, TIENDA_DEFECTO.tiktok),
                 sitioWeb: texto(guardados.sitioWeb, TIENDA_DEFECTO.sitioWeb),
-                pixelMeta: (typeof guardados.pixelMeta === 'string') ? guardados.pixelMeta.trim() : TIENDA_DEFECTO.pixelMeta,
+                pixelMeta: pixelMeta,
                 ga4: (typeof guardados.ga4 === 'string') ? guardados.ga4.trim() : TIENDA_DEFECTO.ga4,
                 clarity: (typeof guardados.clarity === 'string') ? guardados.clarity.trim() : TIENDA_DEFECTO.clarity,
                 productoDestacado: texto(guardados.productoDestacado, TIENDA_DEFECTO.productoDestacado),
             heroDestacadoVisible: guardados.heroDestacadoVisible !== false,
                 productosFavoritos: texto(guardados.productosFavoritos, TIENDA_DEFECTO.productosFavoritos),
                 cantidadProductos: texto(guardados.cantidadProductos, TIENDA_DEFECTO.cantidadProductos),
+                // Categorías y productos ocultos: aquí el valor VACÍO es
+                // significativo ("nada oculto"), así que el de fábrica solo
+                // aplica cuando este navegador nunca guardó la tienda.
+                categoriasOcultas: (typeof guardados.categoriasOcultas === 'string') ? guardados.categoriasOcultas : TIENDA_DEFECTO.categoriasOcultas,
+                productosOcultos: (typeof guardados.productosOcultos === 'string') ? guardados.productosOcultos : TIENDA_DEFECTO.productosOcultos,
                 creditoActivo: si(guardados.creditoActivo, TIENDA_DEFECTO.creditoActivo),
                 simuladorEnTarjetas: si(guardados.simuladorEnTarjetas, TIENDA_DEFECTO.simuladorEnTarjetas),
                 aliados: texto(guardados.aliados, TIENDA_DEFECTO.aliados),
@@ -6584,7 +6630,9 @@
             const idClarity = String(TIENDA.clarity || '').replace(/\s+/g, '');
 
             // --- Pixel de Meta (Facebook) ---
-            if (idMeta) {
+            // Viene activado de fábrica (TIENDA_DEFECTO.pixelMeta). Un "-"
+            // escrito a mano en el panel lo apaga.
+            if (idMeta && idMeta !== '-') {
                 if (!window.fbq) {
                     // Código base oficial: encola los track() hasta que
                     // cargue fbevents.js (por eso se puede inyectar tarde).
@@ -7026,9 +7074,36 @@
             );
         }
 
+        /* ------------------------------------------------------------------
+           🙈 VISIBILIDAD: categorías y productos ocultos
+           El panel de administración esconde categorías completas o juguetes
+           sueltos (TIENDA.categoriasOcultas / TIENDA.productosOcultos).
+           El catálogo público (grid, carruseles, buscador, upsell) se
+           construye con catalogoVisible(); el panel usa CATALOGO_BASE
+           directamente y siempre ve todo para poder revertir.
+           La clave "navidad" es especial: esconde la SECCIÓN "Navidad y
+           Temporada" (burbuja, menús y filtro), no los productos, que
+           pertenecen a categorías normales y siguen a la venta en ellas.
+           ------------------------------------------------------------------ */
+        function categoriasOcultasSet() {
+            return new Set(parseLista(TIENDA.categoriasOcultas).map(s => s.toLowerCase()));
+        }
+        function productosOcultosSet() {
+            return new Set(parseLista(TIENDA.productosOcultos));
+        }
+        function navidadOculta() {
+            return categoriasOcultasSet().has('navidad');
+        }
+        function catalogoVisible() {
+            const ocultas = categoriasOcultasSet();
+            const ocultos = productosOcultosSet();
+            return soloConFotoReal(CATALOGO_BASE)
+                .filter(p => !ocultas.has(p.category) && !ocultos.has(p.id));
+        }
+
         // Catálogo efectivo con los precios al detal aplicados. El panel de
         // administración reasigna esta variable al cambiar márgenes.
-        let products = aplicarPrecios(soloConFotoReal(CATALOGO_BASE));
+        let products = aplicarPrecios(catalogoVisible());
 
         // PAGINACION DEL GRID: con el inventario completo (~1.900 juguetes)
         // no se pueden renderizar todas las tarjetas de golpe (congela
@@ -7042,7 +7117,7 @@
         // Recalcula todos los precios visibles: catálogo, carruseles, buscador,
         // carrito (reprecia las líneas ya agregadas) y tarjeta del hero.
         function recalcularPrecios() {
-            products = aplicarPrecios(soloConFotoReal(CATALOGO_BASE));
+            products = aplicarPrecios(catalogoVisible());
 
             // El carrito guarda el precio del momento en que se agregó cada
             // línea: se realinea con el precio vigente del catálogo.
@@ -7899,6 +7974,9 @@
             // Incluye TODAS las categorías con productos — registradas en
             // CATEGORY_META o nuevas (así Valeria puede marginear una
             // categoría que el cron acabe de mapear, sin esperar código).
+            // Las ocultas desde el panel se marcan para que se sepa que sus
+            // productos no están a la vista en la tienda.
+            const ocultasPanel = categoriasOcultasSet();
             const counts = {};
             CATALOGO_BASE.forEach(p => { counts[p.category] = (counts[p.category] || 0) + 1; });
             const cats = Object.keys(counts).sort((a, b) => categoryLabel(a).localeCompare(categoryLabel(b), 'es'));
@@ -7916,6 +7994,7 @@
                         <span class="admin-cat-nombre">
                             <i class="fas ${categoryIcon(cat)}"></i>
                             ${esc(categoryLabel(cat))}
+                            ${ocultasPanel.has(cat) ? '<small style="color:#9CA3AF">· oculta</small>' : ''}
                             <small>(${counts[cat]})</small>
                         </span>
                         <input type="number" min="0" step="1" data-cat="${esc(cat)}" placeholder="igual"
@@ -7925,6 +8004,8 @@
             }).join('');
 
             pintarTemporadaAdmin();
+            pintarCatsVisiblesAdmin();
+            pintarOcultosAdmin();
             pintarFijadosAdmin();
             pintarPreviewAdmin();
             pintarPanelTienda();
@@ -8123,6 +8204,110 @@
         }
 
         /* ------------------------------------------------------------------
+           🙈 CATEGORÍAS Y PRODUCTOS OCULTOS (panel de administración)
+           Las casillas de la primera cuadrícula marcan categorías (y la
+           sección "navidad"); el buscador esconde juguetes uno por uno.
+           Los datos viven en TIENDA (localStorage) y se publican con
+           "Guardar para TODOS" igual que el resto de la configuración.
+           ------------------------------------------------------------------ */
+        function pintarCatsVisiblesAdmin() {
+            const cont = document.getElementById('adminCatsVisibles');
+            if (!cont) return;
+            const ocultas = categoriasOcultasSet();
+            const counts = {};
+            CATALOGO_BASE.forEach(p => { counts[p.category] = (counts[p.category] || 0) + 1; });
+            const cats = Object.keys(counts).sort((a, b) => categoryLabel(a).localeCompare(categoryLabel(b), 'es'));
+            const fila = (clave, etiqueta, total) => `
+                <label class="admin-check">
+                    <input type="checkbox" data-cat-visible="${esc(clave)}" ${ocultas.has(clave) ? '' : 'checked'}
+                           onchange="setCategoriaVisibleAdmin('${escJs(clave)}', this.checked)">
+                    ${etiqueta} <small>(${total})</small>
+                </label>`;
+            // La sección de temporada no es una categoría real: se lista
+            // primera con su propio contador (productos de temporada).
+            const totalNavidad = CATALOGO_BASE.filter(p => esNavidad(p)).length;
+            cont.innerHTML =
+                fila('navidad', '🎄 Navidad y Temporada <small>(sección especial)</small>', totalNavidad) +
+                cats.map(c => fila(c, esc(categoryLabel(c)), counts[c])).join('');
+        }
+
+        // Marca (visible) o desmarca (oculta) una categoría o la sección navidad
+        function setCategoriaVisibleAdmin(clave, visible) {
+            const set = categoriasOcultasSet();
+            clave = String(clave || '').toLowerCase();
+            if (visible) set.delete(clave); else set.add(clave);
+            TIENDA.categoriasOcultas = Array.from(set).join(', ');
+            aplicarPanelAdmin();
+        }
+
+        function buscarProductoOcultar() {
+            const q = document.getElementById('adminBuscarOcultar').value.trim().toLowerCase();
+            const cont = document.getElementById('adminOcultarResultados');
+            if (q.length < 2) { cont.innerHTML = ''; return; }
+            const base = CATALOGO_BASE.filter(p =>
+                p.name.toLowerCase().includes(q) || String(p.sku || '').toLowerCase().includes(q) || p.id.includes(q)
+            ).slice(0, 8);
+            if (!base.length) {
+                cont.innerHTML = '<div class="admin-preview">No encontramos juguetes con "' + esc(q) + '". Prueba con otra palabra.</div>';
+                return;
+            }
+            const ocultos = productosOcultosSet();
+            const ocultas = categoriasOcultasSet();
+            cont.innerHTML = base.map(p => {
+                const ocultoPorCat = ocultas.has(p.category);
+                const oculto = ocultos.has(p.id) || ocultoPorCat;
+                return `
+                    <div class="admin-prod-fila">
+                        <span class="admin-prod-nombre" title="${esc(p.name)}">${esc(p.name)}</span>
+                        <span class="admin-prod-base">${esc(categoryLabel(p.category))}${ocultoPorCat ? ' · categoría oculta' : ''}</span>
+                        <button type="button" class="${oculto ? 'admin-btn-fijar' : 'admin-btn-quitar'}"
+                                ${ocultoPorCat ? 'disabled title="Marca la categoría ' + esc(categoryLabel(p.category)) + ' en la lista de arriba"' : ''}
+                                onclick="${oculto ? `mostrarProductoAdmin('${escJs(p.id)}')` : `ocultarProductoAdmin('${escJs(p.id)}')`}">
+                            ${oculto ? 'Volver a mostrar' : 'Ocultar de la tienda'}
+                        </button>
+                    </div>`;
+            }).join('');
+        }
+
+        function ocultarProductoAdmin(id) {
+            const set = productosOcultosSet();
+            set.add(id);
+            TIENDA.productosOcultos = Array.from(set).join(', ');
+            aplicarPanelAdmin();
+            const bus = document.getElementById('adminBuscarOcultar');
+            if (bus) bus.value = '';
+            const res = document.getElementById('adminOcultarResultados');
+            if (res) res.innerHTML = '';
+            if (listaTodosVisible) pintarListaTodosAdmin();
+        }
+
+        function mostrarProductoAdmin(id) {
+            const set = productosOcultosSet();
+            set.delete(id);
+            TIENDA.productosOcultos = Array.from(set).join(', ');
+            aplicarPanelAdmin();
+            if (listaTodosVisible) pintarListaTodosAdmin();
+        }
+
+        // Lista de juguetes ocultados uno por uno (con botón para restaurar)
+        function pintarOcultosAdmin() {
+            const cont = document.getElementById('adminOcultosLista');
+            if (!cont) return;
+            const ids = Array.from(productosOcultosSet());
+            if (!ids.length) { cont.innerHTML = ''; return; }
+            cont.innerHTML = ids.map(id => {
+                const p = CATALOGO_BASE.find(x => x.id === id);
+                const nombre = p ? p.name : id;
+                return `
+                    <div class="admin-prod-fila">
+                        <span class="admin-prod-nombre" title="${esc(nombre)}">${esc(nombre)}</span>
+                        <span class="admin-prod-base">oculto de la tienda</span>
+                        <button type="button" class="admin-btn-fijar" onclick="mostrarProductoAdmin('${escJs(id)}')">Volver a mostrar</button>
+                    </div>`;
+            }).join('');
+        }
+
+        /* ------------------------------------------------------------------
            📋 PRECIO DE CADA PRODUCTO: la lista completa del catálogo con su
            costo, el precio que se cobra hoy y un campo para fijar el precio
            de venta exacto de cada referencia (vacío = usa la ganancia).
@@ -8158,11 +8343,14 @@
             CATALOGO_BASE.forEach(p => {
                 (grupos[p.category] = grupos[p.category] || []).push(p);
             });
+            const ocultasLista = categoriasOcultasSet();
+            const ocultosLista = productosOcultosSet();
             const fila = p => {
                 const fijado = PRECIOS.preciosPersonalizados[p.id];
+                const oculto = ocultasLista.has(p.category) || ocultosLista.has(p.id);
                 return `
                     <div class="admin-prod-fila" id="filatodos-${esc(p.id)}">
-                        <span class="admin-prod-nombre" title="${esc(p.name)}">${esc(p.name)}</span>
+                        <span class="admin-prod-nombre" title="${esc(p.name)}">${esc(p.name)}${oculto ? ' <span class="admin-badge-oculto">oculto</span>' : ''}</span>
                         <span class="admin-prod-base">costo ${cop(p.price)}</span>
                         <input type="number" min="1" step="100" value="${fijado || ''}" placeholder="${cop(precioDetal(p))}"
                                title="Precio de venta. Vacío = automático (${cop(precioDetal(p))})"
@@ -8232,6 +8420,7 @@
             aplicarIdentidad();
             aplicarEstadoCredito();
             aplicarEstadoContraEntrega();
+            aplicarEstadoCategorias();
             recalcularPrecios();
             // Tambien persiste: nada de lo escrito se pierde al cerrar el
             // panel (antes solo "Guardar en MI computador" escribia en
@@ -8256,6 +8445,7 @@
             aplicarIdentidad();
             aplicarEstadoCredito();
             aplicarEstadoContraEntrega();
+            aplicarEstadoCategorias();
             recalcularPrecios();
             pintarPanelAdmin();
             showNotification('Guardado en este computador (solo tú los verás)');
@@ -8272,6 +8462,7 @@
             aplicarIdentidad();
             aplicarEstadoCredito();
             aplicarEstadoContraEntrega();
+            aplicarEstadoCategorias();
             recalcularPrecios();
             pintarPanelAdmin();
             showNotification('Volvimos a los valores guardados en el archivo');
@@ -8348,6 +8539,11 @@
             L.push('            heroDestacadoVisible: ' + (TIENDA.heroDestacadoVisible !== false ? 'true' : 'false') + ',');
             L.push('            productosFavoritos: ' + JSON.stringify(TIENDA.productosFavoritos) + ',');
             L.push('            cantidadProductos: ' + JSON.stringify(TIENDA.cantidadProductos) + ',');
+            L.push('');
+            L.push('            // 🙈 Categorías y productos ocultos (slugs/ids separados por comas;');
+            L.push('            //     "navidad" esconde la sección de temporada, no sus productos)');
+            L.push('            categoriasOcultas: ' + JSON.stringify(TIENDA.categoriasOcultas) + ',');
+            L.push('            productosOcultos: ' + JSON.stringify(TIENDA.productosOcultos) + ',');
             L.push('            creditoActivo: ' + (TIENDA.creditoActivo ? 'true' : 'false') + ',');
             L.push('            simuladorEnTarjetas: ' + (TIENDA.simuladorEnTarjetas ? 'true' : 'false') + ',');
             L.push('            aliados: ' + JSON.stringify(TIENDA.aliados) + ',');
@@ -8381,6 +8577,7 @@
             aplicarIdentidad();
             aplicarEstadoCredito();
             aplicarEstadoContraEntrega();
+            aplicarEstadoCategorias();
             recalcularPrecios();
             pintarPanelAdmin();
             const listo = () => showNotification('📋 ¡Copiado, guardado y aplicado! Reemplaza los bloques PRECIOS_DEFECTO y TIENDA_DEFECTO del archivo index.html por este texto');
@@ -8442,6 +8639,7 @@
             aplicarIdentidad();      // nombre, logo, WhatsApp y redes (configurables)
             aplicarEstadoCredito();
             aplicarEstadoContraEntrega();
+            aplicarEstadoCategorias();
             track('PageView');       // línea base para Meta y GA4 (antes no se disparaba)
             loadProducts();
             updateCartUI();
@@ -8679,6 +8877,15 @@
             const productsGrid = document.getElementById('productsGrid');
             if (!productsGrid) return;
 
+            // El filtro activo puede apuntar a una categoría que la
+            // administración acaba de ocultar: se vuelve a "Todas" en vez
+            // de dejar la vitrina vacía y sin explicación.
+            if ((currentFilter === 'navidad' && navidadOculta()) ||
+                (currentFilter !== 'all' && currentFilter !== 'navidad' &&
+                 categoriasOcultasSet().has(currentFilter))) {
+                currentFilter = 'all';
+            }
+
             let filteredProducts;
             if (currentFilter === 'all') {
                 filteredProducts = products.slice();
@@ -8810,8 +9017,9 @@
             // Categoria de temporada (Oct-Dic / Navidad): los productos
             // navideños viven en varias categorías y la selección de
             // temporada la cura la administración (buen margen y ticket
-            // medio). La burbuja solo aparece si hay productos de temporada.
-            const navidenos = products.filter(p => esNavidad(p));
+            // medio). La burbuja solo aparece si hay productos de temporada
+            // y la sección no está oculta desde el panel.
+            const navidenos = navidadOculta() ? [] : products.filter(p => esNavidad(p));
             const navidad = navidenos.length ? `
                 <button type="button" class="category-bubble navidad${currentFilter === 'navidad' ? ' active' : ''}" data-category="navidad" onclick="filterProducts('navidad')" aria-label="Ver productos de Navidad y temporada">
                     <span class="category-bubble-img" style="background-image:url('${esc(navidenos[0].image)}')"></span>
@@ -8842,7 +9050,7 @@
             const catLink = c => `
                 <button type="button" class="shein-subnav-link${currentFilter === c ? ' active' : ''}" onclick="filterProducts('${escJs(c)}')">${esc(categoryLabel(c))}</button>`;
 
-            const navLink = products.some(p => esNavidad(p)) ? `
+            const navLink = (!navidadOculta() && products.some(p => esNavidad(p))) ? `
                 <button type="button" class="shein-subnav-link${currentFilter === 'navidad' ? ' active' : ''}" onclick="filterProducts('navidad')">🎄 Navidad y Temporada</button>` : '';
 
             track.innerHTML = `
@@ -8883,7 +9091,7 @@
             list.innerHTML =
                 tienda +
                 item('fa-th-large', 'Todos los productos', "toggleMobileMenu(); filterProducts('all');", currentFilter === 'all') +
-                (products.some(p => esNavidad(p))
+                (!navidadOculta() && products.some(p => esNavidad(p))
                     ? item('fa-tree', 'Navidad y Temporada', "toggleMobileMenu(); filterProducts('navidad');", currentFilter === 'navidad')
                     : '') +
                 cats.map(c => item(categoryIcon(c), `${categoryLabel(c)} (${counts[c]})`,
@@ -9371,6 +9579,19 @@
                     updatePaymentSelection();
                 }
             }
+        }
+
+        /* ------------------------------------------------------------------
+           SECCIÓN "NAVIDAD Y TEMPORADA" ON/OFF
+           Con "navidad" en categoriasOcultas desaparecen la burbuja y los
+           enlaces de los menús (JS en vivo) y el enlace fijo del pie
+           ([data-solo-navidad]). Los productos de temporada siguen a la
+           venta en sus categorías propias: solo se esconde la sección.
+           ------------------------------------------------------------------ */
+        function aplicarEstadoCategorias() {
+            document.querySelectorAll('[data-solo-navidad]').forEach(el => {
+                el.style.display = navidadOculta() ? 'none' : '';
+            });
         }
 
         /* ------------------------------------------------------------------
