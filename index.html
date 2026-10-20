@@ -11408,7 +11408,12 @@
                 carousel.setAttribute('aria-label', cat ? `Carrusel de ${categoryLabel(cat)}` : 'Carrusel de productos');
                 carousel.setAttribute('tabindex', '0');
 
-                const deEstaCategoria = cat ? products.filter(p => p.category === cat) : [];
+                // Cada fila muestra una SELECCION de la categoria (32):
+                // renderizar los ~290 productos completos hacia 560 <img>
+                // en el DOM y avalanchaba peticiones al cargar (6 MB+ de
+                // golpe); con 32 la fila queda liviana y el catalogo
+                // completo vive en el grid y su filtro.
+                const deEstaCategoria = cat ? products.filter(p => p.category === cat).slice(0, 32) : [];
                 deEstaCategoria.forEach((product, index) => {
                     carousel.appendChild(crearItemCarrusel(product, index));
                 });
