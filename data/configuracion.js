@@ -2,7 +2,7 @@
 // (botón "Publicar para todos"). Se aplica a TODOS los visitantes de
 // saldosjugueteriataiwan.com. Nadie necesita editar este archivo a mano.
 window.CONFIG_PUBLICADA = {
-  "version": 1792486235282,
+  "version": 1792504792896,
   "tienda": {
     "nombre": "Juguetería Taiwan",
     "logo": "https://jugueteriataiwan.com/storage/branding/70TI84WCuEegX1pJk5ttvppyKKn2sCze24oHDKoi.png",
