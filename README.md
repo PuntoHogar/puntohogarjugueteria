@@ -16,6 +16,7 @@ catálogo se sincroniza solo, 4 veces al día, desde el sistema POSGold de la ti
 |---|---|
 | `index.html` | La tienda completa: vitrina, carruseles, lightbox, carrito, checkout por WhatsApp y panel de administración |
 | `catalogo.js` | Catálogo generado automáticamente (1.911 productos). **No se edita a mano**: el cron lo regenera en cada corrida |
+| `data/configuracion.js` | Configuración publicada desde el panel: la que ven **todos** los visitantes. La mantiene el botón "Publicar para todos" del panel vía la API de GitHub — nadie la edita a mano |
 | `assets/fotos/` | Miniaturas WebP (~25 KB) de cada foto de producto, generadas por el cron desde POSGold y servidas por el CDN de GitHub Pages |
 | `data/mapa_imagenes.json` | Cache de la relación SKU ↔ slug ↔ foto |
 | `sync_posgold.py` | Sincronizador: POSGold → filtros de la tienda → miniaturas → `catalogo.js` |
@@ -59,6 +60,13 @@ referencia de cada producto y su enlace directo a la ficha en esta misma tienda
   ocultar categorías y productos, temporada (Navidad), analítica
   (Pixel de Meta, GA4, Clarity) y actualización de costos cifrando el
   Excel del navegador.
+- **Publicación autónoma**: el botón "Publicar para todos" del panel sube
+  la configuración vigente al proyecto de GitHub (API de Contents, el
+  mismo token de los costos) y todos los visitantes la ven en ~1 minuto
+  — sin editar archivos ni pedirle nada a nadie. "Guardar en MI
+  computador" previsualiza solo en ese navegador; lo publicado manda
+  sobre la fábrica y sobre lo guardado cuando su versión es más nueva.
+  La clave del panel nunca se publica.
 - Ocultamiento reversible de categorías y productos individuales.
 - Analítica con píxeles activables por ID, sin código adicional.
 

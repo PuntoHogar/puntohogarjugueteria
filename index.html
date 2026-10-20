@@ -6308,12 +6308,13 @@
 
                 <div class="admin-botones">
                     <button class="btn btn-primary" type="button" onclick="aplicarPanelAdmin()"><i class="fas fa-sync-alt"></i> Ver cambios ahora</button>
+                    <button class="btn btn-primary" type="button" id="adminPublicarBtn" onclick="publicarConfigNavegador()"><i class="fas fa-rocket"></i> Publicar para todos</button>
                     <button class="btn btn-secondary" type="button" onclick="guardarPanelAdmin()"><i class="fas fa-save"></i> Guardar en MI computador</button>
-                    <button class="btn btn-secondary" type="button" onclick="copiarConfigAdmin()"><i class="fas fa-users"></i> Guardar para TODOS</button>
+                    <button class="btn btn-secondary" type="button" onclick="copiarConfigAdmin()"><i class="fas fa-copy"></i> Copiar configuración (respaldo)</button>
                     <button class="btn btn-secondary" type="button" onclick="restaurarPanelAdmin()"><i class="fas fa-undo"></i> Volver a los valores del archivo</button>
                     <button class="btn btn-secondary" type="button" onclick="cerrarSesionAdmin()"><i class="fas fa-sign-out-alt"></i> Salir</button>
                 </div>
-                <p class="admin-nota">💡 <strong>Guardar en MI computador:</strong> solo lo verás tú en este navegador. <strong>Guardar para TODOS:</strong> copia la configuración para que tu página quede con ella — pide a tu persona de confianza reemplazar los bloques <strong>PRECIOS_DEFECTO</strong> y <strong>TIENDA_DEFECTO</strong> del archivo de la página por el texto copiado y publicarla de nuevo.</p>
+                <p class="admin-nota">🚀 <strong>Publicar para todos</strong> sube esta configuración al proyecto de GitHub y <strong>todos los visitantes la ven en ~1 minuto</strong> — funciona solo, sin pedirle nada a nadie: usa el token de GitHub que llega con el enlace de configuración. <strong>Guardar en MI computador</strong> solo previsualiza en este navegador (hasta que publiques). La clave del panel nunca se publica. <strong>Copiar configuración</strong> queda como respaldo por si algún día no hay conexión con GitHub.</p>
                 <div class="admin-preview" id="adminPreview"></div>
             </div>
         </div>
@@ -6394,6 +6395,14 @@
     <audio id="clickSound" preload="auto">
         <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/exzEIHWq+8+OWT" type="audio/wav">
     </audio>
+
+    <!-- Configuración publicada desde el panel ("Publicar para todos"):
+         se aplica a TODOS los visitantes. La mantiene el propio panel vía
+         la API de GitHub — nadie edita este archivo a mano. Se carga
+         SINCRONA (script clásico) para que la configuración ya esté
+         disponible antes de inicializar la tienda; si no existiera, la
+         tienda arranca con los valores de fábrica del script principal. -->
+    <script src="data/configuracion.js"></script>
 
     <!-- Catalogo completo de POSGold: archivo aparte para que el navegador
          lo cachee solo y el index se mantenga liviano. Debe cargar ANTES
@@ -6547,6 +6556,40 @@
             claveAdmin: 'Walter123*'
         };
 
+        /* ------------------------------------------------------------------
+           CONFIGURACIÓN PUBLICADA (data/configuracion.js)
+           El botón "Publicar para todos" del panel sube aquí — vía la API
+           de GitHub, con el mismo token de Contents de los costos — la
+           configuración vigente, y TODOS los visitantes la ven sin que
+           nadie edite el archivo de la página. El script se carga de
+           forma síncrona antes que este bloque, así que ya está aquí.
+           Reglas de precedencia:
+           - Lo publicado manda sobre los valores de fábrica.
+           - Lo guardado en ESTE navegador ("Guardar en MI computador")
+             sirve para previsualizar: se respeta mientras sea de la
+             misma versión de lo publicado. Si lo publicado es más
+             nuevo (version > base local), manda lo publicado y lo
+             guardado aquí se descarta (ya vino incluido o quedó viejo).
+           ------------------------------------------------------------------ */
+        const BASE_CONFIG_KEY = 'jt_config_base';
+        const CONFIG_PUBLICA = window.CONFIG_PUBLICADA || null;
+        (function absorberConfigPublica() {
+            if (!CONFIG_PUBLICA || !CONFIG_PUBLICA.version) return;
+            let baseLocal = null;
+            try { baseLocal = parseInt(localStorage.getItem(BASE_CONFIG_KEY), 10) || null; } catch (e) {}
+            if (baseLocal !== null && baseLocal >= CONFIG_PUBLICA.version) return;
+            // La publicada es nueva para este navegador: manda ella y se
+            // limpia lo guardado aquí (las claves de localStorage son las
+            // mismas que definen TIENDA_KEY y PRECIOS_KEY más abajo).
+            try {
+                localStorage.removeItem('jt_detal_tienda_v1');
+                localStorage.removeItem('jt_detal_precios_v1');
+                localStorage.setItem(BASE_CONFIG_KEY, String(CONFIG_PUBLICA.version));
+            } catch (e) {}
+        })();
+        // Valores efectivos de fábrica: los del archivo + lo publicado
+        const TIENDA_FABRICA = Object.assign({}, TIENDA_DEFECTO, (CONFIG_PUBLICA && CONFIG_PUBLICA.tienda) || {});
+
         const TIENDA_KEY = 'jt_detal_tienda_v1';
         function cargarTienda() {
             let guardados = {};
@@ -6559,45 +6602,45 @@
             // época sin pixel), el vacío cae al ID de fábrica en vez de
             // mantener la etiqueta apagada. Para apagarla a propósito se
             // escribe "-" en el campo del panel y se guarda.
-            let pixelMeta = (typeof guardados.pixelMeta === 'string') ? guardados.pixelMeta.trim() : TIENDA_DEFECTO.pixelMeta;
-            if (!pixelMeta) pixelMeta = TIENDA_DEFECTO.pixelMeta;
+            let pixelMeta = (typeof guardados.pixelMeta === 'string') ? guardados.pixelMeta.trim() : TIENDA_FABRICA.pixelMeta;
+            if (!pixelMeta) pixelMeta = TIENDA_FABRICA.pixelMeta;
             // Plazos de las cuotas: de fábrica pasaron de "3, 6, 12" a
             // "3, 6". Los navegadores que guardaron la tienda con el valor
             // antiguo DE FÁBRICA adoptan el nuevo una sola vez; si la
             // administración escribió otros plazos, se respetan.
-            let plazos = texto(guardados.plazos, TIENDA_DEFECTO.plazos);
-            if (plazos.replace(/\s+/g, '') === '3,6,12') plazos = TIENDA_DEFECTO.plazos;
+            let plazos = texto(guardados.plazos, TIENDA_FABRICA.plazos);
+            if (plazos.replace(/\s+/g, '') === '3,6,12') plazos = TIENDA_FABRICA.plazos;
             return {
-                nombre: texto(guardados.nombre, TIENDA_DEFECTO.nombre),
-                logo: (typeof guardados.logo === 'string') ? guardados.logo.trim() : TIENDA_DEFECTO.logo,
-                whatsappPedidos: texto(guardados.whatsappPedidos, TIENDA_DEFECTO.whatsappPedidos),
-                whatsappContacto: texto(guardados.whatsappContacto, TIENDA_DEFECTO.whatsappContacto),
-                direccion: texto(guardados.direccion, TIENDA_DEFECTO.direccion),
-                instagram: texto(guardados.instagram, TIENDA_DEFECTO.instagram),
-                tiktok: texto(guardados.tiktok, TIENDA_DEFECTO.tiktok),
-                sitioWeb: texto(guardados.sitioWeb, TIENDA_DEFECTO.sitioWeb),
+                nombre: texto(guardados.nombre, TIENDA_FABRICA.nombre),
+                logo: (typeof guardados.logo === 'string') ? guardados.logo.trim() : TIENDA_FABRICA.logo,
+                whatsappPedidos: texto(guardados.whatsappPedidos, TIENDA_FABRICA.whatsappPedidos),
+                whatsappContacto: texto(guardados.whatsappContacto, TIENDA_FABRICA.whatsappContacto),
+                direccion: texto(guardados.direccion, TIENDA_FABRICA.direccion),
+                instagram: texto(guardados.instagram, TIENDA_FABRICA.instagram),
+                tiktok: texto(guardados.tiktok, TIENDA_FABRICA.tiktok),
+                sitioWeb: texto(guardados.sitioWeb, TIENDA_FABRICA.sitioWeb),
                 pixelMeta: pixelMeta,
-                ga4: (typeof guardados.ga4 === 'string') ? guardados.ga4.trim() : TIENDA_DEFECTO.ga4,
-                clarity: (typeof guardados.clarity === 'string') ? guardados.clarity.trim() : TIENDA_DEFECTO.clarity,
-                productoDestacado: texto(guardados.productoDestacado, TIENDA_DEFECTO.productoDestacado),
+                ga4: (typeof guardados.ga4 === 'string') ? guardados.ga4.trim() : TIENDA_FABRICA.ga4,
+                clarity: (typeof guardados.clarity === 'string') ? guardados.clarity.trim() : TIENDA_FABRICA.clarity,
+                productoDestacado: texto(guardados.productoDestacado, TIENDA_FABRICA.productoDestacado),
             heroDestacadoVisible: guardados.heroDestacadoVisible !== false,
-                productosFavoritos: texto(guardados.productosFavoritos, TIENDA_DEFECTO.productosFavoritos),
-                cantidadProductos: texto(guardados.cantidadProductos, TIENDA_DEFECTO.cantidadProductos),
+                productosFavoritos: texto(guardados.productosFavoritos, TIENDA_FABRICA.productosFavoritos),
+                cantidadProductos: texto(guardados.cantidadProductos, TIENDA_FABRICA.cantidadProductos),
                 // Categorías y productos ocultos: aquí el valor VACÍO es
                 // significativo ("nada oculto"), así que el de fábrica solo
                 // aplica cuando este navegador nunca guardó la tienda.
-                categoriasOcultas: (typeof guardados.categoriasOcultas === 'string') ? guardados.categoriasOcultas : TIENDA_DEFECTO.categoriasOcultas,
-                productosOcultos: (typeof guardados.productosOcultos === 'string') ? guardados.productosOcultos : TIENDA_DEFECTO.productosOcultos,
-                creditoActivo: si(guardados.creditoActivo, TIENDA_DEFECTO.creditoActivo),
-                simuladorEnTarjetas: si(guardados.simuladorEnTarjetas, TIENDA_DEFECTO.simuladorEnTarjetas),
-                aliados: texto(guardados.aliados, TIENDA_DEFECTO.aliados),
+                categoriasOcultas: (typeof guardados.categoriasOcultas === 'string') ? guardados.categoriasOcultas : TIENDA_FABRICA.categoriasOcultas,
+                productosOcultos: (typeof guardados.productosOcultos === 'string') ? guardados.productosOcultos : TIENDA_FABRICA.productosOcultos,
+                creditoActivo: si(guardados.creditoActivo, TIENDA_FABRICA.creditoActivo),
+                simuladorEnTarjetas: si(guardados.simuladorEnTarjetas, TIENDA_FABRICA.simuladorEnTarjetas),
+                aliados: texto(guardados.aliados, TIENDA_FABRICA.aliados),
                 plazos: plazos,
-                tasaMensual: numero(guardados.tasaMensual, TIENDA_DEFECTO.tasaMensual),
-                montoMinimo: numero(guardados.montoMinimo, TIENDA_DEFECTO.montoMinimo),
-                pagoContraEntrega: si(guardados.pagoContraEntrega, TIENDA_DEFECTO.pagoContraEntrega),
-                vaciarCarritoTrasPedido: si(guardados.vaciarCarritoTrasPedido, TIENDA_DEFECTO.vaciarCarritoTrasPedido),
-                sonidoAlAgregar: si(guardados.sonidoAlAgregar, TIENDA_DEFECTO.sonidoAlAgregar),
-                claveAdmin: texto(guardados.claveAdmin, TIENDA_DEFECTO.claveAdmin)
+                tasaMensual: numero(guardados.tasaMensual, TIENDA_FABRICA.tasaMensual),
+                montoMinimo: numero(guardados.montoMinimo, TIENDA_FABRICA.montoMinimo),
+                pagoContraEntrega: si(guardados.pagoContraEntrega, TIENDA_FABRICA.pagoContraEntrega),
+                vaciarCarritoTrasPedido: si(guardados.vaciarCarritoTrasPedido, TIENDA_FABRICA.vaciarCarritoTrasPedido),
+                sonidoAlAgregar: si(guardados.sonidoAlAgregar, TIENDA_FABRICA.sonidoAlAgregar),
+                claveAdmin: texto(guardados.claveAdmin, TIENDA_FABRICA.claveAdmin)
             };
         }
         let TIENDA = cargarTienda();
@@ -6785,6 +6828,10 @@
             }
         };
 
+        // Igual que la tienda: los márgenes de fábrica + lo publicado desde
+        // el panel (data/configuracion.js). Lo publicado manda.
+        const PRECIOS_FABRICA = Object.assign({}, PRECIOS_DEFECTO, (CONFIG_PUBLICA && CONFIG_PUBLICA.precios) || {});
+
         // Fusiona los valores por defecto del archivo con lo guardado en
         // este navegador (panel admin). Solo se usan valores válidos.
         const PRECIOS_KEY = 'jt_detal_precios_v1';
@@ -6792,11 +6839,12 @@
             let guardados = {};
             try { guardados = JSON.parse(localStorage.getItem(PRECIOS_KEY)) || {}; } catch (e) {}
             const numero = (v, porDefecto) => (typeof v === 'number' && isFinite(v) && v >= 0) ? v : porDefecto;
-            // Base: los margenes por categoria del ARCHIVO (incluida la
-            // ganancia de "temporada" de Navidad), sobreescritos por lo que
-            // el administrador haya guardado en este navegador.
+            // Base: los margenes por categoria efectivos (fábrica + lo
+            // publicado, incluida la ganancia de "temporada" de Navidad),
+            // sobreescritos por lo que el administrador haya guardado en
+            // este navegador.
             const margenes = {};
-            Object.assign(margenes, PRECIOS_DEFECTO.margenesPorCategoria || {});
+            Object.assign(margenes, PRECIOS_FABRICA.margenesPorCategoria || {});
             Object.keys(guardados.margenesPorCategoria || {}).forEach(cat => {
                 const m = guardados.margenesPorCategoria[cat];
                 if (typeof m === 'number' && isFinite(m) && m >= 0) margenes[cat] = m;
@@ -6807,14 +6855,14 @@
                 if (typeof p === 'number' && isFinite(p) && p > 0) fijados[id] = p;
             });
             // Productos de temporada guardados desde el panel: ids del
-            // catálogo real. Vacío/ausente = usa la lista del archivo.
+            // catálogo real. Vacío/ausente = usa la lista efectiva.
             const temporada = Array.isArray(guardados.temporadaIds)
                 ? guardados.temporadaIds.filter(id => typeof id === 'string' && id)
-                : (PRECIOS_DEFECTO.temporadaIds || []).slice();
+                : (PRECIOS_FABRICA.temporadaIds || []).slice();
             return {
-                margenGlobal: numero(guardados.margenGlobal, PRECIOS_DEFECTO.margenGlobal),
-                multiplicadorBase: Math.max(0.01, numero(guardados.multiplicadorBase, PRECIOS_DEFECTO.multiplicadorBase)),
-                redondeo: numero(guardados.redondeo, PRECIOS_DEFECTO.redondeo),
+                margenGlobal: numero(guardados.margenGlobal, PRECIOS_FABRICA.margenGlobal),
+                multiplicadorBase: Math.max(0.01, numero(guardados.multiplicadorBase, PRECIOS_FABRICA.multiplicadorBase)),
+                redondeo: numero(guardados.redondeo, PRECIOS_FABRICA.redondeo),
                 margenesPorCategoria: margenes,
                 temporadaIds: temporada,
                 preciosPersonalizados: fijados
@@ -7828,25 +7876,27 @@
         function leerPanelTienda() {
             const val = id => (document.getElementById(id) ? document.getElementById(id).value : '').trim();
             const check = id => !!(document.getElementById(id) && document.getElementById(id).checked);
-            TIENDA.nombre = val('adminNombreTienda') || TIENDA_DEFECTO.nombre;
+            // Los campos vacíos vuelven al valor EFECTIVO (fábrica + lo
+            // publicado), no al de fábrica del archivo.
+            TIENDA.nombre = val('adminNombreTienda') || TIENDA_FABRICA.nombre;
             TIENDA.logo = val('adminLogoTienda');
-            TIENDA.whatsappPedidos = normTelefono(val('adminWaPedidos')) || TIENDA_DEFECTO.whatsappPedidos;
-            TIENDA.whatsappContacto = normTelefono(val('adminWaContacto')) || TIENDA_DEFECTO.whatsappContacto;
-            TIENDA.direccion = val('adminDireccion') || TIENDA_DEFECTO.direccion;
-            TIENDA.instagram = (val('adminInstagram') || TIENDA_DEFECTO.instagram).replace(/^@/, '');
-            TIENDA.tiktok = (val('adminTiktok') || TIENDA_DEFECTO.tiktok).replace(/^@/, '');
-            TIENDA.sitioWeb = (val('adminSitioWeb') || TIENDA_DEFECTO.sitioWeb).replace(/^https?:\/\//, '').replace(/\/$/, '');
+            TIENDA.whatsappPedidos = normTelefono(val('adminWaPedidos')) || TIENDA_FABRICA.whatsappPedidos;
+            TIENDA.whatsappContacto = normTelefono(val('adminWaContacto')) || TIENDA_FABRICA.whatsappContacto;
+            TIENDA.direccion = val('adminDireccion') || TIENDA_FABRICA.direccion;
+            TIENDA.instagram = (val('adminInstagram') || TIENDA_FABRICA.instagram).replace(/^@/, '');
+            TIENDA.tiktok = (val('adminTiktok') || TIENDA_FABRICA.tiktok).replace(/^@/, '');
+            TIENDA.sitioWeb = (val('adminSitioWeb') || TIENDA_FABRICA.sitioWeb).replace(/^https?:\/\//, '').replace(/\/$/, '');
             TIENDA.pixelMeta = val('adminPixelMeta');
             TIENDA.ga4 = val('adminGa4');
             TIENDA.clarity = val('adminClarity');
-            TIENDA.productoDestacado = val('adminProductoDestacado') || TIENDA_DEFECTO.productoDestacado;
+            TIENDA.productoDestacado = val('adminProductoDestacado') || TIENDA_FABRICA.productoDestacado;
             TIENDA.heroDestacadoVisible = check('adminHeroVisible');
-            TIENDA.productosFavoritos = val('adminFavoritos') || TIENDA_DEFECTO.productosFavoritos;
-            TIENDA.cantidadProductos = val('adminCantidadProductos') || TIENDA_DEFECTO.cantidadProductos;
+            TIENDA.productosFavoritos = val('adminFavoritos') || TIENDA_FABRICA.productosFavoritos;
+            TIENDA.cantidadProductos = val('adminCantidadProductos') || TIENDA_FABRICA.cantidadProductos;
             TIENDA.creditoActivo = check('adminCreditoActivo');
             TIENDA.simuladorEnTarjetas = check('adminSimulador');
-            TIENDA.aliados = val('adminAliados') || TIENDA_DEFECTO.aliados;
-            TIENDA.plazos = val('adminPlazos') || TIENDA_DEFECTO.plazos;
+            TIENDA.aliados = val('adminAliados') || TIENDA_FABRICA.aliados;
+            TIENDA.plazos = val('adminPlazos') || TIENDA_FABRICA.plazos;
             TIENDA.montoMinimo = Math.max(0, parseFloat(val('adminMontoMin')) || 0);
             TIENDA.pagoContraEntrega = check('adminContraEntrega');
             TIENDA.vaciarCarritoTrasPedido = check('adminVaciar');
@@ -8477,6 +8527,10 @@
             try {
                 localStorage.setItem(PRECIOS_KEY, JSON.stringify(PRECIOS));
                 localStorage.setItem(TIENDA_KEY, JSON.stringify(TIENDA));
+                // Marca de version: lo guardado en este navegador esta basado
+                // en la configuracion publicada vigente (una version publicada
+                // MAS NUEVA si lo reemplaza; la misma version lo respeta).
+                localStorage.setItem(BASE_CONFIG_KEY, String(CONFIG_PUBLICA ? CONFIG_PUBLICA.version : 0));
             } catch (e) {}
             pintarPanelAdmin();
             showNotification('¡Listo! Los cambios ya se ven en toda la página');
@@ -8489,6 +8543,10 @@
             try {
                 localStorage.setItem(PRECIOS_KEY, JSON.stringify(PRECIOS));
                 localStorage.setItem(TIENDA_KEY, JSON.stringify(TIENDA));
+                // Marca de version: lo guardado en este navegador esta basado
+                // en la configuracion publicada vigente (una version publicada
+                // MAS NUEVA si lo reemplaza; la misma version lo respeta).
+                localStorage.setItem(BASE_CONFIG_KEY, String(CONFIG_PUBLICA ? CONFIG_PUBLICA.version : 0));
             } catch (e) {}
             aplicarAnalitica();
             aplicarIdentidad();
@@ -8504,6 +8562,7 @@
             try {
                 localStorage.removeItem(PRECIOS_KEY);
                 localStorage.removeItem(TIENDA_KEY);
+                localStorage.removeItem(BASE_CONFIG_KEY);
             } catch (e) {}
             PRECIOS = cargarPrecios();
             TIENDA = cargarTienda();
@@ -8602,7 +8661,7 @@
             L.push('            pagoContraEntrega: ' + (TIENDA.pagoContraEntrega ? 'true' : 'false') + ',');
             L.push('            vaciarCarritoTrasPedido: ' + (TIENDA.vaciarCarritoTrasPedido ? 'true' : 'false') + ',');
             L.push('            sonidoAlAgregar: ' + (TIENDA.sonidoAlAgregar ? 'true' : 'false') + ',');
-            L.push('            claveAdmin: ' + JSON.stringify(TIENDA.claveAdmin));
+            L.push('            // La clave del panel JAMAS se publica: queda la de fábrica');
             L.push('        };');
             return L.join('\n');
         }
@@ -8615,6 +8674,10 @@
             try {
                 localStorage.setItem(PRECIOS_KEY, JSON.stringify(PRECIOS));
                 localStorage.setItem(TIENDA_KEY, JSON.stringify(TIENDA));
+                // Marca de version: lo guardado en este navegador esta basado
+                // en la configuracion publicada vigente (una version publicada
+                // MAS NUEVA si lo reemplaza; la misma version lo respeta).
+                localStorage.setItem(BASE_CONFIG_KEY, String(CONFIG_PUBLICA ? CONFIG_PUBLICA.version : 0));
             } catch (e) {}
             // Y APLICA los cambios en vivo, igual que "Ver cambios ahora":
             // antes, si se desmarcaba un check (ej. ocultar el producto en
@@ -8629,7 +8692,7 @@
             aplicarEstadoCategorias();
             recalcularPrecios();
             pintarPanelAdmin();
-            const listo = () => showNotification('📋 ¡Copiado, guardado y aplicado! Reemplaza los bloques PRECIOS_DEFECTO y TIENDA_DEFECTO del archivo index.html por este texto');
+            const listo = () => showNotification('📋 ¡Copiado, guardado y aplicado! (Respaldo sin conexión: reemplaza los bloques PRECIOS_DEFECTO y TIENDA_DEFECTO del archivo)');
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(codigo).then(listo).catch(function () {
                     window.prompt('Copia este texto y reemplaza los bloques PRECIOS_DEFECTO y TIENDA_DEFECTO del archivo index.html:', codigo);
@@ -8637,6 +8700,93 @@
             } else {
                 window.prompt('Copia este texto y reemplaza los bloques PRECIOS_DEFECTO y TIENDA_DEFECTO del archivo index.html:', codigo);
             }
+        }
+
+        /* ------------------------------------------------------------------
+           PUBLICAR PARA TODOS (autónomo)
+           Sube la configuración vigente del panel al proyecto de GitHub con
+           la API de Contents — el mismo token de los costos, que solo puede
+           tocar archivos de este repo — y GitHub Pages la sirve a TODOS los
+           visitantes en ~1 minuto. Escribiendo data/configuracion.js ya no
+           hace falta pedirle a nadie que edite el archivo de la página.
+           La clave del panel NUNCA se publica (queda de fábrica en el
+           archivo o guardada en cada navegador).
+           ------------------------------------------------------------------ */
+        async function publicarConfigNavegador() {
+            const token = (() => { try { return localStorage.getItem(COSTOS_TOKEN_KEY) || ''; } catch (e) { return ''; } })();
+            if (!token) {
+                showNotification('Falta el token de GitHub — pide el enlace de configuración (un toque y queda cargado) o mira la guía de abajo', 'error');
+                const guias = document.querySelectorAll('.admin-sync-ayuda');
+                if (guias.length) guias[0].open = true;
+                return;
+            }
+            const btn = document.getElementById('adminPublicarBtn');
+            const etiquetaOriginal = btn ? btn.innerHTML : '';
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-cloud-upload-alt fa-spin"></i> Publicando…'; }
+            try {
+                // Se publica EXACTAMENTE lo que el panel está mostrando
+                leerPanelEnPrecios();
+                leerPanelTienda();
+                const { claveAdmin, ...tiendaSinClave } = TIENDA;
+                // Versión siempre creciente: gana a relojes atrasados
+                const version = Math.max(Date.now(), (CONFIG_PUBLICA ? CONFIG_PUBLICA.version : 0) + 1);
+                const cuerpo = { version: version, tienda: tiendaSinClave, precios: PRECIOS };
+                const contenido =
+                    '// Configuración de la tienda publicada desde el panel de administración\n' +
+                    '// (botón "Publicar para todos"). Se aplica a TODOS los visitantes de\n' +
+                    '// saldosjugueteriataiwan.com. Nadie necesita editar este archivo a mano.\n' +
+                    'window.CONFIG_PUBLICADA = ' + JSON.stringify(cuerpo, null, 2) + ';\n';
+                const b64 = ab64(new TextEncoder().encode(contenido));
+                const encabezados = { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
+                const ruta = REPO_API + '/contents/data/configuracion.js';
+
+                // SHA del archivo actual (null = crear por primera vez)
+                let sha = null;
+                const r1 = await fetch(ruta, { headers: encabezados });
+                if (r1.ok) {
+                    sha = (await r1.json()).sha;
+                } else if (r1.status !== 404) {
+                    showNotification('GitHub respondió ' + r1.status + ' al leer la configuración — intenta de nuevo', 'error');
+                    if (btn) { btn.disabled = false; btn.innerHTML = etiquetaOriginal; }
+                    return;
+                }
+                const enviar = () => fetch(ruta, {
+                    method: 'PUT',
+                    headers: Object.assign({}, encabezados, { 'Content-Type': 'application/json' }),
+                    body: JSON.stringify({
+                        message: 'config: publicada desde el panel (' + new Date().toLocaleString('es-CO') + ')',
+                        content: b64,
+                        sha: sha || undefined,
+                    }),
+                });
+                let r = await enviar();
+                if (r.status === 409 || r.status === 422) {
+                    // Alguien publicó mientras tanto: se toma su sha y se reintenta
+                    const r2 = await fetch(ruta, { headers: encabezados });
+                    if (r2.ok) {
+                        sha = (await r2.json()).sha;
+                        r = await enviar();
+                    }
+                }
+                if (r.status === 200 || r.status === 201) {
+                    // Este navegador queda sincronizado con lo publicado
+                    try {
+                        localStorage.setItem(PRECIOS_KEY, JSON.stringify(PRECIOS));
+                        localStorage.setItem(TIENDA_KEY, JSON.stringify(TIENDA));
+                        localStorage.setItem(BASE_CONFIG_KEY, String(version));
+                    } catch (e) {}
+                    showNotification('🚀 Publicada: todos los visitantes la verán en ~1 minuto', 'success');
+                } else if (r.status === 401 || r.status === 403) {
+                    showNotification('El token no tiene permiso de Contents — créalo de nuevo con la guía de abajo', 'error');
+                    const guias = document.querySelectorAll('.admin-sync-ayuda');
+                    if (guias.length) guias[0].open = true;
+                } else {
+                    showNotification('GitHub respondió ' + r.status + ' — intenta de nuevo en un momento', 'error');
+                }
+            } catch (e) {
+                showNotification('No pudimos hablar con GitHub — revisa la conexión', 'error');
+            }
+            if (btn) { btn.disabled = false; btn.innerHTML = etiquetaOriginal; }
         }
 
         // Foto de respaldo para productos sin imagen en el catálogo

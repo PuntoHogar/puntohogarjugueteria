@@ -13,6 +13,8 @@ arquitectura completa.
    guardan material privado.
 2. **`catalogo.js` y `assets/fotos/` son generados** por `sync_posgold.py`:
    jamás se editan a mano. El historial de git es su respaldo.
+   `data/configuracion.js` lo escribe el PANEL (API de GitHub), no el cron
+   ni personas; tampoco se edita a mano.
 3. Al publicar, `index.html` es lo único que se suele tocar a mano; el cron
    commitea `catalogo.js`, `data/mapa_imagenes.json` y `assets/fotos`.
 4. Textos de la tienda: español de Colombia, tuteo, tono cálido. Los mensajes
@@ -40,10 +42,14 @@ es rechazado, el cron movió el remoto: `git pull --rebase origin main` y de nue
 ## Mapa del código (index.html)
 
 - **Configuración editable** (todo lo que cambia la dueña va aquí):
-  `CONFIG` → valores de fábrica en ejecución; `TIENDA_DEFECTO` → identidad,
-  contacto, analítica, crédito, visibilidad (se sobreescribe con localStorage y
-  se exporta con "Guardar para TODOS"); `PRECIOS_DEFECTO` → márgenes, temporada
-  y precios fijos.
+  `TIENDA_DEFECTO` y `PRECIOS_DEFECTO` son la FÁBRICA; `data/configuracion.js`
+  es lo PUBLICADO desde el panel (botón "Publicar para todos", vía API de
+  GitHub con el token Contents) y **manda sobre la fábrica**. Si cambias
+  TIENDA_DEFECTO o PRECIOS_DEFECTO a mano, actualiza o borra también
+  `data/configuracion.js` o tu cambio será invisible. "Guardar en MI
+  computador" queda en localStorage del navegador (con marca de versión
+  `jt_config_base`: lo publicado más nuevo lo reemplaza al recargar).
+  `CONFIG` → valores de fábrica en ejecución.
 - **Panel de administración**: login con `TIENDA_DEFECTO.claveAdmin`, abre con
   el enlace del pie, `?admin=1` o Ctrl+Shift+A. Sus secciones se pintan desde
   funciones `pintar*Admin()`.
