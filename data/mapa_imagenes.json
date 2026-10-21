@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-10-21T13:53:24",
+ "actualizado": "2026-10-21T14:41:13",
  "por_codigo": {
   "6922982299125": {
    "slug": "animales-pq-en-bolsa-1",
@@ -786,9 +786,8 @@
   },
   "7709828967122": {
    "slug": "juego-mesa-domino",
-   "imagen": "https://jugueteriataiwan.com/storage/products/30489/thumb/203bf4ac-b119-4224-8711-430da3e055f1.webp",
-   "nombre": "JUEGO MESA DOMINO",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/30489/thumb/203bf4ac-b119-4224-8711-430da3e055f1.webp"
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/7709828967122-1.jpeg",
+   "nombre": "JUEGO MESA DOMINO"
   },
   "J-11072-2": {
    "slug": "domino-10mm-x28-en-estuche",
@@ -1333,7 +1332,7 @@
   },
   "2026888805337": {
    "slug": "pista-neon-carro-pila-luz-con-numero",
-   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/2026888805337-1.jpeg",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/2026888805337-2-1.jpeg",
    "nombre": "PISTA NEON CARRO PILA LUZ CON NUMERO"
   },
   "6603888931462": {
@@ -2423,7 +2422,7 @@
   },
   "2023090102049": {
    "slug": "conejo-peluche-juguete-de-pila",
-   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/2023090102049-2.jpg",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/2023090102049.jpg",
    "nombre": "CONEJO PELUCHE JUGUETE DE PILA"
   },
   "6981688090368": {
@@ -2809,7 +2808,7 @@
   },
   "2019202223887": {
    "slug": "vaso-pitillo-plastico-con-tapa-frutas-500-ml-2",
-   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/2019202223887.jpg",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/2019202223887-2.jpg",
    "nombre": "VASO PITILLO PLASTICO CON TAPA FRUTAS 500 ML"
   },
   "03540": {
@@ -3005,7 +3004,8 @@
   "7702202645104": {
    "slug": "desestresante-frutas-cj-x-20",
    "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/7702202645104-1.jpeg",
-   "nombre": "DESESTRESANTE FRUTAS CJ X 20"
+   "nombre": "DESESTRESANTE FRUTAS CJ X 20",
+   "imagen_web": "https://jugueteriataiwan.com/storage/products/30620/thumb/e864ae99-0fb2-4874-b654-7754304124b3.webp"
   },
   "02337": {
    "slug": "sirena-nadadora-4-motivos",
@@ -3028,8 +3028,9 @@
    "nombre": "BOLSA JAZZ FICHA GRANDE X100"
   },
   "03036": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/24845/thumb/5b5d5583-14e7-4605-8b54-631be62e3e1f.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/24845/thumb/5b5d5583-14e7-4605-8b54-631be62e3e1f.webp"
+   "slug": "sonny-angel-surtido",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/03036-1.jpeg",
+   "nombre": "SONNY ANGEL SURTIDO"
   },
   "03707": {
    "slug": "liquido-para-burbuja-tira-x10-sobres",
@@ -3196,8 +3197,9 @@
    "nombre": "CAJA METALICA X40 CARTAS"
   },
   "05131": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/28468/thumb/7c3d1079-d96a-4a7c-9bc5-651e9218eda9.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/28468/thumb/7c3d1079-d96a-4a7c-9bc5-651e9218eda9.webp"
+   "slug": "bolsa-sobre-mundial-albun-azul",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/05131-1.jpeg",
+   "nombre": "BOLSA SOBRE MUNDIAL ALBUN AZUL"
   },
   "7702202307569": {
    "slug": "cubo-piramide-gear-10-cm-engranaje",
@@ -3316,8 +3318,9 @@
    "nombre": "CARRO CARS 22CM BOLSA"
   },
   "01251": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/23770/thumb/6227d9e6-b177-40a1-87af-15a1cc6a4eef.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/23770/thumb/6227d9e6-b177-40a1-87af-15a1cc6a4eef.webp"
+   "slug": "bolsa-ollas-en-aluminio-con-licuadora-cocina",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/01251-1.jpg",
+   "nombre": "BOLSA OLLAS EN ALUMINIO CON LICUADORA COCINA"
   },
   "02699": {
    "slug": "bolsa-tablas-de-bingo-colores-en-carton-x100",
@@ -3503,8 +3506,9 @@
    "nombre": "LLAVERO CAPIBARA PELUCHE PEQUEÑO 6 MOTIVOS"
   },
   "01250": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/23769/thumb/b8b690a5-2041-48fd-808c-e243d3f81e5f.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/23769/thumb/b8b690a5-2041-48fd-808c-e243d3f81e5f.webp"
+   "slug": "bolsa-ollas-en-aluminio-con-vianda-cocina",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/01250.jpg",
+   "nombre": "BOLSA OLLAS EN ALUMINIO CON VIANDA COCINA"
   },
   "05463": {
    "slug": "lego-bat-hero",
@@ -3634,8 +3638,9 @@
    "nombre": "CABEZA DE PEINADO CON ACCESORIOS"
   },
   "03886": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/25282/thumb/d008b2f7-c40b-4488-8056-6a7d883fdbdd.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/25282/thumb/d008b2f7-c40b-4488-8056-6a7d883fdbdd.webp"
+   "slug": "pentomino-pequeno-18cm-12cm",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/03886-1.jpg",
+   "nombre": "PENTOMINO PEQUEÑO 18CM*12CM"
   },
   "2026888805238": {
    "slug": "juego-de-doctor-con-cuerpo-humano-encart-doctor",
@@ -3714,7 +3719,7 @@
   },
   "01138": {
    "slug": "tambor-colombiano-3-14cmx19cm-la-caucanita",
-   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/01138.jpg",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/01138-2.jpg",
    "nombre": "TAMBOR COLOMBIANO # 3 14CMX19CM LA CAUCANITA"
   },
   "6603888895689": {
@@ -3749,7 +3754,7 @@
   },
   "01181": {
    "slug": "tambor-colombiano-2-la-caucanita-14x16cm",
-   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/01181.jpg",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/01181-2.jpg",
    "nombre": "TAMBOR COLOMBIANO # 2 LA CAUCANITA 14X16CM"
   },
   "6603888892909": {
@@ -3898,8 +3903,9 @@
    "nombre": "JUEGO DIDACTICO MENTAL BRAIN GAME"
   },
   "03644": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/25171/thumb/4dee5ef1-8184-4655-a484-b1dd1f27d934.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/25171/thumb/4dee5ef1-8184-4655-a484-b1dd1f27d934.webp"
+   "slug": "labubu-ropa",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/03644-1.jpg",
+   "nombre": "LABUBU ROPA"
   },
   "05147": {
    "slug": "vaso-plastico-capibara-bolsa-x-12",
@@ -3913,7 +3919,7 @@
   },
   "2019202223870": {
    "slug": "vaso-pitillo-plastico-con-tapa-frutas-500-ml-1",
-   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/2019202223870.jpg",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/2019202223870-2.jpg",
    "nombre": "VASO PITILLO PLASTICO CON TAPA FRUTAS 500 ML"
   },
   "04602": {
@@ -4240,7 +4246,8 @@
   "01236": {
    "slug": "caja-juego-de-sapo-y-parques-4-puestos-en-madera-nacional",
    "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/01236-1.jpg",
-   "nombre": "CAJA JUEGO DE SAPO Y PARQUES 4 PUESTOS EN MADERA NACIONAL"
+   "nombre": "CAJA JUEGO DE SAPO Y PARQUES 4 PUESTOS EN MADERA NACIONAL",
+   "imagen_web": "https://jugueteriataiwan.com/storage/products/23755/thumb/5be2fd12-fbdb-4284-8868-7245cdc65dfa.webp"
   },
   "01439": {
    "slug": "tatuco",
@@ -4343,8 +4350,9 @@
    "nombre": "PARQUES GRANDE IMANADO 6-8 JUGADORES 51CMX51CM"
   },
   "01731": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/24122/thumb/2a65e364-5fb2-4b75-9cc0-272f7cf8434d.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/24122/thumb/2a65e364-5fb2-4b75-9cc0-272f7cf8434d.webp"
+   "slug": "rummy-grande-madera-mdf-x6",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/01731-1.jpg",
+   "nombre": "RUMMY GRANDE MADERA MDF X6"
   },
   "01792": {
    "slug": "tridomino-caja-cuadrada-madera-mdf",
@@ -4398,7 +4406,7 @@
   },
   "01275": {
    "slug": "caja-masajeador-delfin",
-   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/01275.jpg",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/01275-2.jpg",
    "nombre": "CAJA MASAJEADOR DELFIN"
   },
   "05023": {
@@ -4427,8 +4435,9 @@
    "nombre": "MEMORY CHESS"
   },
   "7702202187222": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/27114/thumb/3ef2a52b-ac89-4059-a2b4-37e49ec115a3.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/27114/thumb/3ef2a52b-ac89-4059-a2b4-37e49ec115a3.webp"
+   "slug": "bolsa-scuichi-tiburon-en-espuma",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/7702202187222-1.jpg",
+   "nombre": "BOLSA SCUICHI TIBURON EN ESPUMA"
   },
   "7702202260703": {
    "imagen": "https://jugueteriataiwan.com/storage/products/27155/thumb/86abc07b-e414-43ea-9bf1-a5b3659b03c9.webp",
@@ -4504,7 +4513,8 @@
   "01432": {
    "slug": "cartas-de-futbol-super-star-x50-cartas",
    "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/01432-2.jpg",
-   "nombre": "CARTAS DE FUTBOL SUPER STAR X50 CARTAS"
+   "nombre": "CARTAS DE FUTBOL SUPER STAR X50 CARTAS",
+   "imagen_web": "https://jugueteriataiwan.com/storage/products/23949/thumb/a0f9c29c-1f75-42b3-8803-541b9adde4fb.webp"
   },
   "03089": {
    "slug": "monopolio",
@@ -4543,7 +4553,7 @@
   },
   "7702202411211": {
    "slug": "termo-surtido-estampado-de-500ml",
-   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/7702202411211-2.jpg",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/7702202411211-3.jpg",
    "nombre": "TERMO SURTIDO ESTAMPADO DE 500ML"
   },
   "99977": {
@@ -4706,8 +4716,9 @@
    "nombre": "ANIMAL DOMESTICO SET X 6"
   },
   "6920202410893": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/26466/thumb/7ad49420-7151-4ce4-87b6-aa18b0aa4673.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/26466/thumb/7ad49420-7151-4ce4-87b6-aa18b0aa4673.webp"
+   "slug": "llavero-capibara-chicle",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/6920202410893-1.jpeg",
+   "nombre": "LLAVERO CAPIBARA CHICLE"
   },
   "7702202502124": {
    "slug": "jenga-grande-amarilla-48-piezas-26x8-cm",
@@ -4765,8 +4776,9 @@
    "nombre": "CUADRO GEMAS  ITALIAN GRANDE 30X30"
   },
   "6603888894460": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/26243/thumb/cec808b1-4825-4bc3-9f0e-fff1d6dc443b.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/26243/thumb/cec808b1-4825-4bc3-9f0e-fff1d6dc443b.webp"
+   "slug": "carro-grafiti-bolsa",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/6603888894460-1.jpg",
+   "nombre": "CARRO GRAFITI BOLSA"
   },
   "6973244204920": {
    "slug": "bolsa-armatodo-tubos-uniones-100-pcs",
@@ -4786,7 +4798,8 @@
   "6975240105041": {
    "slug": "carton-gato-y-el-raton-coleccion-x4",
    "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/6975240105041-2.jpg",
-   "nombre": "CARTON GATO Y EL RATON COLECCION X4"
+   "nombre": "CARTON GATO Y EL RATON COLECCION X4",
+   "imagen_web": "https://jugueteriataiwan.com/storage/products/26878/thumb/d0c3e292-fe40-47ba-8a4f-be45af2f3915.webp"
   },
   "194735220809": {
    "slug": "carta-uno-no-mercy-rojo-1",
@@ -4829,8 +4842,9 @@
    "nombre": "BOLSA CUBO RUBIK HOJA NEON"
   },
   "7702202301741": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/27214/thumb/b87c6b6c-128e-4994-845e-74878a25b3e5.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/27214/thumb/b87c6b6c-128e-4994-845e-74878a25b3e5.webp"
+   "slug": "caja-piramide-rubik-3x3-hielo",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/7702202301741-1.jpg",
+   "nombre": "CAJA PIRAMIDE RUBIK 3X3 HIELO"
   },
   "7707193625500": {
    "slug": "caja-juego-de-mesa-ajedrez-maestro-carton",
@@ -4843,8 +4857,9 @@
    "nombre": "CAJA JUEGO DE MESA RUMMI 6 CARTON"
   },
   "9009202403146": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/28115/thumb/8adfc936-a4f3-4031-b787-98ff8e56992b.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/28115/thumb/8adfc936-a4f3-4031-b787-98ff8e56992b.webp"
+   "slug": "tetri-transparente",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/9009202403146-1.jpeg",
+   "nombre": "TETRI TRANSPARENTE"
   },
   "01017": {
    "slug": "caja-juego-de-mesa-bendito-7-madera",
@@ -4936,8 +4951,9 @@
    "nombre": "STOP CAJA"
   },
   "05028": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/25836/thumb/b7302b2b-7196-4446-8856-c6f4ba8277d2.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/25836/thumb/b7302b2b-7196-4446-8856-c6f4ba8277d2.webp"
+   "slug": "bolsa-armatodo-ficha-grande-x66-fichas",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/05028-1.jpeg",
+   "nombre": "BOLSA ARMATODO FICHA GRANDE X66 FICHAS"
   },
   "05445": {
    "slug": "carta-fifa-2026-caja-x-36-sobres-1",
@@ -5030,8 +5046,9 @@
    "nombre": "LANZA BALINES T139 P"
   },
   "6948154201604": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/26681/thumb/7db089fb-2165-4865-85b3-40bb6d292b22.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/26681/thumb/7db089fb-2165-4865-85b3-40bb6d292b22.webp"
+   "slug": "caja-cubo-rubik-4x4-hielo",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/6948154201604-1.jpg",
+   "nombre": "CAJA CUBO RUBIK 4X4 HIELO"
   },
   "6971782060268": {
    "slug": "kit-de-arte-infantil-220-piezas-madera",
@@ -5096,7 +5113,8 @@
   "7702212646702": {
    "slug": "desestresante-pan-chino-con-luz-x-3-cj-x-12-1",
    "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/7702212646702-1.jpeg",
-   "nombre": "DESESTRESANTE PAN CHINO CON LUZ X 3  CJ X 12"
+   "nombre": "DESESTRESANTE PAN CHINO CON LUZ X 3  CJ X 12",
+   "imagen_web": "https://jugueteriataiwan.com/storage/products/30627/thumb/42a180dc-7e27-43ee-b799-fd0cc412dddb.webp"
   },
   "02973": {
    "slug": "centro-derecha-izquierda-pequeno",
@@ -5155,7 +5173,7 @@
   },
   "00888": {
    "slug": "caja-juguete-dinosaurio-con-malumeta",
-   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/00888-2.jpg",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/00888.jpg",
    "nombre": "CAJA JUGUETE DINOSAURIO CON MALUMETA"
   },
   "2026888802220": {
@@ -5224,8 +5242,9 @@
    "nombre": "CAJA JUEGO DE MESA BATALLA NAVAL GRANDE"
   },
   "01757": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/24144/thumb/1d296fc5-4c57-4ed7-8446-e6c00151da1b.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/24144/thumb/1d296fc5-4c57-4ed7-8446-e6c00151da1b.webp"
+   "slug": "bolsa-armatubos-x100-fichas",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/01757-1.jpg",
+   "nombre": "BOLSA ARMATUBOS X100 FICHAS"
   },
   "03183": {
    "slug": "carro-hotwheel-monster-trucks",
@@ -5248,8 +5267,9 @@
    "nombre": "CARTON BATERIA BESTON 1.5V X10"
   },
   "7702202306715": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/27240/thumb/da810993-d99c-40bf-9a5c-6cae1f857810.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/27240/thumb/da810993-d99c-40bf-9a5c-6cae1f857810.webp"
+   "slug": "caja-cubo-rubik-5x5-carbon-stikers-qytoys-speedcube",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/7702202306715-1.jpg",
+   "nombre": "CAJA CUBO RUBIK 5X5 CARBON STIKERS QYTOYS SPEEDCUBE"
   },
   "01178": {
    "slug": "balotera-de-bingo-metalica-con-pimpones",
@@ -5268,7 +5288,7 @@
   },
   "2023100275046": {
    "slug": "caja-cubo-rubik-5x5-stikers-the-ever",
-   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/2023100275046-2.jpg",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/2023100275046.jpg",
    "nombre": "CAJA CUBO RUBIK 5X5 STIKERS THE EVER"
   },
   "6603888891803": {
@@ -5287,8 +5307,9 @@
    "nombre": "ANIMAL SALVAJE SET X 6"
   },
   "01159": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/23678/thumb/36ff16d9-e17e-48a4-93ae-7ef39d7067bb.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/23678/thumb/36ff16d9-e17e-48a4-93ae-7ef39d7067bb.webp"
+   "slug": "balon-de-futbol-penalty-3-5",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/01159-1.png",
+   "nombre": "BALON DE FUTBOL PENALTY #3.5"
   },
   "01452": {
    "slug": "caja-juguete-volqueta-con-luz-y-sonido-truck-engineering-series-1",
@@ -5316,8 +5337,9 @@
    "nombre": "BOLSA ESPIRAL X12 COLOR PASTEL"
   },
   "03119": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/24901/thumb/99dc71b4-ebe8-4001-a348-c506f944224d.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/24901/thumb/99dc71b4-ebe8-4001-a348-c506f944224d.webp"
+   "slug": "llavero-luz",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/03119-1.jpg",
+   "nombre": "LLAVERO LUZ"
   },
   "2022121402042": {
    "slug": "bolsa-libro-de-agua-mediano",
@@ -5564,8 +5586,9 @@
    "nombre": "PLANCHA MASAJEADORA EN MADERA"
   },
   "01360": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/23877/thumb/04cb9ff3-cbff-45b7-91d1-d475f93f563b.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/23877/thumb/04cb9ff3-cbff-45b7-91d1-d475f93f563b.webp"
+   "slug": "fichas-casino-x100",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/01360-1.jpg",
+   "nombre": "FICHAS CASINO X100"
   },
   "05310": {
    "slug": "foamy-moldeable",
@@ -5614,7 +5637,7 @@
   },
   "9620238414083": {
    "slug": "caja-muneca-lentejuelas",
-   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/9620238414083-2.jpg",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/9620238414083.jpg",
    "nombre": "CAJA MUÑECA LENTEJUELAS"
   },
   "FOX-2309": {
@@ -5658,8 +5681,9 @@
    "nombre": "BOLSO CAPIBARA CON LLAVERO"
   },
   "03313": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/24998/thumb/c977708c-5e75-403b-a9c5-fe9ea0f09429.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/24998/thumb/c977708c-5e75-403b-a9c5-fe9ea0f09429.webp"
+   "slug": "sobre-sorpresa-la-bubu-caja-x6",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/03313-1.jpg",
+   "nombre": "SOBRE SORPRESA LA BUBU CAJA X6"
   },
   "04730": {
    "slug": "bolsa-stickers-cafe-x50-mundial-2026",
@@ -5727,8 +5751,9 @@
    "nombre": "TITERE ANIMAL JUMBO"
   },
   "2023100274582": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/25985/thumb/42789e59-4f7b-4378-922b-3fbe31913a83.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/25985/thumb/42789e59-4f7b-4378-922b-3fbe31913a83.webp"
+   "slug": "caja-piano-musical-abeja-mediana-de-baterias",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/2023100274582.jpg",
+   "nombre": "CAJA PIANO MUSICAL ABEJA MEDIANA DE BATERIAS"
   },
   "6603888921319": {
    "slug": "set-maleta-doctor-1",
@@ -5768,7 +5793,8 @@
   "7702202645005": {
    "slug": "desestresante-figuras-geometrica-cj-x-12",
    "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/7702202645005-1.jpeg",
-   "nombre": "DESESTRESANTE FIGURAS GEOMETRICA CJ X 12"
+   "nombre": "DESESTRESANTE FIGURAS GEOMETRICA CJ X 12",
+   "imagen_web": "https://jugueteriataiwan.com/storage/products/30619/thumb/0796681f-9d3c-4a5d-af3c-d425b785e885.webp"
   },
   "01447": {
    "slug": "caja-cronometro",
@@ -5982,7 +6008,7 @@
   },
   "2024011223645": {
    "slug": "bolsa-sonaleros-pandereta",
-   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/2024011223645.jpg",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/2024011223645-2.jpg",
    "nombre": "BOLSA SONALEROS PANDERETA"
   },
   "6603888903667": {
@@ -6011,8 +6037,9 @@
    "nombre": "CARTON PATINETA X12"
   },
   "2023100275145": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/25996/thumb/dc575dd2-785b-4763-a508-e218357b8a81.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/25996/thumb/dc575dd2-785b-4763-a508-e218357b8a81.webp"
+   "slug": "caja-cubo-rubik-3x3-cuadritos-transparente-the-ever",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/2023100275145.jpg",
+   "nombre": "CAJA CUBO RUBIK 3X3 CUADRITOS TRANSPARENTE THE EVER"
   },
   "6957362474274": {
    "slug": "tablero-magico-con-abaco-4-colores",
@@ -6171,7 +6198,7 @@
   },
   "7895430108425": {
    "slug": "balon-futbol-ak-clasico-5",
-   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/7895430108425-1.jpg",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/7895430108425-2-1.jpeg",
    "nombre": "BALON FUTBOL AK CLASICO #5"
   },
   "8680659570110": {
@@ -6190,8 +6217,9 @@
    "nombre": "CAJA DIDACTICA APRENDER A LEER"
   },
   "03832": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/25260/thumb/b6c4c488-e85f-4837-af54-26239b0fb0d4.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/25260/thumb/b6c4c488-e85f-4837-af54-26239b0fb0d4.webp"
+   "slug": "bolsa-cartas-x100-sobres-italian-2da-temporada",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/03832-1.jpg",
+   "nombre": "BOLSA CARTAS X100 SOBRES ITALIAN 2DA TEMPORADA"
   },
   "4720250427810": {
    "slug": "fichas-didacticas-de-multiplicacion",
@@ -6271,12 +6299,14 @@
   "6957738204610": {
    "slug": "pistola-lanza-agua-28cm",
    "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/6957738204610-1.jpg",
-   "nombre": "PISTOLA LANZA AGUA 28CM"
+   "nombre": "PISTOLA LANZA AGUA 28CM",
+   "imagen_web": "https://jugueteriataiwan.com/storage/products/26750/thumb/4a916314-2a5f-47f3-a4b4-47138c851aa2.webp"
   },
   "7702222646709": {
    "slug": "desestresante-pan-chino-con-luz-x-3-cj-x-12",
    "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/7702222646709-1.jpeg",
-   "nombre": "DESESTRESANTE PAN CHINO CON LUZ X 3 CJ X 12"
+   "nombre": "DESESTRESANTE PAN CHINO CON LUZ X 3 CJ X 12",
+   "imagen_web": "https://jugueteriataiwan.com/storage/products/30628/thumb/acf8a94f-1c7b-42bb-ad7d-127d325720c8.webp"
   },
   "7702242602464": {
    "slug": "desestresante-dragon",
@@ -6420,8 +6450,9 @@
    "nombre": "ENCAJABLE ABECEDARIO O NUMEROS TABLA 30CM*22CM"
   },
   "6957738201343": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/28850/thumb/32ad5678-4beb-428c-8537-047a594490ce.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/28850/thumb/32ad5678-4beb-428c-8537-047a594490ce.webp"
+   "slug": "avion-yei-yei-grande",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/6957738201343-1.jpeg",
+   "nombre": "AVION YEI-YEI GRANDE"
   },
   "6973038368296": {
    "slug": "juego-de-cartas-matematicas-divisiones",
@@ -6510,12 +6541,14 @@
    "nombre": "ANIMAL CRECE AGUA  GRANDE REPTIL X6"
   },
   "6924171511742": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/26547/thumb/c03bec98-d987-4bf0-8e5f-fd10c2364e1a.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/26547/thumb/c03bec98-d987-4bf0-8e5f-fd10c2364e1a.webp"
+   "slug": "caja-carro-monster-x4",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/6924171511742-1.jpg",
+   "nombre": "CAJA CARRO MONSTER X4"
   },
   "6957738201374": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/28851/thumb/6c096820-e6c7-4e7a-9137-77b36395d570.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/28851/thumb/6c096820-e6c7-4e7a-9137-77b36395d570.webp"
+   "slug": "avion-yei-yei-arrastrar",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/6957738201374-1.jpeg",
+   "nombre": "AVION YEI-YEI ARRASTRAR"
   },
   "7702202260062": {
    "slug": "tablero-madera",
@@ -6530,7 +6563,8 @@
   "7702202644909": {
    "slug": "desestresante-esfera",
    "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/7702202644909-1.jpeg",
-   "nombre": "DESESTRESANTE ESFERA"
+   "nombre": "DESESTRESANTE ESFERA",
+   "imagen_web": "https://jugueteriataiwan.com/storage/products/30618/thumb/10ebe714-576a-4877-9e14-f7c345d0fed0.webp"
   },
   "7899800245017": {
    "slug": "set-musical",
@@ -6543,8 +6577,9 @@
    "nombre": "SET DE MANILLAS MOÑO"
   },
   "03446": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/25053/thumb/063f9c3d-653b-4945-a0e0-bff9182db7e1.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/25053/thumb/063f9c3d-653b-4945-a0e0-bff9182db7e1.webp"
+   "slug": "bolsa-cartas-x100-sobres-italian-brainrot",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/03446-1.jpeg",
+   "nombre": "BOLSA CARTAS X100 SOBRES ITALIAN BRAINROT"
   },
   "2025041082868": {
    "slug": "lanza-burbuja-azul-mil-burbujas-bubble-gun",
@@ -6813,8 +6848,9 @@
    "nombre": "FICHAS DIDACTICAS PROFESIONES"
   },
   "6854000166082": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/26326/thumb/26ca680c-fd93-4b17-8303-a383e6224ac2.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/26326/thumb/26ca680c-fd93-4b17-8303-a383e6224ac2.webp"
+   "slug": "bolsa-conejo-musical-y-luces-surtido",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/6854000166082.jpg",
+   "nombre": "BOLSA CONEJO MUSICAL Y LUCES SURTIDO"
   },
   "6920225108333": {
    "slug": "4-columnas-figuras-geometricas-con-martillo-sleeve-column-caja",
@@ -6824,7 +6860,8 @@
   "6932247007891": {
    "slug": "termo-oso-traslucido-x2-3-colores",
    "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/6932247007891-1.png",
-   "nombre": "TERMO OSO TRASLUCIDO X2 3 COLORES"
+   "nombre": "TERMO OSO TRASLUCIDO X2 3 COLORES",
+   "imagen_web": "https://jugueteriataiwan.com/storage/products/26600/thumb/f1c5cee9-99e7-41db-90c0-c2877184e43e.webp"
   },
   "7120251150798": {
    "slug": "juego-de-aprendizaje-matematico",
@@ -6957,8 +6994,9 @@
    "nombre": "CAJA METALICA DOMINO DOBLE 12"
   },
   "02297": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/24441/thumb/27e107c2-5b71-451b-af29-f71ce2bb0429.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/24441/thumb/27e107c2-5b71-451b-af29-f71ce2bb0429.webp"
+   "slug": "bolsa-cartas-dragon-ball-x100-sobres",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/02297-1.jpeg",
+   "nombre": "BOLSA CARTAS DRAGON BALL X100 SOBRES"
   },
   "03529": {
    "slug": "peluche-capibara-tortuga-moco-o-fresa-30cm",
@@ -7001,8 +7039,9 @@
    "nombre": "FLAUTA DULCE"
   },
   "00723": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/23255/thumb/9707954a-1fb9-4834-b22a-77a2794bf590.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/23255/thumb/9707954a-1fb9-4834-b22a-77a2794bf590.webp"
+   "slug": "nobody-sausage-magic-dancer",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/00723-1.jpeg",
+   "nombre": "NOBODY SAUSAGE MAGIC DANCER"
   },
   "01527": {
    "slug": "camion-de-construccion",
@@ -7020,8 +7059,9 @@
    "nombre": "LLAVERO PEUCHE KUROMI VESTIDO CUADROS"
   },
   "2023100275152": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/25997/thumb/69949d4c-03fa-446e-8c77-0d4eaf4ff6f0.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/25997/thumb/69949d4c-03fa-446e-8c77-0d4eaf4ff6f0.webp"
+   "slug": "caja-cubo-rubik-3x3-caritas-transparente-the-ever",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/2023100275152-1.jpg",
+   "nombre": "CAJA CUBO RUBIK 3X3 CARITAS TRANSPARENTE THE EVER"
   },
   "2025041082950": {
    "slug": "lanza-burbujas-57-hoyos-mp5-rosado",
@@ -7049,8 +7089,9 @@
    "nombre": "ABACO 10 DIGITOS CAJA"
   },
   "6943384100093": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/29395/thumb/45bc7e6a-5bf4-4ae5-8e95-8f757a8105dc.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/29395/thumb/45bc7e6a-5bf4-4ae5-8e95-8f757a8105dc.webp"
+   "slug": "polvo-mata-cucaracha-caja",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/6953937184111-1.jpeg",
+   "nombre": "POLVO MATA CUCARACHA CAJA"
   },
   "6945108336160": {
    "slug": "termo-traslucido-motion-3-colores",
@@ -7299,7 +7340,7 @@
   },
   "01226": {
    "slug": "paloma-de-equilibrio-x12",
-   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/01226-2.jpg",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/01226.jpg",
    "nombre": "PALOMA DE EQUILIBRIO X12"
   },
   "01436": {
@@ -7348,8 +7389,9 @@
    "nombre": "CUBO DIDACTICO MULTIFUNCIONAL LABERINTO CAJA"
   },
   "05499": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/29608/thumb/412bfcfb-500c-47aa-9b45-7711d0c98fe4.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/29608/thumb/412bfcfb-500c-47aa-9b45-7711d0c98fe4.webp"
+   "slug": "domino-pasta-fino",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/05499-1.jpeg",
+   "nombre": "DOMINO PASTA FINO"
   },
   "2021028578003": {
    "slug": "caja-coleccion-safari-animales-selva",
@@ -7441,8 +7483,9 @@
    "nombre": "RUMMI LETRAS CAJA AZUL"
   },
   "7703493056006": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/27749/thumb/53aaca0e-614a-447e-b365-ffbf9d53328b.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/27749/thumb/53aaca0e-614a-447e-b365-ffbf9d53328b.webp"
+   "slug": "rummiq-caja-madera",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/7703493056006-1.jpg",
+   "nombre": "RUMMIQ CAJA MADERA"
   },
   "7705451019870": {
    "slug": "la-bubu-disfraz-stitch",
@@ -7600,8 +7643,9 @@
    "nombre": "PISTA CON CARRO PILAS"
   },
   "6908761547021": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/26424/thumb/28613ed8-7992-424e-8511-61fb85bf391c.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/26424/thumb/28613ed8-7992-424e-8511-61fb85bf391c.webp"
+   "slug": "caja-muneco-sorpresa-con-base-y-carta",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/6908761547021.jpg",
+   "nombre": "CAJA MUÑECO SORPRESA CON BASE Y CARTA"
   },
   "6924668896154": {
    "slug": "caja-sorpresas-bluey-x24",
@@ -7959,8 +8003,9 @@
    "nombre": "CAJA QUITA MOTA PARA ROPA"
   },
   "01389": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/23906/thumb/ab24ef95-e5b3-43cd-ae88-b2fb705428cc.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/23906/thumb/ab24ef95-e5b3-43cd-ae88-b2fb705428cc.webp"
+   "slug": "llavero-acrilico-surtido",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/01389-1.jpeg",
+   "nombre": "LLAVERO ACRILICO SURTIDO"
   },
   "02719": {
    "slug": "parques-6-puestos-y-ajedrez-pino-49-cm",
@@ -8240,8 +8285,9 @@
    "nombre": "MASCOTA PERRO DE PILAS CON GUACAL VERDE/ ROSADO"
   },
   "6990803547052": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/26972/thumb/d383e56e-b1c5-466e-9fc5-18b2e273bdf3.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/26972/thumb/d383e56e-b1c5-466e-9fc5-18b2e273bdf3.webp"
+   "slug": "pelota-pokebola-grande",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/6990803547052-1.jpeg",
+   "nombre": "PELOTA POKEBOLA GRANDE"
   },
   "7702202421524": {
    "slug": "laberinto-de-carreras",
@@ -8369,7 +8415,8 @@
   "01521": {
    "slug": "caja-lanzadardos-3-softgun-pequeno-2-colores",
    "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/01521.jpg",
-   "nombre": "CAJA LANZADARDOS 3 SOFTGUN PEQUEÑO 2 COLORES"
+   "nombre": "CAJA LANZADARDOS 3 SOFTGUN PEQUEÑO 2 COLORES",
+   "imagen_web": "https://jugueteriataiwan.com/storage/products/24034/thumb/a16874ee-b877-429c-9e2b-53c6cee2c5dd.webp"
   },
   "01543": {
    "slug": "huevo-sorpresa-erizo-veloz-x12",
@@ -8437,12 +8484,14 @@
    "nombre": "ELICE X20 ENCARTONADO"
   },
   "04729": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/25700/thumb/8dad60b4-62db-45a5-933d-e81f7d55d9d2.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/25700/thumb/8dad60b4-62db-45a5-933d-e81f7d55d9d2.webp"
+   "slug": "bolsa-sticker-verde-x100-mundial-2026",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/04729-1.jpeg",
+   "nombre": "BOLSA STICKER VERDE X100 MUNDIAL 2026"
   },
   "04942": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/25778/thumb/4fe5b4b9-a678-464b-94d8-2e9f8351fa34.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/25778/thumb/4fe5b4b9-a678-464b-94d8-2e9f8351fa34.webp"
+   "slug": "bolsa-cartas-mario-galaxy-x100",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/04942-1.jpeg",
+   "nombre": "BOLSA CARTAS MARIO GALAXY X100"
   },
   "04947": {
    "slug": "slime-tarro-stitch",
@@ -8530,8 +8579,9 @@
    "imagen_web": "https://jugueteriataiwan.com/storage/products/10505/thumb/c253b3c2-b39a-4d4f-bb05-e44915253e0d.webp"
   },
   "2224444027715": {
-   "imagen": "https://jugueteriataiwan.com/storage/products/26058/thumb/9efc625c-4185-4aeb-ab5d-8b514e171dac.webp",
-   "imagen_web": "https://jugueteriataiwan.com/storage/products/26058/thumb/9efc625c-4185-4aeb-ab5d-8b514e171dac.webp"
+   "slug": "bolsa-gel-antibacterial-en-figura-con-aroma-en-tarro-30ml",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/2224444027715-1.jpg",
+   "nombre": "BOLSA GEL ANTIBACTERIAL EN FIGURA CON AROMA EN TARRO 30ML"
   },
   "2266-30": {
    "imagen": "https://jugueteriataiwan.com/storage/products/10874/thumb/1932cfee-bd80-4ea4-85cc-5fdaf72e2c7d.webp",
@@ -9849,7 +9899,7 @@
   },
   "7702202411181": {
    "slug": "termo-surtido-en-colores-350ml-1",
-   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/7702202411181-2.jpg",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/7702202411181-3.jpg",
    "nombre": "TERMO SURTIDO EN COLORES 350ML"
   },
   "04615": {
@@ -10113,7 +10163,7 @@
    "nombre": "BOLSA MUÑECOS X2 ANIME"
   },
   "01322": {
-   "slug": "caja-juguete-muneco-anime-2",
+   "slug": "caja-juguete-muneco-anime-3",
    "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/01322-1.jpg",
    "nombre": "CAJA JUGUETE MUÑECO ANIME"
   },
@@ -10258,7 +10308,7 @@
    "nombre": "CABALLERO ASTROLOGIA"
   },
   "04610": {
-   "slug": "demon-x10",
+   "slug": "demon-x10-2",
    "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/04610-1.jpeg",
    "nombre": "DEMON X10"
   },
@@ -10606,6 +10656,56 @@
    "slug": "tangram-magnetico-libro",
    "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/03735-1.jpg",
    "nombre": "TANGRAM MAGNETICO LIBRO"
+  },
+  "4967202614267": {
+   "slug": "muneco-arana-dos-modelos",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/4967202614267-1.jpeg",
+   "nombre": "MUÑECO ARAÑA DOS MODELOS"
+  },
+  "4980082022649": {
+   "slug": "caja-monkey-d-lufy",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/4980082022649.jpg",
+   "nombre": "CAJA MONKEY D LUFY"
+  },
+  "04527": {
+   "slug": "encajable-surtido-20cm-20cm",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/04527-1.jpeg",
+   "nombre": "ENCAJABLE SURTIDO 20CM*20CM"
+  },
+  "04649": {
+   "slug": "harry-potter-x6",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/04649-1.jpeg",
+   "nombre": "HARRY POTTER X6"
+  },
+  "01092": {
+   "slug": "bolsa-fuerzas-especiales-coleccion-x7-anime",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/01092-1.jpg",
+   "nombre": "BOLSA FUERZAS ESPECIALES COLECCIÓN X7 ANIME"
+  },
+  "7707193627344": {
+   "slug": "bolsa-bate-beisbol-con-pelotas",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/7707193627340-1.jpg",
+   "nombre": "BOLSA BATE BEISBOL CON PELOTAS"
+  },
+  "01318": {
+   "slug": "caja-juguete-muneco-anime-con-base-anime",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/01318-1.jpg",
+   "nombre": "CAJA JUGUETE MUÑECO ANIME CON BASE ANIME"
+  },
+  "01359": {
+   "slug": "torre-hanoi-caja",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/01359-1.jpeg",
+   "nombre": "TORRE HANOI CAJA"
+  },
+  "01071": {
+   "slug": "caja-juguete-muneco-anime-4",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/01071-1.jpg",
+   "nombre": "CAJA JUGUETE MUÑECO ANIME"
+  },
+  "04656": {
+   "slug": "luffy-gear-5",
+   "imagen": "https://jugueteriataiwan.goldpos.com.co/Files/Images/04656-1.jpeg",
+   "nombre": "LUFFY GEAR 5"
   }
  }
 }
