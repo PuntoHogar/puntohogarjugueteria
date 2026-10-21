@@ -9,26 +9,31 @@ Como funciona (cron: .github/workflows/sync-top300.yml):
   2. Genera JWT fresco: POST /apiGold/Login_Api/LoginJWTToken
   3. Descarga productos: GET /apiGold/ProductoApi/GetProduct_V6
      (bodega configurada en .env, por defecto la 2)
-  4. Carga costos del ultimo Excel exportado de POSGold (por Productoid)
-  5. FILTROS DUROS (regla de la tienda): activo + Disponible>0 en bodega
-     + foto real en POSGold + categoria vendible + costo conocido
-  6. Rentabilidad sobre el precio detal:
-       precio_base_sin_iva = Precio1 / (1 + IVA/100)
-       margen_costo  = (precio_base_sin_iva - costo) / costo     (default)
-       margen_precio = (precio_base_sin_iva - costo) / precio_base_sin_iva
-       utilidad      = precio_base_sin_iva - costo
-  7. Toma el TOP N (los destacados que cumplen entran primero si
-     INCLUIR_DESTACADOS=true). TODO sale de POSGold — la web mayorista
-     ya no participa:
+   4. Carga costos del ultimo Excel exportado de POSGold (por Productoid)
+   5. FILTROS DUROS (regla de la tienda): activo + Disponible>0 en bodega
+      + foto real en POSGold + categoria vendible + costo conocido
+   6. Rentabilidad sobre el precio detal (PRECIO 2 del sistema):
+        precio_base_sin_iva = Precio2 / (1 + IVA/100)
+        margen_costo  = (precio_base_sin_iva - costo) / costo     (default)
+        margen_precio = (precio_base_sin_iva - costo) / precio_base_sin_iva
+        utilidad      = precio_base_sin_iva - costo
+   7. Toma el TOP N (los destacados que cumplen entran primero si
+      INCLUIR_DESTACADOS=true). TODO sale de POSGold — la web mayorista
+      ya no participa:
        - slug (id): el conocido del cache data/mapa_imagenes.json o, para
          productos nuevos, el derivado del nombre en POSGold
        - fotos: {POSGOLD_BASE}/Files/Images/{archivo}, verificadas por
          HTTP (muestra diaria; --verificar-todas para auditar todo), con
          la foto vieja del cache como respaldo si alguna falla
-  8. Genera catalogo.js: el enlace del pedido apunta a ESTA tienda al
-     detal ({DETAL_URL}/?producto={slug}), no a la web de mayoristas
-  9. Reporte local en reportes/ (contiene costos: NO publicar)
- 10. Con --publicar: git commit + push -> GitHub Pages republica solo
+   8. Genera catalogo.js: el enlace del pedido apunta a ESTA tienda al
+      detal ({DETAL_URL}/?producto={slug}), no a la web de mayoristas.
+      CONCILIACION dura con POSGold: antes y despues de generar se
+      verifica que el catalogo quede 100% con productos ACTIVOS y con
+      existencias; si no, aborta SIN tocar lo publicado.
+   9. Reportes locales en reportes/: sync_*.csv (todo, con costos: NO
+      publicar) y novedades_*.xlsx (Excel para la tienda: inactivos,
+      agotados, duplicados, sin precio, sin foto, sin costo...)
+  10. Con --publicar: git commit + push -> GitHub Pages republica solo
 
 Uso:
   python sync_posgold.py --dry-run     (prueba sin tocar el catalogo)
@@ -657,7 +662,114 @@ def index_referencia_catalogo():
 # ------------------------------------------------------------------
 
 
-def escribir_reporte(filas):
+def leer_skus_publicados():
+    """Codigos (SKU) del catalogo.js publicado en este checkout: la
+    conciliacion contra POSGold parte de lo que la tienda muestra AHORA."""
+    if not os.path.exists(CATALOGO_PATH):
+        return set()
+    with open(CATALOGO_PATH, encoding="utf-8") as f:
+        return set(re.findall(r'sku:"([^"]+)"', f.read()))
+
+
+# Tipos de novedad -> nombre de hoja del Excel (por prefijo del motivo)
+HOJAS_NOVEDAD = (
+    ("id duplicado", "Duplicados"),
+    ("inactivo", "Inactivos POSGold"),
+    ("sin existencias", "Sin existencias"),
+    ("sin foto", "Sin foto"),
+    ("sin precio", "Sin precio"),
+    ("sin costo", "Sin costo en Excel"),
+    ("rentabilidad", "Rentabilidad negativa"),
+    ("categoria no vendible", "Categoria no vendible"),
+)
+
+
+def hoja_novedad(motivo):
+    m = (motivo or "").lower()
+    for prefijo, hoja in HOJAS_NOVEDAD:
+        if prefijo in m:
+            return hoja
+    return "Otras novedades"
+
+
+def escribir_reporte_excel(filas, publicados):
+    """Excel de NOVEDADES para la tienda: todo producto que no publica y
+    por que (inactivos, agotados, duplicados, sin precio, sin foto, sin
+    costo, rentabilidad negativa...). Hoja Resumen + una hoja por tipo.
+    Marca que productos seguian publicados en la tienda al correr: son
+    los que salen del catalogo en esta corrida."""
+    try:
+        import openpyxl
+        from openpyxl.styles import Font
+        from openpyxl.utils import get_column_letter
+    except ImportError:
+        log("AVISO: falta openpyxl: no se genera el Excel de novedades.")
+        return None
+    novedades = [f for f in filas if f.get("estado") == "OCULTO"]
+    if not novedades:
+        return None
+    negrita = Font(bold=True)
+    wb = openpyxl.Workbook()
+
+    resumen = wb.active
+    resumen.title = "Resumen"
+    conteo = {}
+    for f in novedades:
+        hoja = hoja_novedad(f.get("motivo"))
+        conteo[hoja] = conteo.get(hoja, 0) + 1
+    salen = sum(1 for f in novedades if f.get("codigo") in publicados)
+    resumen.append(["NOVEDADES POSGOLD — Jugueteria Taiwan"])
+    resumen.cell(row=1, column=1).font = negrita
+    resumen.append(["Corrida: " + dt.datetime.now().strftime("%Y-%m-%d %H:%M")])
+    resumen.append([])
+    for etiqueta, valor in (
+        ("Productos analizados en POSGold", len(filas)),
+        ("Publicados en la tienda al correr", len(publicados)),
+        ("Publicados que ya no cumplen (salen en esta corrida)", salen),
+        ("Productos que entran", sum(1 for f in filas if f.get("estado") == "ENTRA")),
+        ("Total novedades (no publican)", len(novedades)),
+    ):
+        resumen.append([etiqueta, valor])
+        resumen.cell(row=resumen.max_row, column=1).font = negrita
+    resumen.append([])
+    resumen.append(["Tipo de novedad", "Productos"])
+    resumen.cell(row=resumen.max_row, column=1).font = negrita
+    resumen.cell(row=resumen.max_row, column=2).font = negrita
+    for hoja, n in sorted(conteo.items(), key=lambda kv: -kv[1]):
+        resumen.append([hoja, n])
+    resumen.column_dimensions["A"].width = 52
+    resumen.column_dimensions["B"].width = 12
+
+    hojas = {}
+    for f in novedades:
+        hojas.setdefault(hoja_novedad(f.get("motivo")), []).append(f)
+    encabezado = ["productoid", "codigo", "nombre", "categoria_posgold",
+                  "categoria_web", "disponible", "precio_detal", "novedad",
+                  "estaba_publicado"]
+    for hoja, filas_hoja in sorted(hojas.items()):
+        ws = wb.create_sheet(hoja[:31])
+        ws.append(encabezado)
+        for f in sorted(filas_hoja, key=lambda x: (x.get("codigo") or "")):
+            ws.append([
+                f.get("productoid") or "", f.get("codigo") or "",
+                f.get("nombre") or "", f.get("categoria_posgold") or "",
+                f.get("categoria_web") or "", f.get("disponible") or "",
+                f.get("precio_detal_con_iva") or "", f.get("motivo") or "",
+                "SI" if f.get("codigo") in publicados else "",
+            ])
+        for c in ws[1]:
+            c.font = negrita
+        for i, ancho in enumerate((12, 16, 52, 26, 16, 12, 13, 36, 16), 1):
+            ws.column_dimensions[get_column_letter(i)].width = ancho
+        ws.freeze_panes = "A2"
+
+    ruta = os.path.join(DIR_REPORTES, "novedades_" +
+                        dt.datetime.now().strftime("%Y-%m-%d_%H%M%S") + ".xlsx")
+    wb.save(ruta)
+    return ruta
+
+
+def escribir_reporte(filas, publicados=frozenset()):
     os.makedirs(DIR_REPORTES, exist_ok=True)
     stamp = dt.datetime.now().strftime("%Y-%m-%d_%H%M%S")
     ruta = os.path.join(DIR_REPORTES, f"sync_{stamp}.csv")
@@ -673,6 +785,9 @@ def escribir_reporte(filas):
         w.writeheader()
         for fila in filas:
             w.writerow({c: fila.get(c, "") for c in campos})
+    ruta_xlsx = escribir_reporte_excel(filas, publicados)
+    if ruta_xlsx:
+        log("Excel de novedades: " + ruta_xlsx)
     return ruta
 
 
@@ -770,8 +885,36 @@ def main():
     n2 = sembrar_cache_desde_dropi(cache)
     log(f"      sembrado desde catalogo.js: {n1} | desde DROPI: {n2} | cache total: {len(cache['por_codigo'])}")
 
+    # --- conciliacion: lo que la tienda publica hoy, contra POSGold en vivo ---
+    log("\n[4/6] Conciliacion con lo publicado, filtros y rentabilidad...")
+    publicados_antes = leer_skus_publicados()
+    por_codigo_api = {}
+    for it in productos_api:
+        c = codigo_limpio(it.get("Codigo") or it.get("Producto_cod"))
+        if c:
+            por_codigo_api.setdefault(c, it)
+    if publicados_antes:
+        razones = {}
+        for c in publicados_antes:
+            it = por_codigo_api.get(c)
+            if it is None:
+                razon = "ya no esta en la bodega consultada"
+            elif it.get("Activo") is not True:
+                razon = "inactivo en POSGold"
+            elif (it.get("Disponible") or 0) <= 0:
+                razon = "sin existencias"
+            else:
+                continue
+            razones[razon] = razones.get(razon, 0) + 1
+        if razones:
+            log("      CONCILIACION: " + str(len(publicados_antes)) + " publicados; "
+                + str(sum(razones.values())) + " ya no cumplen (salen en esta corrida): "
+                + ", ".join(r + " x" + str(n) for r, n in sorted(razones.items(), key=lambda kv: -kv[1])))
+        else:
+            log("      CONCILIACION: los " + str(len(publicados_antes)) +
+                " productos publicados siguen activos con existencias en POSGold")
+
     # --- analisis y filtros ---
-    log("\n[4/6] Filtros y rentabilidad...")
     analisis = []
     contadores = {}
     for it in productos_api:
@@ -792,18 +935,18 @@ def main():
         elif not it.get("Imagenes") or all(
                 PLACEHOLDER_POSGOLD in str(x).lower() for x in it.get("Imagenes")):
             fila.update({"estado": "OCULTO", "motivo": "sin foto en POSGold"})
-        elif not (it.get("Precio1") or 0) > 0:
+        elif not (it.get("Precio2") or 0) > 0:
             fila.update({"estado": "OCULTO", "motivo": "sin precio detal"})
         elif pid not in costos:
             fila.update({"estado": "OCULTO", "motivo": f"sin costo en Excel ({campo_costo})"})
         else:
             iva = float(it.get("ProductoImpuestoPorcentaje") or 0)
-            p1 = float(it["Precio1"])
-            base = p1 / (1 + iva / 100) if iva > 0 else p1
+            p2 = float(it["Precio2"])
+            base = p2 / (1 + iva / 100) if iva > 0 else p2
             costo = costos[pid]
             utilidad = base - costo
             fila.update({
-                "precio_detal_con_iva": int(round(p1)),
+                "precio_detal_con_iva": int(round(p2)),
                 "precio_base_sin_iva": round(base, 1),
                 "costo": costo,
                 "utilidad": round(utilidad, 1),
@@ -832,11 +975,6 @@ def main():
 
     # --- resolucion de fotos y seleccion ---
     log("\n[5/6] Seleccion del TOP " + str(cantidad) + " y resolucion de fotos...")
-    por_codigo_api = {}
-    for it in productos_api:
-        c = codigo_limpio(it.get("Codigo") or it.get("Producto_cod"))
-        if c:
-            por_codigo_api.setdefault(c, it)
 
     seleccion = []
     slugs_usados = {}
@@ -872,7 +1010,7 @@ def main():
         log("El catalogo NO se toco: la tienda sigue con la ultima version publicada.")
         log("Reintentar manualmente desde la pestana Actions o esperar la")
         log("siguiente corrida programada.")
-        escribir_reporte(analisis)
+        escribir_reporte(analisis, publicados_antes)
         sys.exit(1)
 
     def resolver_producto(fila, slug_fijo=None, refrescar=False):
@@ -1013,22 +1151,23 @@ def main():
             log(f"      lote {i // 40}: {len(seleccion)}/{cantidad} seleccionados "
                 f"(candidatos revisados: {min(i, len(candidatos))})")
 
-    # comparePrice: Precio2 sugerido, o precio x 1.19 para el badge
+    # comparePrice: el tachado sale del PRECIO 1 del sistema (el otro precio
+    # de POSGold) cuando queda por encima del detal (Precio2); si no, el
+    # precio x 1.19 para el badge (el index acota el descuento a 20-30%)
     fallback_xiva = env.get("COMPARE_FALLBACK_XIVA", "true").lower() == "true"
-    por_codigo_precio2 = {}
+    por_codigo_precio1 = {}
     for it in productos_api:
         c = codigo_limpio(it.get("Codigo") or it.get("Producto_cod"))
         if c:
-            por_codigo_precio2[c] = float(it.get("Precio2") or 0)
+            por_codigo_precio1[c] = float(it.get("Precio1") or 0)
     for fila in seleccion:
-        p1 = fila["precio_detal_con_iva"]
-        p2 = por_codigo_precio2.get(fila["codigo"], 0) or 0
-        p2 = int(round(p2))
-        if p2 > p1:
-            fila["compare"] = p2
+        precio = fila["precio_detal_con_iva"]
+        p1 = int(round(por_codigo_precio1.get(fila["codigo"], 0) or 0))
+        if p1 > precio:
+            fila["compare"] = p1
         else:
-            fila["compare"] = int(round(p1 * 1.19)) if fallback_xiva else 0
-        fila["precio"] = p1
+            fila["compare"] = int(round(precio * 1.19)) if fallback_xiva else 0
+        fila["precio"] = precio
 
     # los que cumplen pero no alcanzaron cupo en el TOP quedan marcados
     for fila in analisis:
@@ -1044,12 +1183,45 @@ def main():
     log("\n[6/6] Generando catalogo.js...")
     if not seleccion:
         log("ERROR: ningun producto seleccionado; NO se toca el catalogo.")
-        escribir_reporte(analisis)
+        escribir_reporte(analisis, publicados_antes)
         sys.exit(1)
+
+    # CONCILIACION dura, garantia "solo activos, si o si": antes de
+    # generar, TODO seleccionado debe seguir activo y con existencias en
+    # el estado que reporto POSGold en esta corrida. Si algo no cuadra,
+    # aborta SIN tocar el catalogo publicado.
+    violaciones = []
+    for f in seleccion:
+        it = por_codigo_api.get(f["codigo"]) or {}
+        if it.get("Activo") is not True:
+            violaciones.append((f, "inactivo en POSGold"))
+        elif (it.get("Disponible") or 0) <= 0:
+            violaciones.append((f, "sin existencias"))
+    if violaciones:
+        log("ERROR DE CONCILIACION: el catalogo quedaria con productos "
+            "que POSGold no reporta activos. NO se toca lo publicado.")
+        for f, razon in violaciones[:10]:
+            log(f"  {f['codigo']} · {razon} · {f['nombre'][:48]}")
+        escribir_reporte(analisis, publicados_antes)
+        sys.exit(1)
+
     contenido = generar_catalogo_js(env, seleccion, len(seleccion))
     if not validar_js_nodo(contenido):
-        escribir_reporte(analisis)
+        escribir_reporte(analisis, publicados_antes)
         sys.exit(1)
+
+    # segunda puerta: el contenido ya generado no debe traer un solo SKU
+    # inactivo (mismo estado de POSGold, ahora sobre el texto final)
+    skus_generados = set(re.findall(r'sku:"([^"]+)"', contenido))
+    inactivos_generados = [c for c in skus_generados
+                           if (por_codigo_api.get(c) or {}).get("Activo") is not True]
+    if inactivos_generados:
+        log("ERROR DE CONCILIACION: el catalogo generado trae SKUs inactivos: "
+            + ", ".join(inactivos_generados[:10]) + ". NO se publica.")
+        escribir_reporte(analisis, publicados_antes)
+        sys.exit(1)
+    log(f"      conciliacion OK: {len(skus_generados)} productos, "
+        "todos activos y con existencias en POSGold")
 
     if args.dry_run:
         log("DRY-RUN: catalogo.js NO se modifica. Primer producto:")
@@ -1063,12 +1235,21 @@ def main():
         if not index_referencia_catalogo():
             log("      AVISO: index.html no carga catalogo.js — agregale "
                 '<script src="catalogo.js"></script> antes del script principal.')
+        # tercera puerta sobre el archivo ya escrito: lo que quedo
+        # publicado debe ser 100% activo; si no, se aborta sin publicar
+        inactivos_escritos = [c for c in leer_skus_publicados()
+                              if (por_codigo_api.get(c) or {}).get("Activo") is not True]
+        if inactivos_escritos:
+            log("ERROR DE CONCILIACION: catalogo.js quedo con SKUs inactivos: "
+                + ", ".join(inactivos_escritos[:10]) + ". NO se publica.")
+            escribir_reporte(analisis, publicados_antes)
+            sys.exit(1)
         if args.publicar:
             if publicar_git(env, len(seleccion)):
                 log("      publicado en GitHub (Pages republica solo)")
 
     guardar_cache(cache)
-    ruta_reporte = escribir_reporte(analisis)
+    ruta_reporte = escribir_reporte(analisis, publicados_antes)
     log(f"\nReporte completo: {ruta_reporte}")
 
     # resumen de consola

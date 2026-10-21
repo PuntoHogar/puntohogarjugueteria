@@ -38,6 +38,8 @@ En cada corrida, `sync_posgold.py`:
 
 1. Genera un JWT fresco de la API de POSGold (`/apiGold`).
 2. Descarga el inventario de la bodega 2 y lo cruza con los costos del Excel cifrado.
+   El precio detal sale del **Precio 2** del sistema; el tachado (`comparePrice`),
+   del Precio 1 cuando queda por encima.
 3. Aplica los **filtros duros de la tienda**: activo + existencias + foto real +
    categoría vendible + costo conocido + rentabilidad positiva.
 4. Ordena por margen y resuelve cada producto:
@@ -47,7 +49,13 @@ En cada corrida, `sync_posgold.py`:
      WebP por foto (el servidor de POSGold tarda ~2 s por foto: la vitrina usa
      las miniaturas del repo y el lightbox sube al original bajo demanda).
 5. Regenera `catalogo.js` (con el top de utilidad para "Los imperdibles") y
-   publica: GitHub Pages republica solo.
+   publica: GitHub Pages republica solo. **Conciliación dura con POSGold**: antes
+   y después de generar verifica que el catálogo quede 100 % con productos
+   activos y con existencias; si algo no cuadra, aborta sin tocar lo publicado.
+6. Deja `reportes/novedades_*.xlsx`: el Excel de la tienda con todo lo que NO
+   publica y por qué (inactivos, agotados, duplicados, sin precio, sin foto, sin
+   costo, rentabilidad negativa), marcando los que estaban publicados. El cron lo
+   sube como artefacto descargable en la pestaña Actions.
 
 Los pedidos no tienen backend: el checkout arma el mensaje de WhatsApp con la
 referencia de cada producto y su enlace directo a la ficha en esta misma tienda

@@ -91,6 +91,15 @@ es rechazado, el cron movió el remoto: `git pull --rebase origin main` y de nue
 - **Pedidos**: `sendWhatsAppOrder()` arma el mensaje de WhatsApp; el enlace de
   cada producto apunta a `?producto={slug}` de esta misma tienda (deep link que
   resalta la tarjeta con `scrollToProduct`).
+- **Sincronización (`sync_posgold.py`)**: el detal sale del **Precio 2** del
+  sistema (el tachado, del Precio 1 cuando queda encima) y los filtros duros son
+  activo + existencias + foto + categoría + costo + rentabilidad. Conciliación
+  dura con POSGold en 3 puertas (pre-generación, contenido y archivo escrito):
+  si el catálogo quedara con UN solo producto inactivo o sin existencias, aborta
+  SIN tocar lo publicado. Cada corrida deja `reportes/sync_*.csv` (con costos:
+  nunca publicar) y `reportes/novedades_*.xlsx` para la tienda (lo que no
+  publica y por qué, marcando lo que estaba publicado); el cron sube ese Excel
+  como artefacto de Actions.
 
 ## Gotchas conocidos
 

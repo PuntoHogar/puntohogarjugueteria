@@ -86,3 +86,14 @@ jobs:
           GIT_AUTHOR_EMAIL: actions@github.com
           GIT_COMMITTER_NAME: sync-posgold
           GIT_COMMITTER_EMAIL: actions@github.com
+
+      # Novedades de la corrida (inactivos, agotados, duplicados, sin
+      # precio, sin foto, sin costo...) para descargar desde Actions.
+      - name: Subir Excel de novedades
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: novedades-sync
+          path: reportes/novedades_*.xlsx
+          if-no-files-found: ignore
+          retention-days: 30
