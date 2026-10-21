@@ -15,19 +15,21 @@ catálogo se sincroniza solo, 4 veces al día, desde el sistema POSGold de la ti
 | Archivo / carpeta | Qué es |
 |---|---|
 | `index.html` | La tienda completa: vitrina, carruseles, lightbox, carrito, checkout por WhatsApp y panel de administración |
-| `catalogo.js` | Catálogo generado automáticamente (1.911 productos). **No se edita a mano**: el cron lo regenera en cada corrida |
+| `catalogo.js` | Catálogo generado automáticamente (1.954 productos). **No se edita a mano**: el cron lo regenera en cada corrida |
 | `data/configuracion.js` | Configuración publicada desde el panel: la que ven **todos** los visitantes. La mantiene el botón "Publicar para todos" del panel vía la API de GitHub — nadie la edita a mano |
 | `assets/fotos/` | Miniaturas WebP (~25 KB) de cada foto de producto, generadas por el cron desde POSGold y servidas por el CDN de GitHub Pages |
 | `data/mapa_imagenes.json` | Cache de la relación SKU ↔ slug ↔ foto |
 | `sync_posgold.py` | Sincronizador: POSGold → filtros de la tienda → miniaturas → `catalogo.js` |
 | `.github/workflows/sync-top300.yml` | Cron en GitHub Actions (07:15, 08:15, 19:15 y 20:15, hora Colombia) |
+| `hub/` | **Hub (mini-VTEX)**: catálogo maestro con costos + adaptadores de canal (Mercado Libre activo). Ver [`hub/README.md`](hub/README.md) y [`docs/plan_hub.md`](docs/plan_hub.md) |
 | `costos.posgold.enc` | Excel de costos de POSGold **cifrado** (AES-256-CBC + PBKDF2) — el repo es público y los costos jamás viajan en claro |
 | `assets/` (favicon, og) | Iconos de la marca |
 
 Archivos **locales** (excluidos del repo por `.gitignore`): `.env` (credenciales
 POSGold y llave de cifrado), `*.xlsx` (exportes con costos), `qa_e2e.py` (suite QA
 completa; contiene la clave del panel en su escenario de admin),
-`reportes/` (CSVs con costos y márgenes) y `generar_enlace_config.py` (arma el
+`reportes/` (CSVs con costos y márgenes + el Excel de novedades de cada corrida)
+y `generar_enlace_config.py` (arma el
 enlace de configuración de un solo toque para cargar llave y tokens en el
 navegador de la administración). `qa_carrito.py` sí vive en el repo: no toca
 el panel y no lleva secretos.
@@ -104,10 +106,31 @@ corrida. El panel avisa "⚠️ Costos desactualizados" cuando el archivo pasa
 de 15 días. Si POSGold algún día agrega el campo de costo al API, el
 workflow documenta cómo retirar la dependencia del Excel.
 
+## El hub: catálogo maestro y canales (nuestro mini-VTEX)
+
+El **hub** (`hub/`) es la capa que convierte este repo en una plataforma de
+canales: un catálogo maestro único (todo el inventario de POSGold con costos,
+gitignored) del que beben los adaptadores. El primero en producción planeado:
+**Mercado Libre** — altas, pausas/activaciones, stock y precios automáticos
+con guardia de rentabilidad sobre la comisión real de ML.
+
+- Documentación operativa (comandos, variables, token rotativo):
+  [`hub/README.md`](hub/README.md).
+- Plan completo (fases 2–4: webhooks, OMS, panel unificado) y decisiones
+  abiertas: [`docs/plan_hub.md`](docs/plan_hub.md).
+
+```bash
+python hub/construir_hub.py                       # catálogo maestro (requiere Excel de costos)
+python hub/canal_ml.py --dry-run                  # plan del canal ML sin token ni red
+python hub/canal_ml.py --autorizar                # primera vez: OAuth de ML
+python hub/canal_ml.py --sincronizar --publicar 3 # corrida completa del canal
+```
+
 ## Características de la tienda
 
 - Vitrina con grid paginado, carruseles por categoría y lightbox tipo Amazon.
-- Precios calculados con margen y **redondeados a múltiplos de $1.000**
+- Precios calculados sobre el **Precio 2** del sistema (el tachado, del Precio 1),
+  con margen y **redondeados a múltiplos de $1.000**
   (1000, 2000, 3000…): configurable desde el panel ("Sin redondeo" a
   "1.000").
 - Efecto de compra: al agregar al carrito, la foto del juguete vuela hasta
@@ -192,14 +215,16 @@ Publicar = `git push origin main` (GitHub Pages reconstruye en ~1 minuto).
 
 ## Checkpoint — octubre de 2026
 
-Estado del proyecto tras la última tanda de mejoras (20 de octubre de 2026):
+Estado del proyecto tras la última tanda de mejoras (21 de octubre de 2026):
 
 | Área | Estado |
 |---|---|
-| Precios | Redondeados a múltiplos de **$1.000** (fábrica en `PRECIOS_DEFECTO` y publicado en `data/configuracion.js`, sincronizados) |
+| Precios | Redondeados a múltiplos de **$1.000** (fábrica en `PRECIOS_DEFECTO` y publicado en `data/configuracion.js`, sincronizados). La base del detal es el **Precio 2** de POSGold; el tachado sale del Precio 1 |
 | Efecto de compra | **Vuelo al carrito** + pop del badge al agregar; **confeti** al enviar el pedido — sin librerías, respetan `prefers-reduced-motion` |
 | QA | `qa_e2e.py` **42/42** y `qa_carrito.py` **38/38** (verde antes de publicar) |
 | Costos | Documentado: el API de POSGold no trae costos (verificado); el Excel de PRODUCTOS es el contrato de formato y el pipeline falla seguro en cada etapa |
-| Catálogo | 1.911 productos publicados; los nuevos de POSGold entran solos en la próxima corrida si cumplen los filtros (incluido costo en el Excel) |
+| Catálogo | 1.954 productos publicados, **todos activos y con existencias**: la conciliación dura con POSGold (3 puertas) aborta la corrida sin publicar si algo no cuadra; los nuevos de POSGold entran solos en la próxima corrida si cumplen los filtros (incluido costo en el Excel) |
+| Novedades | Cada corrida deja `reportes/novedades_*.xlsx` para la tienda: lo que no publica y por qué (inactivos, agotados, duplicados, sin precio, sin foto, sin costo), marcando lo que estaba publicado; el cron lo sube como artefacto de Actions (`novedades-sync`) |
+| Hub | **Fase 0+1 construidas** (21 oct 2026): catálogo maestro con costos + adaptador de Mercado Libre (`hub/`); pendiente aprobar la app en developers.mercadolibre.com.co |
 | Panel | Publica configuración y costos solo (API de GitHub); nada se edita a mano |
 | Dopamina descartada | Urgencia artificial y metas falsas: probadas/evaluadas y rechazadas (la urgencia ya costó pedidos una vez) |

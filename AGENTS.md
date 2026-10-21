@@ -68,7 +68,9 @@ es rechazado, el cron movió el remoto: `git pull --rebase origin main` y de nue
 - **Precios**: `precioDetal()` = base × multiplicador × (1+margen) y
   `redondearPrecio()` al múltiplo de `PRECIOS.redondeo` (**1000** hoy: la
   fábrica en `PRECIOS_DEFECTO` y lo publicado en `data/configuracion.js`
-  deben llevar el mismo valor o lo publicado tapa a la fábrica). El
+  deben llevar el mismo valor o lo publicado tapa a la fábrica). La base
+  llega del cron: el **Precio 2** del sistema que trae `catalogo.js` (el
+  tachado de publicación sale del Precio 1 cuando queda encima). El
   tachado (`compareDetal`) se acota a un descuento creíble de 20–30%.
 - **Carrito**: `cart` fusiona líneas por `lineId` (`id::talla`), el total
   sale de `getCartSummary()` (Σ precio×cantidad) y `qa_carrito.py` (36/36)
@@ -100,6 +102,21 @@ es rechazado, el cron movió el remoto: `git pull --rebase origin main` y de nue
   nunca publicar) y `reportes/novedades_*.xlsx` para la tienda (lo que no
   publica y por qué, marcando lo que estaba publicado); el cron sube ese Excel
   como artefacto de Actions.
+- **Hub (`hub/`, fase 0+1)**: catálogo maestro + adaptador de Mercado Libre.
+  `hub/construir_hub.py` genera `hub/productos.json` — TODO el inventario de
+  POSGold (activos y agotados: los canales necesitan saber cuándo pausar) con
+  costos unidos por `Productoid`; es **gitignored, NUNCA se commitea ni se
+  imprimen costos a consola**. `hub/canal_ml.py` lee ese hub y gestiona el
+  canal ML: altas, pausas/activaciones, stock y precio (detal ×
+  `ML_PRECIO_FACTOR`, con guardia de rentabilidad descontando la comisión
+  `ML_COMISION_PCT`; sin costo conocido no publica). El estado del canal
+  (SKU→listing, sin costos) vive en `data/canal_ml.json` (generado, se
+  commitea). El refresh token de ML **rota en cada uso**: se persiste cifrado
+  en `hub/ml_token.enc` (AES-256+PBKDF2, mismo modelo que `costos.posgold.enc`;
+  ese blob sí se commitea) y el workflow `sync-ml.yml` lo renueva y lo vuelve a
+  subir. `sync-ml.yml` es dispatch-only hasta aprobar la app en
+  developers.mercadolibre.com.co. Comandos: `--autorizar` (primera vez),
+  `--prueba`, `--dry-run` (sin red ni token), `--sincronizar --publicar N`.
 
 ## Gotchas conocidos
 
