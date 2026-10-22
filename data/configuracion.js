@@ -2,7 +2,7 @@
 // (botón "Publicar para todos"). Se aplica a TODOS los visitantes de
 // saldosjugueteriataiwan.com. Nadie necesita editar este archivo a mano.
 window.CONFIG_PUBLICADA = {
-  "version": 1792504792896,
+  "version": 1792703676820,
   "tienda": {
     "nombre": "Juguetería Taiwan",
     "logo": "https://jugueteriataiwan.com/storage/branding/70TI84WCuEegX1pJk5ttvppyKKn2sCze24oHDKoi.png",
@@ -32,18 +32,13 @@ window.CONFIG_PUBLICADA = {
     "sonidoAlAgregar": true
   },
   "precios": {
-    "margenGlobal": 0.25,
+    "margenGlobal": 0,
     "multiplicadorBase": 1,
-    "redondeo": 1000,
-    "margenesPorCategoria": {
-      "temporada": 0.35
-    },
+    "redondeo": 0,
+    "margenesPorCategoria": {},
     "temporadaIds": [
-      "peluche-oso-panda-con-corazon-te-amo-21cm",
       "burbujero-capibara",
       "burbujero-mounstro-pilas-bolsa-2-colores",
-      "domino-10mm-x28-en-estuche",
-      "burbujero-mil-burbujas-pilas-cj-bubble-gun-4-motivos",
       "juguete-didactico-avion",
       "rummikub-clasico-caja-azul-1",
       "set-tienda-con-licuadora-y-accesorios-1",
@@ -57,8 +52,8 @@ window.CONFIG_PUBLICADA = {
       "caja-registradora-con-pilas-luz-ysonido-en-caja",
       "set-de-herramientas-negra-pilas",
       "muneco-goku",
-      "set-reloj-digital-de-mano-con-audifonos-inalambricos-1",
-      "excavadora-control-remoto-pila-recargable-5"
+      "excavadora-control-remoto-pila-recargable-5",
+      "burbujero-mil-burbujas-pilas-cj-bubble-gun-4-motivos"
     ],
     "preciosPersonalizados": {}
   }
