@@ -77,8 +77,8 @@ async def main():
         ok(1, "nombre y SKU exactos del catalogo",
            len(l1) == 1 and l1[0]["name"] == b["name"] and l1[0]["sku"] == b["sku"],
            (l1[0]["name"] if l1 else "")[:40])
-        ok(1, "precio de linea = precio detal vigente (redondeado a $1.000)",
-           len(l1) == 1 and l1[0]["price"] == b["opt"] and b["opt"] % 1000 == 0,
+        ok(1, "precio de linea = precio detal vigente (exacto)",
+           len(l1) == 1 and l1[0]["price"] == b["opt"],
            str(l1[0]["price"] if l1 else 0))
         ok(1, "talla y cantidad correctas (Unidad x 1)",
            len(l1) == 1 and l1[0]["sizeLabel"] == "Unidad" and l1[0]["quantity"] == 1,
@@ -207,18 +207,21 @@ async def main():
            m3["n"] == 1 and m3["total"] == m3["precio"] * m3["qty"] and m3["total"] != total_antes,
            str(m3["total"]))
 
-        # TODO el catalogo: precios en miles y tachado coherente
+        # TODO el catalogo: la tienda vende al Precio 2 exacto de POSGold
+        # (margen 0 y sin redondeo) y el tachado, si existe, es real
         m4 = await page.evaluate("""() => {
-            let malRed = 0, malCompare = 0;
+            let malExacto = 0, malCompare = 0;
+            const base = new Map(CATALOGO_BASE.map(p => [p.id, p]));
             products.forEach(p => {
-                if (p.price % 1000 !== 0) malRed++;
+                const b = base.get(p.id);
+                if (b && p.price !== b.price) malExacto++;
                 if (p.comparePrice && p.comparePrice <= p.price) malCompare++;
-                flattenSizeOptions(p).forEach(o => { if (o.price % 1000 !== 0) malRed++; });
+                flattenSizeOptions(p).forEach(o => { if (b && o.price !== b.price) malExacto++; });
             });
-            return { malRed: malRed, malCompare: malCompare, n: products.length };
+            return { malExacto: malExacto, malCompare: malCompare, n: products.length };
         }""")
-        ok(2, f"los {m4['n']} productos y sus tallas terminan en miles exactos",
-           m4["malRed"] == 0, f"{m4['malRed']} precios mal redondeados")
+        ok(2, f"los {m4['n']} productos se venden al Precio 2 exacto de POSGold",
+           m4["malExacto"] == 0, f"{m4['malExacto']} precios alterados")
         ok(2, "ningun tachado es menor o igual al precio de venta",
            m4["malCompare"] == 0, str(m4["malCompare"]))
 

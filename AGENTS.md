@@ -62,16 +62,34 @@ es rechazado, el cron movió el remoto: `git pull --rebase origin main` y de nue
   el enlace del pie, `?admin=1` o Ctrl+Shift+A. Sus secciones se pintan desde
   funciones `pintar*Admin()`.
 - **Visibilidad**: `catalogoVisible()` filtra categorías/productos ocultos
-  (`TIENDA.categoriasOcultas` / `productosOcultos`); el panel siempre ve
-  `CATALOGO_BASE` completo. La clave `"navidad"` esconde la sección de
-  temporada, no sus productos.
+  (`TIENDA.categoriasOcultas` / `productosOcultos`) y luego aplica las reglas
+  activas (`aplicarReglasTienda()`); el panel siempre ve `CATALOGO_BASE`
+  completo. La clave `"navidad"` esconde la sección de temporada, no sus
+  productos.
+- **Reglas de la tienda**: `TIENDA.reglas` (ids separados por comas, como
+  categoriasOcultas) enciende/apaga las reglas de `REGLAS_TIENDA` desde el
+  panel (selección múltiple, `pintarReglasAdmin()` con vista previa viva de
+  cuántos ocultaría). Regla 1 `deduplicar-mayor-existencia` (activa de
+  fábrica): de los publicados con nombre o descripción EXACTAMENTE iguales
+  (`gruposDuplicadosExactos`, insensible a mayúsculas y espacios repetidos,
+  uniendo ambos criterios) solo muestra el de MÁS existencias de POSGold
+  (campo `stock` de `catalogo.js`; empate → el más barato; sin `stock` se
+  lee 0 y la regla nunca rompe). Agregar una regla nueva = objeto en
+  `REGLAS_TIENDA` con `id`, textos y `filtrar()`.
 - **Precios**: `precioDetal()` = base × multiplicador × (1+margen) y
-  `redondearPrecio()` al múltiplo de `PRECIOS.redondeo` (**1000** hoy: la
-  fábrica en `PRECIOS_DEFECTO` y lo publicado en `data/configuracion.js`
-  deben llevar el mismo valor o lo publicado tapa a la fábrica). La base
-  llega del cron: el **Precio 2** del sistema que trae `catalogo.js` (el
-  tachado de publicación sale del Precio 1 cuando queda encima). El
-  tachado (`compareDetal`) se acota a un descuento creíble de 20–30%.
+  `redondearPrecio()` al múltiplo de `PRECIOS.redondeo`. **Desde el
+  22-10-2026 la tienda vende al Precio 2 exacto de POSGold**: margen 0,
+  redondeo 0 (la fábrica en `PRECIOS_DEFECTO` y lo publicado en
+  `data/configuracion.js` deben llevar los mismos valores o lo publicado
+  tapa a la fábrica). La base llega del cron: el **Precio 2** del sistema
+  que trae `catalogo.js`. El tachado (`compareDetal`) es **honesto**:
+  solo existe si POSGold trae un Precio 1 real por encima del Precio 2
+  (el cron ya no inventa respaldos ×1,19 y el index no fuerza la banda
+  20–30%); hoy ningún producto lo trae, así que no hay badges de
+  descuento. Por debajo del paso de redondeo no se redondea (el piso de
+  $1.000 que disparaba los baratos se retiró). El margen de temporada
+  (`margenesPorCategoria.temporada`) solo aplica entre **octubre y
+  diciembre** (`margenDeCategoria`); hoy está en 0.
 - **Carrito**: `cart` fusiona líneas por `lineId` (`id::talla`), el total
   sale de `getCartSummary()` (Σ precio×cantidad) y `qa_carrito.py` (36/36)
   vigila identidad de líneas, aritmética exacta hasta el mensaje de
@@ -95,7 +113,9 @@ es rechazado, el cron movió el remoto: `git pull --rebase origin main` y de nue
   resalta la tarjeta con `scrollToProduct`).
 - **Sincronización (`sync_posgold.py`)**: el detal sale del **Precio 2** del
   sistema (el tachado, del Precio 1 cuando queda encima) y los filtros duros son
-  activo + existencias + foto + categoría + costo + rentabilidad. Conciliación
+  activo + existencias + foto + categoría + costo + rentabilidad. Cada producto
+  de `catalogo.js` viaja con `stock` (existencias de la bodega: lo usan las
+  reglas de la tienda del panel para deduplicar, desde 2026-10-22). Conciliación
   dura con POSGold en 3 puertas (pre-generación, contenido y archivo escrito):
   si el catálogo quedara con UN solo producto inactivo o sin existencias, aborta
   SIN tocar lo publicado. Cada corrida deja `reportes/sync_*.csv` (con costos:
@@ -117,6 +137,18 @@ es rechazado, el cron movió el remoto: `git pull --rebase origin main` y de nue
   subir. `sync-ml.yml` es dispatch-only hasta aprobar la app en
   developers.mercadolibre.com.co. Comandos: `--autorizar` (primera vez),
   `--prueba`, `--dry-run` (sin red ni token), `--sincronizar --publicar N`.
+- **POSGold: panel Desarrollador de la cuenta (21-10-2026)**: la empresa
+  tiene 8 endpoints API registrados, 5 de creación de PEDIDOS
+  (`PedidoWebCreateAnonimo_v3/_v5`, `PedidoCreateExternal`,
+  `PedidoCreateExternal_Anonimo`, `PedidoCreate_PluginWordPress`),
+  `PedidoGestionApi/CrearPedido`, `CiudadApi/CiudadesGet` y el
+  `GetProduct_V6` en uso — todos marcados "Inactivo" (verificado:
+  `CiudadesGet` responde 404 con JWT válido; `GetProduct_V6` 200). Hay
+  botón "Actualizar permisos" en `/apilog/Index`. La sección Webhooks
+  existe pero está vacía (pedir catálogo de eventos). El token maestro
+  (Empresa → Token) vive en `.env` como `POSGOLD_API_TOKEN` (local,
+  gitignored). Correo a GoldPOS listo en `docs/correo_goldpos.md`; plan
+  completo en `docs/plan_hub.md` y `hub/README.md`.
 
 ## Gotchas conocidos
 
@@ -140,6 +172,8 @@ es rechazado, el cron movió el remoto: `git pull --rebase origin main` y de nue
   34 campos, ninguno de costo; el login web tiene captcha): no intentar
   automatizar el refresco de costos. El plan B si POSGold algún día expone
   el campo está documentado en `.github/workflows/sync-top300.yml`.
+  (Diferente: los endpoints de PEDIDO sí existen en la cuenta, solo están
+  sin activar — ver la sección del hub arriba y `docs/correo_goldpos.md`.)
 - **El Excel de costos es un contrato de formato**: el export de PRODUCTOS
   de POSGold trae 86 columnas y encabezados en minúscula
   (`productoid`, `costo`, `costopromedio`, `costoultimo`); el pipeline lee

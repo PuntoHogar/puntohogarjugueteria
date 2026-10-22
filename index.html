@@ -5119,6 +5119,13 @@
             min-height: 42px;
         }
         .admin-check input { width: 18px; height: 18px; accent-color: var(--primary-color); }
+        /* Reglas de la tienda: texto explicativo largo -> una casilla por
+           fila, con el texto alineado arriba junto a su interruptor. */
+        .admin-grid-reglas { grid-template-columns: 1fr; }
+        .admin-regla { align-items: flex-start !important; min-height: 0; padding: 8px 4px; }
+        .admin-regla input { margin-top: 2px; flex-shrink: 0; }
+        .admin-regla strong { font-size: 0.85rem; }
+        .admin-regla small { display: inline; line-height: 1.35; }
         .admin-separador {
             border: none;
             border-top: 1px solid var(--border-color);
@@ -6325,6 +6332,14 @@
                 <div class="admin-resultados" id="adminOcultarResultados"></div>
                 <div class="admin-fijados" id="adminOcultosLista"></div>
 
+                <h4 class="admin-sub">🧹 Reglas de la tienda <small>(marca las que quieres que trabajen; puedes combinar varias)</small></h4>
+                <p class="admin-help admin-help-mini">
+                    Las reglas revisan en cada visita los juguetes <strong>publicados y activos</strong> y ocultan los repetidos de la vitrina. No borran nada: aquí en el panel siempre ves todo y desmarcando la casilla la tienda vuelve a mostrarlo al instante.
+                </p>
+                <div class="admin-grid admin-grid-reglas" id="adminReglas">
+                    <!-- JS: una casilla por regla, con cuántos repetidos ocultaría ahora mismo -->
+                </div>
+
                 <h4 class="admin-sub">Precio exacto para un juguete <small>(se vende tal cual, sin ganancia extra)</small></h4>
                 <input type="text" class="admin-buscar" id="adminBuscarProd" placeholder="Escribe el nombre del juguete… ej: excavadora" oninput="buscarProductoAdmin()">
                 <div class="admin-resultados" id="adminResultados"></div>
@@ -6567,6 +6582,17 @@
             categoriasOcultas: 'navidad, colecciones',
             productosOcultos: '',
 
+            // 🧹 Reglas de la tienda: ids separados por comas (se pueden
+            // marcar VARIAS en el panel; vacío = todas apagadas). Cada una
+            // revisa los juguetes publicados y activos en cada visita, así
+            // que encenderlas o apagarlas es instantáneo y reversible.
+            // "deduplicar-mayor-existencia": de los juguetes con nombre o
+            // descripción exactamente iguales solo se muestra el de MÁS
+            // existencias en POSGold (las trae el cron en el campo stock
+            // de catalogo.js); los repetidos se ocultan de la tienda y el
+            // panel siempre los puede volver a mostrar.
+            reglas: 'deduplicar-mayor-existencia',
+
             // Crédito en cuotas (Addi / Sistecrédito)
             creditoActivo: true,
             simuladorEnTarjetas: true,
@@ -6661,6 +6687,9 @@
                 // aplica cuando este navegador nunca guardó la tienda.
                 categoriasOcultas: (typeof guardados.categoriasOcultas === 'string') ? guardados.categoriasOcultas : TIENDA_FABRICA.categoriasOcultas,
                 productosOcultos: (typeof guardados.productosOcultos === 'string') ? guardados.productosOcultos : TIENDA_FABRICA.productosOcultos,
+                // Reglas de la tienda: el vacío también es significativo
+                // ("ninguna regla activa"), como en categoriasOcultas.
+                reglas: (typeof guardados.reglas === 'string') ? guardados.reglas : TIENDA_FABRICA.reglas,
                 creditoActivo: si(guardados.creditoActivo, TIENDA_FABRICA.creditoActivo),
                 simuladorEnTarjetas: si(guardados.simuladorEnTarjetas, TIENDA_FABRICA.simuladorEnTarjetas),
                 aliados: texto(guardados.aliados, TIENDA_FABRICA.aliados),
@@ -6804,37 +6833,36 @@
               por el texto copiado y sube el archivo.
            ================================================================== */
         const PRECIOS_DEFECTO = {
-            // Margen global por defecto: +25% sobre el precio base
-            margenGlobal: 0.25,
+            // Margen global: 0 = el precio de venta es EL PRECIO 2 de
+            // POSGold tal cual (decisión de la tienda, 22-10-2026). Si
+            // algún día se quiere volver a sumar ganancia, se sube aquí
+            // o desde el panel ("¿Cuánto quieres ganar?").
+            margenGlobal: 0,
 
             // Multiplicador general de los precios base (1 = sin cambio)
             multiplicadorBase: 1,
 
-            // Redondeo de precios finales al múltiplo de... (0 = sin redondeo)
-            redondeo: 1000,
+            // Redondeo de precios finales al múltiplo de... (0 = sin
+            // redondeo: el precio de venta es el Precio 2 exacto)
+            redondeo: 0,
 
             // Margen por categoría: SOBREESCRIBE el global. En decimales
             // (0.30 = +30%). Borrar la línea para volver al global.
-            margenesPorCategoria: {
-                // 'vehiculos': 0.30,
-                // 'colecciones': 0.35,
-                // 'burbujeros': 0.20,
-                // Ganancia de los productos de TEMPORADA (Oct-Dic / Navidad):
-                // se aplica solo a los juguetes de la lista temporadaIds.
-                'temporada': 0.35,
-            },
+            // "temporada" es la ganancia de los productos de Navidad
+            // (solo aplica entre Octubre y Diciembre). Hoy la tienda
+            // vende al Precio 2 exacto: sin márgenes propios.
+            margenesPorCategoria: {},
 
             // 🎄 PRODUCTOS DE TEMPORADA (octubre-diciembre / Navidad):
-            // selección curada de referencias con buen margen y ticket
-            // medio — perfectas para regalo. La administración puede
-            // agregar o quitar productos desde el panel. La clave es el
-            // id del producto (igual que en preciosPersonalizados).
+            // selección curada de referencias con buen ticket medio —
+            // perfectas para regalo. La administración puede agregar o
+            // quitar productos desde el panel. La clave es el id del
+            // producto (igual que en preciosPersonalizados). La ganancia
+            // especial de temporada vive en margenesPorCategoria.temporada
+            // y SOLO se aplica entre Octubre y Diciembre.
             temporadaIds: [
-                'peluche-oso-panda-con-corazon-te-amo-21cm',      // 12.300 peluche clásico de regalo
                 'burbujero-capibara',                              // 15.000 tendencia capibara
                 'burbujero-mounstro-pilas-bolsa-2-colores',        // 18.000
-                'domino-10mm-x28-en-estuche',                      // 18.700 juego de mesa
-                'burbujero-mil-burbujas-pilas-cj-bubble-gun-4-motivos', // 16.000 estrella de la tienda
                 'juguete-didactico-avion',                         // 24.000 didáctico
                 'rummikub-clasico-caja-azul-1',                    // 28.000 juego familiar
                 'set-tienda-con-licuadora-y-accesorios-1',         // 30.000 juego de roles
@@ -6848,8 +6876,8 @@
                 'caja-registradora-con-pilas-luz-ysonido-en-caja',  // 55.000 juego de roles
                 'set-de-herramientas-negra-pilas',                 // 56.000
                 'muneco-goku',                                     // 60.000 colección anime
-                'set-reloj-digital-de-mano-con-audifonos-inalambricos-1', // 64.000
                 'excavadora-control-remoto-pila-recargable-5',      // 70.000 RC premium
+                'burbujero-mil-burbujas-pilas-cj-bubble-gun-4-motivos', // 16.000 estrella de la tienda
             ],
 
             // Precio final FIJO por producto (ignora márgenes). Clave = id.
@@ -6903,8 +6931,14 @@
         function margenDeCategoria(cat, producto) {
             // Los productos de temporada (Oct-Dic) pueden tener su propia
             // ganancia ("temporada" en margenesPorCategoria), pensada para
-            // dejar buen margen en las fechas de mayor venta.
-            if (producto && esNavidad(producto)) {
+            // dejar buen margen en las fechas de mayor venta. La ventana es
+            // la de la temporada de verdad — Octubre a Diciembre —: fuera
+            // de esos meses el margen especial NO aplica (antes se sumaba
+            // los 365 días del año). esNavidad sigue detectando los
+            // productos para la SECCIÓN de temporada todo el año.
+            const mes = new Date().getMonth() + 1;   // 1-12
+            const enTemporada = mes >= 10 && mes <= 12;
+            if (producto && enTemporada && esNavidad(producto)) {
                 const t = PRECIOS.margenesPorCategoria['temporada'];
                 if (typeof t === 'number' && isFinite(t)) return t;
             }
@@ -6915,7 +6949,11 @@
         function redondearPrecio(n) {
             const r = PRECIOS.redondeo;
             if (!r || r <= 0) return Math.round(n);
-            return Math.max(r, Math.round(n / r) * r);
+            // Por debajo del paso NO se redondea: el piso de $1.000
+            // disparaba el precio de los juguetes muy baratos (uno de $200
+            // terminaba costando $1.000, +400%). Se mantiene exacto.
+            if (n < r) return Math.round(n);
+            return Math.round(n / r) * r;
         }
 
         // Precio detal final de un producto del catálogo base
@@ -6925,7 +6963,12 @@
             return redondearPrecio(p.price * PRECIOS.multiplicadorBase * (1 + margenDeCategoria(p.category, p)));
         }
 
-        // Tachado detal (mantiene el % de descuento publicado)
+        // Tachado detal HONESTO: solo existe si POSGold trae un precio
+        // real por encima del Precio 2 publicado (el cron ya no inventa
+        // tachados de respaldo). Aquí tampoco se fuerza ningún rango de
+        // descuento: el "antes" que se ve es el real, escalado con el
+        // mismo multiplicador y margen del precio final. Si no hay
+        // precio mayor, no hay badge — no se fabrican rebajas.
         function compareDetal(p) {
             if (!p.comparePrice || p.comparePrice <= p.price) return 0;
             const fijado = PRECIOS.preciosPersonalizados[p.id];
@@ -6935,27 +6978,9 @@
             } else {
                 antes = redondearPrecio(p.comparePrice * PRECIOS.multiplicadorBase * (1 + margenDeCategoria(p.category, p)));
             }
-            // Badge moderado y creible: el descuento mostrado queda entre
-            // 20% y 30%. El "antes" real (Precio2 sugerido de POSGold) se
-            // respeta cuando cae en ese rango; si implicaba mas de 30% se
-            // acota (un -45% en el badge sonaba a truco) y si implicaba
-            // menos de 20% se sube al piso. Los costos no participan.
-            const precio = precioDetal(p);
-            let antesFinal = redondearPrecio(
-                Math.min(Math.max(antes, precio / (1 - 0.20)), precio / (1 - 0.30)));
-            // El redondeo a $100 desplaza el % en precios pequenos: se
-            // corrige en pasos del redondeo activo hasta volver al rango.
-            const paso = PRECIOS.redondeo;
-            if (paso > 0) {
-                let vueltas = 0;
-                while (vueltas++ < 12 && (antesFinal - precio) / antesFinal > 0.30) antesFinal -= paso;
-                while (vueltas++ < 24 && (antesFinal - precio) / antesFinal < 0.20) antesFinal += paso;
-                // precios tan pequenos que el redondeo no puede expresar un
-                // 20-30% (p. ej. $200 con pasos de $100): mejor sin badge
-                const pctFinal = (antesFinal - precio) / antesFinal;
-                if (pctFinal < 0.18 || pctFinal > 0.32) return 0;
-            }
-            return antesFinal;
+            // Sanidad: el "antes" siempre queda por encima del precio
+            // final (si un redondeo lo empujara abajo, se omite).
+            return antes > precioDetal(p) ? antes : 0;
         }
 
         // Genera el catálogo con precios al detal aplicados (grid, carrusel,
@@ -7193,11 +7218,126 @@
         function navidadOculta() {
             return categoriasOcultasSet().has('navidad');
         }
+
+        /* ------------------------------------------------------------------
+           🧹 REGLAS DE LA TIENDA
+           Interruptores que la administración enciende o apaga desde el
+           panel (TIENDA.reglas: ids separados por comas — se pueden
+           combinar varias). Cada regla recibe el catálogo ya filtrado
+           por categorías/productos ocultos y devuelve lo que sigue a la
+           vista; el panel de administración SIEMPRE ve CATALOGO_BASE
+           completo, así que revertir es tan fácil como desmarcar.
+           Agregar una regla nueva = sumar un objeto a REGLAS_TIENDA
+           (id, textos y filtrar) y aparece sola en el panel.
+           ------------------------------------------------------------------ */
+        function reglasActivasSet() {
+            return new Set(parseLista(TIENDA.reglas));
+        }
+
+        // "Exactamente igual" para la regla de duplicados: mismo texto sin
+        // importar mayúsculas ni espacios repetidos (POSGold trae el mismo
+        // juguete escrito "ROJO  2" y "rojo 2").
+        function textoComparable(s) {
+            return String(s || '').trim().replace(/\s+/g, ' ').toLowerCase();
+        }
+
+        // Grupos de duplicados exactos: dos juguetes son EL MISMO si su
+        // nombre O su descripción coinciden al 100% (la descripción es
+        // "SKU: ..." en este catálogo, así que dos referencias con el
+        // mismo código también son duplicados). Los dos criterios se
+        // unen: si A empata por nombre con B y B por descripción con C,
+        // los tres forman un solo grupo.
+        function gruposDuplicadosExactos(lista) {
+            const padre = lista.map((_, i) => i);
+            const raiz = i => {
+                while (padre[i] !== i) { padre[i] = padre[padre[i]]; i = padre[i]; }
+                return i;
+            };
+            const unir = (a, b) => {
+                const ra = raiz(a), rb = raiz(b);
+                if (ra !== rb) padre[rb] = ra;
+            };
+            const primera = new Map();
+            lista.forEach((p, i) => {
+                [['n', p.name], ['d', p.description]].forEach(par => {
+                    const clave = par[0] + ':' + textoComparable(par[1]);
+                    if (clave.length < 3) return;   // "n:"/"d:" solos no agrupan
+                    if (primera.has(clave)) unir(primera.get(clave), i);
+                    else primera.set(clave, i);
+                });
+            });
+            const grupos = new Map();
+            lista.forEach((_, i) => {
+                const r = raiz(i);
+                if (!grupos.has(r)) grupos.set(r, []);
+                grupos.get(r).push(i);
+            });
+            return Array.from(grupos.values())
+                .filter(g => g.length > 1)
+                .map(g => g.map(i => lista[i]));
+        }
+
+        // Existencias del inventario de POSGold: viajan en catalogo.js
+        // (campo stock, lo escribe el cron en cada sincronización). Un
+        // catálogo viejo sin el campo se lee como 0 mientras llega la
+        // próxima corrida — la regla nunca rompe la página.
+        function existenciasDe(p) {
+            return (typeof p.stock === 'number' && p.stock >= 0) ? p.stock : 0;
+        }
+
+        // REGLA "deduplicar-mayor-existencia": de cada grupo de duplicados
+        // exactos se queda SOLO el de mayor existencias en POSGold; si
+        // empatan, el más barato; si siguen empatando, el primero del
+        // catálogo. Devuelve los ids que la tienda NO debe mostrar.
+        function idsDuplicadosAOcultar(lista) {
+            const ocultos = new Set();
+            gruposDuplicadosExactos(lista).forEach(grupo => {
+                const elegido = grupo.slice().sort((a, b) =>
+                    (existenciasDe(b) - existenciasDe(a)) || (a.price - b.price))[0];
+                grupo.forEach(p => { if (p.id !== elegido.id) ocultos.add(p.id); });
+            });
+            return ocultos;
+        }
+
+        // Catálogo de reglas del panel. cuenta() alimenta la vista previa
+        // de cada casilla con los duplicados que hay AHORA MISMO en la
+        // vitrina (mismo filtro que ve el cliente, sin contar la propia
+        // regla dos veces).
+        const REGLAS_TIENDA = [
+            {
+                id: 'deduplicar-mayor-existencia',
+                nombre: 'Un solo ejemplar de cada juguete',
+                descripcion: 'Si dos o más juguetes publicados tienen el nombre o la descripción exactamente iguales, solo se muestra el que tiene MÁS existencias en el inventario de POSGold; los repetidos se ocultan de la tienda (aquí en el panel los sigues viendo todos).',
+                filtrar: lista => {
+                    const dobles = idsDuplicadosAOcultar(lista);
+                    return dobles.size ? lista.filter(p => !dobles.has(p.id)) : lista;
+                },
+                cuenta: () => idsDuplicadosAOcultar(
+                    soloConFotoReal(CATALOGO_BASE).filter(p =>
+                        !categoriasOcultasSet().has(p.category) &&
+                        !productosOcultosSet().has(p.id))).size
+            }
+        ];
+
+        // Aplica las reglas ENCENDIDAS, una tras otra, sobre el catálogo
+        // ya filtrado por visibilidad. Sin reglas activas es la lista
+        // intacta (la tienda queda exactamente como antes).
+        function aplicarReglasTienda(lista) {
+            const activas = reglasActivasSet();
+            if (!activas.size) return lista;
+            let visible = lista;
+            REGLAS_TIENDA.forEach(regla => {
+                if (activas.has(regla.id) && regla.filtrar) visible = regla.filtrar(visible);
+            });
+            return visible;
+        }
+
         function catalogoVisible() {
             const ocultas = categoriasOcultasSet();
             const ocultos = productosOcultosSet();
-            return soloConFotoReal(CATALOGO_BASE)
+            const base = soloConFotoReal(CATALOGO_BASE)
                 .filter(p => !ocultas.has(p.category) && !ocultos.has(p.id));
+            return aplicarReglasTienda(base);
         }
 
         // Catálogo efectivo con los precios al detal aplicados. El panel de
@@ -8134,6 +8274,7 @@
 
             pintarTemporadaAdmin();
             pintarCatsVisiblesAdmin();
+            pintarReglasAdmin();
             pintarOcultosAdmin();
             pintarFijadosAdmin();
             pintarPreviewAdmin();
@@ -8329,6 +8470,50 @@
 
         function quitarTemporadaAdmin(id) {
             PRECIOS.temporadaIds = (PRECIOS.temporadaIds || []).filter(x => x !== id);
+            aplicarPanelAdmin();
+        }
+
+        /* ------------------------------------------------------------------
+           🧹 REGLAS DE LA TIENDA (panel de administración)
+           Casillas de selección múltiple: cada regla enciende o apaga su
+           filtrado del catálogo público (TIENDA.reglas, ids separados por
+           comas — la misma forma de guardar que las categorías ocultas).
+           Cada casilla muestra una vista previa viva: cuántos juguetes
+           quedarían ocultos ahora mismo y, mientras el catálogo no traiga
+           existencias, el aviso de que llegan con la próxima corrida.
+           ------------------------------------------------------------------ */
+        function pintarReglasAdmin() {
+            const cont = document.getElementById('adminReglas');
+            if (!cont) return;
+            const activas = reglasActivasSet();
+            const conStock = CATALOGO_BASE.some(p => typeof p.stock === 'number');
+            cont.innerHTML = REGLAS_TIENDA.map(r => {
+                let nota = '';
+                try {
+                    const n = r.cuenta ? r.cuenta() : 0;
+                    nota = n
+                        ? 'ocultaría ' + n + (n === 1 ? ' juguete repetido' : ' juguetes repetidos') + ' ahora mismo'
+                        : 'sin repeticiones para ocultar ahora mismo';
+                } catch (e) {}
+                if (!conStock) nota += ' · las existencias llegan con la próxima sincronización del catálogo';
+                return `
+                    <label class="admin-check admin-regla">
+                        <input type="checkbox" data-regla="${esc(r.id)}" ${activas.has(r.id) ? 'checked' : ''}
+                               onchange="setReglaTiendaAdmin('${escJs(r.id)}', this.checked)">
+                        <span>
+                            <strong>${esc(r.nombre)}</strong><br>
+                            <small>${esc(r.descripcion)}</small>
+                            ${nota ? '<br><small style="color:#9CA3AF">' + esc(nota) + '</small>' : ''}
+                        </span>
+                    </label>`;
+            }).join('');
+        }
+
+        // Marca (enciende) o desmarca (apaga) una regla de la tienda
+        function setReglaTiendaAdmin(id, activa) {
+            const set = reglasActivasSet();
+            if (activa) set.add(id); else set.delete(id);
+            TIENDA.reglas = Array.from(set).join(', ');
             aplicarPanelAdmin();
         }
 
@@ -8682,6 +8867,8 @@
             L.push('            //     "navidad" esconde la sección de temporada, no sus productos)');
             L.push('            categoriasOcultas: ' + JSON.stringify(TIENDA.categoriasOcultas) + ',');
             L.push('            productosOcultos: ' + JSON.stringify(TIENDA.productosOcultos) + ',');
+            L.push("            // 🧹 Reglas de la tienda activas (ids separados por comas; vacío = todas apagadas)");
+            L.push('            reglas: ' + JSON.stringify(TIENDA.reglas) + ',');
             L.push('            creditoActivo: ' + (TIENDA.creditoActivo ? 'true' : 'false') + ',');
             L.push('            simuladorEnTarjetas: ' + (TIENDA.simuladorEnTarjetas ? 'true' : 'false') + ',');
             L.push('            aliados: ' + JSON.stringify(TIENDA.aliados) + ',');

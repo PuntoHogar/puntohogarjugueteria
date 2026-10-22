@@ -553,7 +553,12 @@ def generar_catalogo_js(env, seleccion, cantidad):
     El slug (id) de cada producto viene de POSGold — el conocido del cache
     o, para productos nuevos, el derivado del nombre en POSGold — y el
     enlace del pedido apunta a ESTA tienda al detal con ese slug
-    (?producto=...), no a la pagina de mayoristas."""
+    (?producto=...), no a la pagina de mayoristas.
+
+    Cada producto viaja con 'stock' (existencias Disponibles de la bodega
+    en POSGold): las REGLAS del panel de administración lo usan para
+    decidir, entre duplicados exactos, cual referencia mostrar. Viaja tal
+    cual: es el dato que necesita la vitrina para elegir bien."""
     fecha = dt.datetime.now().strftime("%Y-%m-%d %H:%M")
     detal = (env.get("DETAL_URL") or "https://saldosjugueteriataiwan.com").rstrip("/")
     L = []
@@ -564,6 +569,8 @@ def generar_catalogo_js(env, seleccion, cantidad):
     L.append("// en bodega + foto real. El producto que deja de cumplir se")
     L.append("// oculta solo en la proxima corrida. NO editar a mano: este")
     L.append("// archivo se regenera completo en cada sincronizacion.")
+    L.append("// Cada producto trae 'stock' (existencias en POSGold): las")
+    L.append("// reglas de la tienda del panel lo usan para deduplicar.")
     L.append("// ==================================================================")
     L.append("const CATALOGO_BASE = [")
     # Cada producto en UNA sola linea compacta (sin indentacion): con el
@@ -573,6 +580,7 @@ def generar_catalogo_js(env, seleccion, cantidad):
     for p in seleccion:
         precio = p["precio"]
         compare = p["compare"]
+        stock = int(p.get("disponible") or 0)
         galeria = p.get("imagenes") or [p["imagen"]]
         # Originales de POSGold para el lightbox (fulls), mismo indice que
         # la galeria de miniaturas; si faltara, el frente cae a la miniura
@@ -584,7 +592,7 @@ def generar_catalogo_js(env, seleccion, cantidad):
             f"fulls:[{','.join(js_texto(x) for x in originales)}],"
             f"category:{js_texto(p['categoria_web'])},sku:{js_texto(p['codigo'])},"
             f"url:{js_texto(detal + '/?producto=' + p['slug'])},"
-            f"price:{precio},comparePrice:{compare},"
+            f"price:{precio},comparePrice:{compare},stock:{stock},"
             f"sizeGroups:[{{key:'unidad',label:'Unidades',options:["
             f"{{id:'unidad',label:'Unidad',price:{precio}}}]}}]}},"
         )
@@ -1152,9 +1160,10 @@ def main():
                 f"(candidatos revisados: {min(i, len(candidatos))})")
 
     # comparePrice: el tachado sale del PRECIO 1 del sistema (el otro precio
-    # de POSGold) cuando queda por encima del detal (Precio2); si no, el
-    # precio x 1.19 para el badge (el index acota el descuento a 20-30%)
-    fallback_xiva = env.get("COMPARE_FALLBACK_XIVA", "true").lower() == "true"
+    # de POSGold) y SOLO cuando queda por encima del detal (Precio 2). Si
+    # no hay precio mayor, no hay tachado: el badge de descuento solo se
+    # publica cuando POSGold trae un precio real mas alto — nada de
+    # tachados inventados (el x1.19 de respaldo se retiro 22-10-2026).
     por_codigo_precio1 = {}
     for it in productos_api:
         c = codigo_limpio(it.get("Codigo") or it.get("Producto_cod"))
@@ -1163,10 +1172,7 @@ def main():
     for fila in seleccion:
         precio = fila["precio_detal_con_iva"]
         p1 = int(round(por_codigo_precio1.get(fila["codigo"], 0) or 0))
-        if p1 > precio:
-            fila["compare"] = p1
-        else:
-            fila["compare"] = int(round(precio * 1.19)) if fallback_xiva else 0
+        fila["compare"] = p1 if p1 > precio else 0
         fila["precio"] = precio
 
     # los que cumplen pero no alcanzaron cupo en el TOP quedan marcados
