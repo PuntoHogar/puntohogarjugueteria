@@ -15,7 +15,7 @@ catálogo se sincroniza solo, 4 veces al día, desde el sistema POSGold de la ti
 | Archivo / carpeta | Qué es |
 |---|---|
 | `index.html` | La tienda completa: vitrina, carruseles, lightbox, carrito, checkout por WhatsApp y panel de administración |
-| `catalogo.js` | Catálogo generado automáticamente (1.954 productos). **No se edita a mano**: el cron lo regenera en cada corrida |
+| `catalogo.js` | Catálogo generado automáticamente en cada corrida. **No se edita a mano**: el cron lo regenera completo |
 | `data/configuracion.js` | Configuración publicada desde el panel: la que ven **todos** los visitantes. La mantiene el botón "Publicar para todos" del panel vía la API de GitHub — nadie la edita a mano |
 | `assets/fotos/` | Miniaturas WebP (~25 KB) de cada foto de producto, generadas por el cron desde POSGold y servidas por el CDN de GitHub Pages |
 | `data/mapa_imagenes.json` | Cache de la relación SKU ↔ slug ↔ foto |
@@ -41,7 +41,9 @@ En cada corrida, `sync_posgold.py`:
 1. Genera un JWT fresco de la API de POSGold (`/apiGold`).
 2. Descarga el inventario de la bodega 2 y lo cruza con los costos del Excel cifrado.
    El precio detal sale del **Precio 2** del sistema; el tachado (`comparePrice`),
-   del Precio 1 cuando queda por encima.
+   del Precio 1 **solo cuando queda por encima** (no se inventan rebajas). Cada
+   producto viaja con `stock` (las existencias de la bodega): las reglas de la
+   tienda del panel lo usan para decidir qué mostrar.
 3. Aplica los **filtros duros de la tienda**: activo + existencias + foto real +
    categoría vendible + costo conocido + rentabilidad positiva.
 4. Ordena por margen y resuelve cada producto:
@@ -67,10 +69,12 @@ referencia de cada producto y su enlace directo a la ficha en esta misma tienda
 
 Un juguete recién creado en POSGold entra **solo** en la próxima corrida si
 cumple los filtros: el cron le genera automáticamente la miniatura WebP, el
-slug, la categoría web, el precio con margen y redondeo a $1.000, el tachado
-y el enlace de ficha. Lo único que el cron no puede inventar es el **costo**:
-un producto sin costo en el Excel queda oculto con el motivo
-"sin costo en Excel" hasta que alguien refresque los costos (abajo).
+slug, la categoría web, el precio de venta (el Precio 2 tal cual: margen y
+redondeo se configuran desde el panel), las existencias, el tachado (solo
+si hay un precio mayor real) y el enlace de ficha. Lo único que el cron no
+puede inventar es el **costo**: un producto sin costo en el Excel queda
+oculto con el motivo "sin costo en Excel" hasta que alguien refresque los
+costos (abajo).
 
 La vitrina no tiene tope práctico de productos: el grid pagina de 60 en 60
 con scroll infinito y los carruseles muestran máximo 32 por categoría, así
@@ -118,6 +122,10 @@ con guardia de rentabilidad sobre la comisión real de ML.
   [`hub/README.md`](hub/README.md).
 - Plan completo (fases 2–4: webhooks, OMS, panel unificado) y decisiones
   abiertas: [`docs/plan_hub.md`](docs/plan_hub.md).
+- **Hallazgo de octubre de 2026**: la cuenta POSGold ya tiene registrados
+  5 endpoints de creación de pedidos y una sección de Webhooks (ambos sin
+  activar) — el flujo "pedido web/ML → factura en POSGold" está a un
+  correo de distancia ([`docs/correo_goldpos.md`](docs/correo_goldpos.md)).
 
 ```bash
 python hub/construir_hub.py                       # catálogo maestro (requiere Excel de costos)
@@ -129,10 +137,16 @@ python hub/canal_ml.py --sincronizar --publicar 3 # corrida completa del canal
 ## Características de la tienda
 
 - Vitrina con grid paginado, carruseles por categoría y lightbox tipo Amazon.
-- Precios calculados sobre el **Precio 2** del sistema (el tachado, del Precio 1),
-  con margen y **redondeados a múltiplos de $1.000**
-  (1000, 2000, 3000…): configurable desde el panel ("Sin redondeo" a
-  "1.000").
+- **Venta al Precio 2 exacto de POSGold** (desde el 22-10-2026): margen 0 y
+  sin redondeo — el precio que ve el cliente es el del sistema, tal cual
+  (si algún día se quiere sumar ganancia, se sube desde el panel). El
+  tachado es honesto: solo aparece si POSGold trae un Precio 1 por encima
+  del precio de venta; no se fabrican rebajas.
+- **Reglas de la tienda** activables desde el panel, varias a la vez y
+  reversibles al instante: *Un solo ejemplar de cada juguete* (de los
+  duplicados exactos queda el de más existencias; activa) y *Ocultar
+  juguetes agotados* (existencias en cero o menos; opción disponible,
+  aún sin activar).
 - Efecto de compra: al agregar al carrito, la foto del juguete vuela hasta
   el icono y el contador rebota; al enviar el pedido, un confeti breve
   celebra el cierre (sin librerías: reusa la miniatura en cache, respeta
@@ -141,10 +155,10 @@ python hub/canal_ml.py --sincronizar --publicar 3 # corrida completa del canal
 - Pago a crédito en cuotas (Addi / Sistecrédito) con simulador en tarjetas,
   carrito y checkout — configurable desde el panel.
 - Panel de administración (enlace "Administración" del pie, `?admin=1` o
-  Ctrl+Shift+A): precios y márgenes, producto en tendencia, favoritos,
-  ocultar categorías y productos, temporada (Navidad), analítica
-  (Pixel de Meta, GA4, Clarity) y actualización de costos cifrando el
-  Excel del navegador.
+  Ctrl+Shift+A): precios y márgenes, reglas de la tienda, producto en
+  tendencia, favoritos, ocultar categorías y productos, temporada
+  (Navidad), analítica (Pixel de Meta, GA4, Clarity) y actualización de
+  costos cifrando el Excel del navegador.
 - **Publicación autónoma**: el botón "Publicar para todos" del panel sube
   la configuración vigente al proyecto de GitHub (API de Contents, el
   mismo token de los costos) y todos los visitantes la ven en ~1 minuto
@@ -215,16 +229,17 @@ Publicar = `git push origin main` (GitHub Pages reconstruye en ~1 minuto).
 
 ## Checkpoint — octubre de 2026
 
-Estado del proyecto tras la última tanda de mejoras (21 de octubre de 2026):
+Estado del proyecto tras la última tanda de mejoras (22 de octubre de 2026):
 
 | Área | Estado |
 |---|---|
-| Precios | Redondeados a múltiplos de **$1.000** (fábrica en `PRECIOS_DEFECTO` y publicado en `data/configuracion.js`, sincronizados). La base del detal es el **Precio 2** de POSGold; el tachado sale del Precio 1 |
+| Precios | **Venta al Precio 2 exacto de POSGold** (margen 0, sin redondeo; fábrica en `PRECIOS_DEFECTO` y publicado en `data/configuracion.js`, sincronizados). Tachado honesto: solo del Precio 1 real por encima del precio de venta — hoy ningún producto lo trae, así que no hay badges de descuento inventados |
+| Reglas de la tienda | Sección nueva del panel con selección múltiple y vista previa viva: *deduplicar por mayor existencias* (activa: de cada grupo de repetidos queda el de más stock) y *ocultar agotados* (opción inactiva); conmutan entre sí y cada producto de `catalogo.js` viaja con `stock` |
 | Efecto de compra | **Vuelo al carrito** + pop del badge al agregar; **confeti** al enviar el pedido — sin librerías, respetan `prefers-reduced-motion` |
-| QA | `qa_e2e.py` **42/42** y `qa_carrito.py` **38/38** (verde antes de publicar) |
+| QA | `qa_e2e.py` **42/42** y `qa_carrito.py` **38/38** (verde antes de publicar; el carrito exige el Precio 2 exacto en todo el catálogo) |
 | Costos | Documentado: el API de POSGold no trae costos (verificado); el Excel de PRODUCTOS es el contrato de formato y el pipeline falla seguro en cada etapa |
-| Catálogo | 1.954 productos publicados, **todos activos y con existencias**: la conciliación dura con POSGold (3 puertas) aborta la corrida sin publicar si algo no cuadra; los nuevos de POSGold entran solos en la próxima corrida si cumplen los filtros (incluido costo en el Excel) |
+| Catálogo | 1.943 productos publicados, **todos activos y con existencias**: la conciliación dura con POSGold (3 puertas) aborta la corrida sin publicar si algo no cuadra; los nuevos de POSGold entran solos en la próxima corrida si cumplen los filtros (incluido costo en el Excel) |
 | Novedades | Cada corrida deja `reportes/novedades_*.xlsx` para la tienda: lo que no publica y por qué (inactivos, agotados, duplicados, sin precio, sin foto, sin costo), marcando lo que estaba publicado; el cron lo sube como artefacto de Actions (`novedades-sync`) |
-| Hub | **Fase 0+1 construidas** (21 oct 2026): catálogo maestro con costos + adaptador de Mercado Libre (`hub/`); pendiente aprobar la app en developers.mercadolibre.com.co |
+| Hub | **Fase 0+1 construidas** (21 oct 2026): catálogo maestro con costos + adaptador de Mercado Libre (`hub/`); pendiente aprobar la app en developers.mercadolibre.com.co. Hallazgo: POSGold ya tiene endpoints de pedidos y webhooks registrados (Inactivos) — correo de solicitud listo en `docs/correo_goldpos.md` |
 | Panel | Publica configuración y costos solo (API de GitHub); nada se edita a mano |
 | Dopamina descartada | Urgencia artificial y metas falsas: probadas/evaluadas y rechazadas (la urgencia ya costó pedidos una vez) |

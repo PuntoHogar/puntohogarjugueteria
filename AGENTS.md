@@ -96,7 +96,7 @@ es rechazado, el cron movió el remoto: `git pull --rebase origin main` y de nue
   (`margenesPorCategoria.temporada`) solo aplica entre **octubre y
   diciembre** (`margenDeCategoria`); hoy está en 0.
 - **Carrito**: `cart` fusiona líneas por `lineId` (`id::talla`), el total
-  sale de `getCartSummary()` (Σ precio×cantidad) y `qa_carrito.py` (36/36)
+  sale de `getCartSummary()` (Σ precio×cantidad) y `qa_carrito.py` (38/38)
   vigila identidad de líneas, aritmética exacta hasta el mensaje de
   WhatsApp, persistencia y vuelo.
 - **Vuelo al carrito**: `volarAlCarrito(product)` clona la miniatura de la
