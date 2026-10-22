@@ -74,8 +74,13 @@ es rechazado, el cron movió el remoto: `git pull --rebase origin main` y de nue
   (`gruposDuplicadosExactos`, insensible a mayúsculas y espacios repetidos,
   uniendo ambos criterios) solo muestra el de MÁS existencias de POSGold
   (campo `stock` de `catalogo.js`; empate → el más barato; sin `stock` se
-  lee 0 y la regla nunca rompe). Agregar una regla nueva = objeto en
-  `REGLAS_TIENDA` con `id`, textos y `filtrar()`.
+  lee 0 y la regla nunca rompe). Regla 2 `ocultar-sin-existencias`
+  (desarrollada 22-10-2026, INACTIVA de fábrica y en lo publicado; se
+  activa desde el panel): esconde los juguetes con `stock` ≤ 0; con un
+  catálogo viejo sin el campo se duerme en vez de esconder todo. Las dos
+  reglas conmutan (mismo resultado en cualquier orden; un grupo
+  duplicado agotado por completo desaparece entero). Agregar una regla
+  nueva = objeto en `REGLAS_TIENDA` con `id`, textos y `filtrar()`.
 - **Precios**: `precioDetal()` = base × multiplicador × (1+margen) y
   `redondearPrecio()` al múltiplo de `PRECIOS.redondeo`. **Desde el
   22-10-2026 la tienda vende al Precio 2 exacto de POSGold**: margen 0,

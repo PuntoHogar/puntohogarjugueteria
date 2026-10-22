@@ -7299,29 +7299,63 @@
             return ocultos;
         }
 
+        // Catálogo que ve el cliente ANTES de las reglas (foto real y
+        // nada oculto por categorías/productos): el punto de partida de
+        // cada regla y de las vistas previas del panel.
+        function listaVitrinaSinReglas() {
+            const ocultas = categoriasOcultasSet();
+            const ocultos = productosOcultosSet();
+            return soloConFotoReal(CATALOGO_BASE)
+                .filter(p => !ocultas.has(p.category) && !ocultos.has(p.id));
+        }
+
         // Catálogo de reglas del panel. cuenta() alimenta la vista previa
-        // de cada casilla con los duplicados que hay AHORA MISMO en la
-        // vitrina (mismo filtro que ve el cliente, sin contar la propia
-        // regla dos veces).
+        // de cada casilla con lo que ocultaría AHORA MISMO. Agregar una
+        // regla nueva = objeto con id, textos y filtrar(), y aparece
+        // sola en el panel; activarla es cosa de la administración.
         const REGLAS_TIENDA = [
             {
                 id: 'deduplicar-mayor-existencia',
                 nombre: 'Un solo ejemplar de cada juguete',
+                ocultaUno: 'repetido',
+                ocultaMuchos: 'repetidos',
+                necesitaStock: true,
                 descripcion: 'Si dos o más juguetes publicados tienen el nombre o la descripción exactamente iguales, solo se muestra el que tiene MÁS existencias en el inventario de POSGold; los repetidos se ocultan de la tienda (aquí en el panel los sigues viendo todos).',
                 filtrar: lista => {
                     const dobles = idsDuplicadosAOcultar(lista);
                     return dobles.size ? lista.filter(p => !dobles.has(p.id)) : lista;
                 },
-                cuenta: () => idsDuplicadosAOcultar(
-                    soloConFotoReal(CATALOGO_BASE).filter(p =>
-                        !categoriasOcultasSet().has(p.category) &&
-                        !productosOcultosSet().has(p.id))).size
+                cuenta: () => idsDuplicadosAOcultar(listaVitrinaSinReglas()).size
+            },
+            {
+                id: 'ocultar-sin-existencias',
+                nombre: 'Ocultar juguetes agotados',
+                ocultaUno: 'agotado',
+                ocultaMuchos: 'agotados',
+                necesitaStock: true,
+                descripcion: 'Los juguetes con existencias en cero o menos en el inventario de POSGold desaparecen de la tienda (aquí en el panel los sigues viendo). El cron no publica agotados, pero si algo se vende entre una corrida y la siguiente, esta regla lo esconde al instante.',
+                filtrar: lista => {
+                    // Guarda de catálogo viejo: si NADIE trae el dato de
+                    // existencias (un catalogo.js anterior al campo stock),
+                    // la regla se queda dormida en vez de esconder TODO.
+                    if (!lista.some(p => typeof p.stock === 'number')) return lista;
+                    return lista.filter(p => existenciasDe(p) > 0);
+                },
+                cuenta: () => {
+                    const base = listaVitrinaSinReglas();
+                    if (!base.some(p => typeof p.stock === 'number')) return 0;
+                    return base.filter(p => existenciasDe(p) <= 0).length;
+                }
             }
         ];
 
         // Aplica las reglas ENCENDIDAS, una tras otra, sobre el catálogo
-        // ya filtrado por visibilidad. Sin reglas activas es la lista
-        // intacta (la tienda queda exactamente como antes).
+        // ya filtrado por visibilidad. Las reglas se combinan sin pise:
+        // se aplican en orden y cada una trabaja sobre lo que dejó la
+        // anterior — "ocultar agotados" y "deduplicar" dan lo mismo en
+        // cualquier orden porque el duplicado que sobrevive es siempre
+        // el de más existencias (si TODO el grupo está agotado, ningún
+        // orden lo salva). Sin reglas activas la lista sale intacta.
         function aplicarReglasTienda(lista) {
             const activas = reglasActivasSet();
             if (!activas.size) return lista;
@@ -7333,11 +7367,7 @@
         }
 
         function catalogoVisible() {
-            const ocultas = categoriasOcultasSet();
-            const ocultos = productosOcultosSet();
-            const base = soloConFotoReal(CATALOGO_BASE)
-                .filter(p => !ocultas.has(p.category) && !ocultos.has(p.id));
-            return aplicarReglasTienda(base);
+            return aplicarReglasTienda(listaVitrinaSinReglas());
         }
 
         // Catálogo efectivo con los precios al detal aplicados. El panel de
@@ -8488,14 +8518,15 @@
             const activas = reglasActivasSet();
             const conStock = CATALOGO_BASE.some(p => typeof p.stock === 'number');
             cont.innerHTML = REGLAS_TIENDA.map(r => {
+                const uno = r.ocultaUno || 'repetido', muchos = r.ocultaMuchos || 'repetidos';
                 let nota = '';
                 try {
                     const n = r.cuenta ? r.cuenta() : 0;
                     nota = n
-                        ? 'ocultaría ' + n + (n === 1 ? ' juguete repetido' : ' juguetes repetidos') + ' ahora mismo'
-                        : 'sin repeticiones para ocultar ahora mismo';
+                        ? 'ocultaría ' + n + (n === 1 ? ' juguete ' + uno : ' juguetes ' + muchos) + ' ahora mismo'
+                        : 'sin ' + muchos + ' para ocultar ahora mismo';
                 } catch (e) {}
-                if (!conStock) nota += ' · las existencias llegan con la próxima sincronización del catálogo';
+                if (!conStock && r.necesitaStock) nota += ' · las existencias llegan con la próxima sincronización del catálogo';
                 return `
                     <label class="admin-check admin-regla">
                         <input type="checkbox" data-regla="${esc(r.id)}" ${activas.has(r.id) ? 'checked' : ''}
