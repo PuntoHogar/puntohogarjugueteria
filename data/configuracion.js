@@ -2,7 +2,7 @@
 // (botón "Publicar para todos"). Se aplica a TODOS los visitantes de
 // saldosjugueteriataiwan.com. Nadie necesita editar este archivo a mano.
 window.CONFIG_PUBLICADA = {
-  "version": 1792703676820,
+  "version": 1792707289988,
   "tienda": {
     "nombre": "Juguetería Taiwan",
     "logo": "https://jugueteriataiwan.com/storage/branding/70TI84WCuEegX1pJk5ttvppyKKn2sCze24oHDKoi.png",
@@ -29,7 +29,8 @@ window.CONFIG_PUBLICADA = {
     "montoMinimo": 100000,
     "pagoContraEntrega": true,
     "vaciarCarritoTrasPedido": true,
-    "sonidoAlAgregar": true
+    "sonidoAlAgregar": true,
+    "reglas": "deduplicar-mayor-existencia"
   },
   "precios": {
     "margenGlobal": 0,
