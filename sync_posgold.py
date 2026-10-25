@@ -558,7 +558,13 @@ def generar_catalogo_js(env, seleccion, cantidad):
     Cada producto viaja con 'stock' (existencias Disponibles de la bodega
     en POSGold): las REGLAS del panel de administración lo usan para
     decidir, entre duplicados exactos, cual referencia mostrar. Viaja tal
-    cual: es el dato que necesita la vitrina para elegir bien."""
+    cual: es el dato que necesita la vitrina para elegir bien.
+
+    Si POSGold define PRECIO 5 para el producto, viaja tambien 'price5'
+    (tal cual, con IVA) como campo ADITIVO: los canales del grupo (JUGA)
+    lo usan como precio base. Esta vitrina NO lo lee: su precio de venta
+    sigue siendo el Precio 2 (price). Sin Precio 5 definido, el campo no
+    viaja y cada canal decide su respaldo."""
     fecha = dt.datetime.now().strftime("%Y-%m-%d %H:%M")
     detal = (env.get("DETAL_URL") or "https://saldosjugueteriataiwan.com").rstrip("/")
     L = []
@@ -581,6 +587,10 @@ def generar_catalogo_js(env, seleccion, cantidad):
         precio = p["precio"]
         compare = p["compare"]
         stock = int(p.get("disponible") or 0)
+        # Precio 5 del sistema: campo aditivo para los canales del grupo
+        # (JUGA lo usa como base). 0 = POSGold no lo define: no viaja.
+        p5 = int(p.get("precio5") or 0)
+        campo_p5 = f"price5:{p5}," if p5 > 0 else ""
         galeria = p.get("imagenes") or [p["imagen"]]
         # Originales de POSGold para el lightbox (fulls), mismo indice que
         # la galeria de miniaturas; si faltara, el frente cae a la miniura
@@ -593,6 +603,7 @@ def generar_catalogo_js(env, seleccion, cantidad):
             f"category:{js_texto(p['categoria_web'])},sku:{js_texto(p['codigo'])},"
             f"url:{js_texto(detal + '/?producto=' + p['slug'])},"
             f"price:{precio},comparePrice:{compare},stock:{stock},"
+            f"{campo_p5}"
             f"sizeGroups:[{{key:'unidad',label:'Unidades',options:["
             f"{{id:'unidad',label:'Unidad',price:{precio}}}]}}]}},"
         )
@@ -1165,15 +1176,22 @@ def main():
     # publica cuando POSGold trae un precio real mas alto — nada de
     # tachados inventados (el x1.19 de respaldo se retiro 22-10-2026).
     por_codigo_precio1 = {}
+    por_codigo_precio5 = {}
     for it in productos_api:
         c = codigo_limpio(it.get("Codigo") or it.get("Producto_cod"))
         if c:
             por_codigo_precio1[c] = float(it.get("Precio1") or 0)
+            por_codigo_precio5[c] = float(it.get("Precio5") or 0)
     for fila in seleccion:
         precio = fila["precio_detal_con_iva"]
         p1 = int(round(por_codigo_precio1.get(fila["codigo"], 0) or 0))
         fila["compare"] = p1 if p1 > precio else 0
         fila["precio"] = precio
+        # PRECIO 5 del sistema, tal cual (con IVA): campo aditivo para los
+        # canales del grupo (JUGA lo toma como base; respaldo Precio 2).
+        # 0 = POSGold no lo define o la API no lo trae: no viaja.
+        p5 = int(round(por_codigo_precio5.get(fila["codigo"], 0) or 0))
+        fila["precio5"] = p5 if p5 > 0 else 0
 
     # los que cumplen pero no alcanzaron cupo en el TOP quedan marcados
     for fila in analisis:
