@@ -8,7 +8,7 @@ import re
 import urllib.parse
 from playwright.async_api import async_playwright
 
-URL = "file:///C:/Users/User/JUGUETERIA_TAIWAN/index.html"
+URL = "file:///C:/Users/User/PUNTO_HOGAR/JUGUETERIA/puntohogarjugueteria/index.html"
 ERRORES = []
 RESULTADOS = []
 
@@ -207,20 +207,29 @@ async def main():
            m3["n"] == 1 and m3["total"] == m3["precio"] * m3["qty"] and m3["total"] != total_antes,
            str(m3["total"]))
 
-        # TODO el catalogo: la tienda vende al Precio 2 exacto de POSGold
-        # (margen 0 y sin redondeo) y el tachado, si existe, es real
+        # TODO el catalogo: la tienda vende con 30% de ganancia global
+        # sobre el Precio 2 de POSGold (margenGlobal 0.30, redondeo 0)
+        # y el tachado, si existe, es real
         m4 = await page.evaluate("""() => {
             let malExacto = 0, malCompare = 0;
             const base = new Map(CATALOGO_BASE.map(p => [p.id, p]));
             products.forEach(p => {
                 const b = base.get(p.id);
-                if (b && p.price !== b.price) malExacto++;
+                if (!b) return;
+                const detal = Math.round(b.price * 1.30);            // precioDetal sin redondeo
+                const factor = b.price > 0 ? detal / b.price : 1;     // mismo escalado de aplicarPrecios
+                if (p.price !== detal) malExacto++;
                 if (p.comparePrice && p.comparePrice <= p.price) malCompare++;
-                flattenSizeOptions(p).forEach(o => { if (b && o.price !== b.price) malExacto++; });
+                const ops = flattenSizeOptions(p);
+                const baseOps = [];
+                (b.sizeGroups || []).forEach(g => (g.options || []).forEach(o => baseOps.push(o)));
+                ops.forEach((o, i) => {
+                    if (baseOps[i] && o.price !== Math.round(baseOps[i].price * factor)) malExacto++;
+                });
             });
             return { malExacto: malExacto, malCompare: malCompare, n: products.length };
         }""")
-        ok(2, f"los {m4['n']} productos se venden al Precio 2 exacto de POSGold",
+        ok(2, f"los {m4['n']} productos se venden al Precio 2 de POSGold + 30% de ganancia",
            m4["malExacto"] == 0, f"{m4['malExacto']} precios alterados")
         ok(2, "ningun tachado es menor o igual al precio de venta",
            m4["malCompare"] == 0, str(m4["malCompare"]))

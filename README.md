@@ -1,225 +1,138 @@
-# Juguetería Taiwan — Tienda al detal
+# Punto Hogar Juguetería — Tienda al detal
 
-Tienda en línea de **Juguetería Taiwan** (Cali, Colombia): juguetería, piñatería,
-didácticos, cubos Rubik, cacharros y más, al detal con envíos a toda Colombia.
+Tienda en línea de **Punto Hogar Juguetería — by Fredy Henao**: juguetes,
+juegos y regalos para sorprender, compartir y crear recuerdos. Al detal con
+envíos a toda Colombia y atención por WhatsApp.
 Se sirve por GitHub Pages desde este repositorio:
-**[saldosjugueteriataiwan.com](https://saldosjugueteriataiwan.com/)**
+**[puntohogarjugueteria.github.io](https://puntohogarjugueteria.github.io)**
 
-Todo el frente vive en **`index.html`** (HTML + CSS + JS en un solo archivo) y el
-catálogo se sincroniza solo, 4 veces al día, desde el sistema POSGold de la tienda.
+Todo el frente vive en **`index.html`** (HTML + CSS + JS en un solo archivo).
+El catálogo (`catalogo.js`, 1.938 productos) es una **foto estática del
+sistema POSGold original**: Punto Hogar aún no tiene POSGold, así que el cron
+de sincronización está desactivado (ver "El catálogo", abajo).
 
 ---
+
+## Identidad (Brief de Branding)
+
+| Elemento | Definición |
+|---|---|
+| Marca | Punto Hogar Juguetería |
+| Firma | by Fredy Henao |
+| Concepto | Un punto de encuentro para regalar diversión |
+| Eslogan | ¡Diversión para cada momento! |
+| Colores base | Gris carbón `#27313B`, gris acero `#7D858D`, verde lima `#A6C83A`, blanco |
+| Colores juguetones | Rojo `#F52F35`, amarillo `#FFC928`, azul `#1689E8`, naranja `#FF861B`, violeta `#8B35DB` |
+| Tipografía principal | Poppins ExtraBold (titulares, precios destacados) |
+| Tipografía secundaria | Montserrat Medium/SemiBold (descripciones y textos) |
+| Logo | Circular (`assets/logo-circular.png`), oso, cohete, camión, pelota y estrellas |
+| WhatsApp | **+57 313 720 31 36** (pedidos e información) |
+| Tienda física | No: atención por WhatsApp y envíos a domicilio |
+
+Los tokens viven en `:root` de `index.html` (`--primary-color` = verde lima,
+`--secondary-color` = rojo juguetón, etc.).
 
 ## Arquitectura
 
 | Archivo / carpeta | Qué es |
 |---|---|
 | `index.html` | La tienda completa: vitrina, carruseles, lightbox, carrito, checkout por WhatsApp y panel de administración |
-| `catalogo.js` | Catálogo generado automáticamente en cada corrida. **No se edita a mano**: el cron lo regenera completo |
-| `data/configuracion.js` | Configuración publicada desde el panel: la que ven **todos** los visitantes. La mantiene el botón "Publicar para todos" del panel vía la API de GitHub — nadie la edita a mano |
-| `assets/fotos/` | Miniaturas WebP (~25 KB) de cada foto de producto, generadas por el cron desde POSGold y servidas por el CDN de GitHub Pages |
+| `catalogo.js` | Catálogo publicado. En el sistema original lo regenera el cron; aquí es una foto estática (los enlaces de ficha apuntan a `puntohogarjugueteria.github.io`) |
+| `data/configuracion.js` | Configuración publicada desde el panel: la que ven **todos** los visitantes. La mantiene el botón "Publicar para todos" vía la API de GitHub — nadie la edita a mano |
+| `assets/fotos/` | Miniaturas WebP (~25 KB) de cada foto de producto, servidas por el CDN de GitHub Pages |
+| `assets/logo-circular.png` | Logo circular de la marca (512×512); `og-compartir.png`, `favicon-32.png` y `apple-touch-icon.png` derivan del mismo |
 | `data/mapa_imagenes.json` | Cache de la relación SKU ↔ slug ↔ foto |
-| `sync_posgold.py` | Sincronizador: POSGold → filtros de la tienda → miniaturas → `catalogo.js` |
-| `.github/workflows/sync-top300.yml` | Cron en GitHub Actions (07:15, 08:15, 19:15 y 20:15, hora Colombia) |
-| `hub/` | **Hub (mini-VTEX)**: catálogo maestro con costos + adaptadores de canal (Mercado Libre activo). Ver [`hub/README.md`](hub/README.md) y [`docs/plan_hub.md`](docs/plan_hub.md) |
-| `costos.posgold.enc` | Excel de costos de POSGold **cifrado** (AES-256-CBC + PBKDF2) — el repo es público y los costos jamás viajan en claro |
-| `assets/` (favicon, og) | Iconos de la marca |
+| `sync_posgold.py` | Sincronizador: POSGold → filtros de la tienda → miniaturas → `catalogo.js` (inactivo mientras Punto Hogar no tenga POSGold) |
+| `.github/workflows/sync-top300.yml` | Cron en GitHub Actions — **desactivado** (solo `workflow_dispatch`) |
 
-Archivos **locales** (excluidos del repo por `.gitignore`): `.env` (credenciales
-POSGold y llave de cifrado), `*.xlsx` (exportes con costos), `qa_e2e.py` (suite QA
-completa; contiene la clave del panel en su escenario de admin),
-`reportes/` (CSVs con costos y márgenes + el Excel de novedades de cada corrida)
-y `generar_enlace_config.py` (arma el
-enlace de configuración de un solo toque para cargar llave y tokens en el
-navegador de la administración). `qa_carrito.py` sí vive en el repo: no toca
-el panel y no lleva secretos.
+## Precios: 30% de ganancia sobre el Precio 2
 
-## El catálogo automático
+El precio que ve el cliente se calcula en `precioDetal()`:
 
-En cada corrida, `sync_posgold.py`:
-
-1. Genera un JWT fresco de la API de POSGold (`/apiGold`).
-2. Descarga el inventario de la bodega 2 y lo cruza con los costos del Excel cifrado.
-   El precio detal sale del **Precio 2** del sistema; el tachado (`comparePrice`),
-   del Precio 1 **solo cuando queda por encima** (no se inventan rebajas). Cada
-   producto viaja con `stock` (las existencias de la bodega): las reglas de la
-   tienda del panel lo usan para decidir qué mostrar.
-3. Aplica los **filtros duros de la tienda**: activo + existencias + foto real +
-   categoría vendible + costo conocido + rentabilidad positiva.
-4. Ordena por margen y resuelve cada producto:
-   - **Slug**: el conocido del cache o, para productos nuevos, el derivado del
-     nombre en POSGold.
-   - **Fotos**: descarga las de POSGold (`Files/Images/`), genera UNA miniatura
-     WebP por foto (el servidor de POSGold tarda ~2 s por foto: la vitrina usa
-     las miniaturas del repo y el lightbox sube al original bajo demanda).
-5. Regenera `catalogo.js` (con el top de utilidad para "Los imperdibles") y
-   publica: GitHub Pages republica solo. **Conciliación dura con POSGold**: antes
-   y después de generar verifica que el catálogo quede 100 % con productos
-   activos y con existencias; si algo no cuadra, aborta sin tocar lo publicado.
-6. Deja `reportes/novedades_*.xlsx`: el Excel de la tienda con todo lo que NO
-   publica y por qué (inactivos, agotados, duplicados, sin precio, sin foto, sin
-   costo, rentabilidad negativa), marcando los que estaban publicados. El cron lo
-   sube como artefacto descargable en la pestaña Actions.
-
-Los pedidos no tienen backend: el checkout arma el mensaje de WhatsApp con la
-referencia de cada producto y su enlace directo a la ficha en esta misma tienda
-(`?producto={slug}`), que al abrirse resalta el juguete con su panel de cantidades.
-
-### Productos nuevos: qué entra solo y qué necesita la tienda
-
-Un juguete recién creado en POSGold entra **solo** en la próxima corrida si
-cumple los filtros: el cron le genera automáticamente la miniatura WebP, el
-slug, la categoría web, el precio de venta (el Precio 2 tal cual: margen y
-redondeo se configuran desde el panel), las existencias, el tachado (solo
-si hay un precio mayor real) y el enlace de ficha. Lo único que el cron no
-puede inventar es el **costo**: un producto sin costo en el Excel queda
-oculto con el motivo "sin costo en Excel" hasta que alguien refresque los
-costos (abajo).
-
-La vitrina no tiene tope práctico de productos: el grid pagina de 60 en 60
-con scroll infinito y los carruseles muestran máximo 32 por categoría, así
-que el inventario puede crecer sin congelar el navegador. Lo que sí crece es
-el peso: `catalogo.js` (~0,5 KB por producto) y las miniaturas (~25 KB por
-foto) viven en el repo.
-
-### Costos: por qué van por Excel y no por API
-
-El API de POSGold **no expone los costos** (verificado contra
-`GetProduct_V6`: 34 campos y ninguno de costos; su login web tiene captcha),
-y este repo es público: el Excel con costos y márgenes nunca puede subir en
-claro. Por eso el flujo es: exportar → cifrar → commitear cifrado
-(`costos.posgold.enc`, solo 4 columnas, ~115 KB).
-
-El formato es **el que POSGold genera tal cual** (una hoja "Productos",
-86 columnas, 6.000+ filas, encabezados en minúscula: `productoid`, `costo`,
-`costopromedio`, `costoultimo`): exportar y subir, sin prepararlo. Y es a
-prueba de error:
-
-- El **panel** valida el archivo antes de cifrarlo: rechaza uno incompleto,
-  sin columnas de costo o con menos de 1.000 filas (export filtrado).
-- `actualizar_costos.py` verifica el roundtrip SHA-256 antes de commitear.
-- El **cron** lee por nombre de columna (el orden y las otras 82 columnas no
-  importan). Si POSGold renombrara un encabezado en el futuro, el script
-  aborta **antes de tocar `catalogo.js`**: la tienda publicada queda
-  intacta con los costos anteriores hasta corregir. Un producto sin costo
-  válido queda oculto, nunca rompe la vitrina.
-
-La frecuencia correcta es semanal o mensual: los costos solo cambian cuando
-compran inventario; stock, precios y fotos se refrescan solos en cada
-corrida. El panel avisa "⚠️ Costos desactualizados" cuando el archivo pasa
-de 15 días. Si POSGold algún día agrega el campo de costo al API, el
-workflow documenta cómo retirar la dependencia del Excel.
-
-## El hub: catálogo maestro y canales (nuestro mini-VTEX)
-
-El **hub** (`hub/`) es la capa que convierte este repo en una plataforma de
-canales: un catálogo maestro único (todo el inventario de POSGold con costos,
-gitignored) del que beben los adaptadores. El primero en producción planeado:
-**Mercado Libre** — altas, pausas/activaciones, stock y precios automáticos
-con guardia de rentabilidad sobre la comisión real de ML.
-
-- Documentación operativa (comandos, variables, token rotativo):
-  [`hub/README.md`](hub/README.md).
-- Plan completo (fases 2–4: webhooks, OMS, panel unificado) y decisiones
-  abiertas: [`docs/plan_hub.md`](docs/plan_hub.md).
-- **Hallazgo de octubre de 2026**: la cuenta POSGold ya tiene registrados
-  5 endpoints de creación de pedidos y una sección de Webhooks (ambos sin
-  activar) — el flujo "pedido web/ML → factura en POSGold" está a un
-  correo de distancia ([`docs/correo_goldpos.md`](docs/correo_goldpos.md)).
-
-```bash
-python hub/construir_hub.py                       # catálogo maestro (requiere Excel de costos)
-python hub/canal_ml.py --dry-run                  # plan del canal ML sin token ni red
-python hub/canal_ml.py --autorizar                # primera vez: OAuth de ML
-python hub/canal_ml.py --sincronizar --publicar 3 # corrida completa del canal
 ```
+precio detal = precio base (Precio 2 del sistema) × multiplicador × (1 + margen)
+```
+
+**Punto Hogar Juguetería vende con 30% de ganancia global sobre el Precio 2**
+(decisión de la tienda, 26-10-2026): `margenGlobal: 0.30`, `redondeo: 0`
+(precio exacto, sin redondeo). Ejemplo: Precio 2 de $15.000 → se vende a
+$19.500. La fábrica (`PRECIOS_DEFECTO` en `index.html`) y lo publicado
+(`data/configuracion.js`) llevan los mismos valores (lo publicado manda).
+El margen se puede cambiar en cualquier momento desde el panel de
+administración ("¿Cuánto quieres ganar?").
+
+El tachado (`comparePrice`) es honesto: solo aparece si el sistema trae un
+Precio 1 real por encima del precio de venta. No se inventan rebajas.
+
+## El catálogo (foto estática, sin POSGold)
+
+Punto Hogar Juguetería **no tiene POSGold** (26-10-2026). El catálogo
+publicado (1.938 productos, todos activos y con existencias al momento del
+clonado) es una foto estática del sistema original:
+
+- El **cron está desactivado**: el workflow solo corre a mano
+  (`workflow_dispatch`). No lo actives hasta que Punto Hogar conecte su
+  propio POSGold.
+- Las **fotos originales del lightbox** siguen servidas desde el servidor de
+  imágenes del sistema original (`fulls[]` de `catalogo.js`); la vitrina usa
+  las miniaturas WebP de este repo.
+- Cuando Punto Hogar tenga POSGold: definir `POSGOLD_BASE` en
+  `sync-top300.yml`, agregar los secrets (`POSGOLD_TOKEN_USER`,
+  `POSGOLD_TOKEN_PASS`, `COSTOS_KEY`), subir su propio `costos.posgold.enc`
+  y reactivar el `schedule:`.
+
+Los pedidos no tienen backend: el checkout arma el mensaje de WhatsApp con
+la referencia de cada producto y su enlace directo a la ficha en esta misma
+tienda (`?producto={slug}`), al **+57 313 720 31 36**.
 
 ## Características de la tienda
 
 - Vitrina con grid paginado, carruseles por categoría y lightbox tipo Amazon.
-- **Venta al Precio 2 exacto de POSGold** (desde el 22-10-2026): margen 0 y
-  sin redondeo — el precio que ve el cliente es el del sistema, tal cual
-  (si algún día se quiere sumar ganancia, se sube desde el panel). El
-  tachado es honesto: solo aparece si POSGold trae un Precio 1 por encima
-  del precio de venta; no se fabrican rebajas.
-- **Reglas de la tienda** activables desde el panel, varias a la vez y
-  reversibles al instante: *Un solo ejemplar de cada juguete* (de los
-  duplicados exactos queda el de más existencias; activa) y *Ocultar
-  juguetes agotados* (existencias en cero o menos; opción disponible,
-  aún sin activar).
-- Efecto de compra: al agregar al carrito, la foto del juguete vuela hasta
-  el icono y el contador rebota; al enviar el pedido, un confeti breve
-  celebra el cierre (sin librerías: reusa la miniatura en cache, respeta
-  `prefers-reduced-motion` y se omite si el checkout ya está abierto).
+- **+30% de ganancia global sobre el Precio 2** del sistema, exacto.
+- Reglas de la tienda activables desde el panel, reversibles al instante:
+  *Un solo ejemplar de cada juguete* (activa) y *Ocultar juguetes agotados*
+  (opción disponible, inactiva).
+- Efecto de compra: vuelo al carrito + confeti al enviar el pedido (sin
+  librerías, respeta `prefers-reduced-motion`).
 - Checkout por WhatsApp estilo COD en 5 fases (pedido → datos → entrega → pago → notas).
-- Pago a crédito en cuotas (Addi / Sistecrédito) con simulador en tarjetas,
-  carrito y checkout — configurable desde el panel.
+- Entrega **a domicilio** (sin retiro en tienda: Punto Hogar no tiene local).
+- Pago a crédito en cuotas (Addi / Sistecrédito) con simulador — configurable
+  desde el panel.
 - Panel de administración (enlace "Administración" del pie, `?admin=1` o
-  Ctrl+Shift+A): precios y márgenes, reglas de la tienda, producto en
-  tendencia, favoritos, ocultar categorías y productos, temporada
-  (Navidad), analítica (Pixel de Meta, GA4, Clarity) y actualización de
-  costos cifrando el Excel del navegador.
-- **Publicación autónoma**: el botón "Publicar para todos" del panel sube
-  la configuración vigente al proyecto de GitHub (API de Contents, el
-  mismo token de los costos) y todos los visitantes la ven en ~1 minuto
-  — sin editar archivos ni pedirle nada a nadie. "Guardar en MI
-  computador" previsualiza solo en ese navegador; lo publicado manda
-  sobre la fábrica y sobre lo guardado cuando su versión es más nueva.
-  La clave del panel nunca se publica.
-- Ocultamiento reversible de categorías y productos individuales.
-- Analítica con píxeles activables por ID, sin código adicional.
+  Ctrl+Shift+A): precios y márgenes, reglas, tendencia, favoritos, ocultar
+  categorías y productos, temporada (Navidad), analítica (Pixel de Meta,
+  GA4, Clarity) y publicación para todos los visitantes.
+- Publicación autónoma: el botón "Publicar para todos" del panel sube la
+  configuración al proyecto de GitHub (API de Contents) y todos los
+  visitantes la ven en ~1 minuto.
 
-## Panel de administración (el día a día de la tienda)
+## Panel de administración
 
 Se abre con el enlace "Administración" del pie, `?admin=1` o Ctrl+Shift+A
-(clave de `TIENDA_DEFECTO.claveAdmin`).
+(clave de `TIENDA_DEFECTO.claveAdmin`, de fábrica `Walter123*`).
 
-- **Una sola vez**: la persona de confianza corre `python generar_enlace_config.py`
-  y envía por WhatsApp el enlace de configuración; al abrirlo, la llave de cifrado
-  y los tokens de GitHub quedan cargados en ese navegador para siempre (nunca van
-  escritos en el archivo de la página: el repo es público).
+- **Una sola vez**: crear un fine-grained token sobre
+  `PuntoHogar/puntohogarjugueteria` (permisos Actions:Read+write y
+  Contents:Read+write), cargarlo en el panel y usar "Publicar para todos".
 - **Guardar en MI computador** — previsualiza solo en ese navegador.
-- **Publicar para todos** — sube la configuración al proyecto (API de GitHub) y
-  todos los visitantes la ven en ~1 minuto. Es el botón normal: nadie edita
-  archivos ni publica por ella.
-- **Actualizar costos** — exporta el Excel de PRODUCTOS de POSGold (todo el
-  inventario, sin filtros) y súbelo en el panel: se cifra en el navegador y el
-  cron lo aplica al ranking.
-- **Sincronizar ahora** — lanza la corrida del catálogo al instante (o espera al
-  cron de las 07:15, 08:15, 19:15 y 20:15).
-
-Si una corrida del cron termina con "AVISO git push" (el panel publicó algo a
-media corrida), no es un error: la siguiente corrida lo publica todo.
+- **Publicar para todos** — sube la configuración al proyecto y la ven todos.
+- **Sincronizar ahora** — lanza la corrida del catálogo al instante (solo
+  aplica cuando Punto Hogar tenga POSGold y secrets configurados).
 
 ## Seguridad
 
-- El repositorio es **público**: las credenciales viven en `.env` (local) y en
-  los *secrets* de GitHub Actions. **Nunca** se suben tokens, llaves ni costos en claro.
-- Los costos viajan cifrados (`costos.posgold.enc`) y la llave solo existe en
-  `.env` y en el secret `COSTOS_KEY`.
+- El repositorio es **público**: las credenciales viven en `.env` (local) y
+  en los *secrets* de GitHub Actions. **Nunca** se suben tokens, llaves ni
+  costos en claro.
 - El panel de administración es una barrera de conveniencia del lado del
   cliente, no seguridad real: quien tenga acceso al archivo puede ver su clave.
 
 ## Desarrollo local
 
 ```bash
-# suite QA completa (Playwright): 42 pruebas en Chrome y WebKit/Safari,
-# escritorio y móvil — debe pasar 42/42 antes de publicar
-python qa_e2e.py
-
 # suite del carrito (38/38): identidad de los productos agregados,
-# aritmetica exacta (totales, cantidades, fusion de lineas, persistencia),
-# mensaje de WhatsApp, vuelo al carrito y confeti — sin secretos, vive en el repo
+# aritmetica exacta, mensaje de WhatsApp, vuelo al carrito y confeti
 python qa_carrito.py
-
-# sincronización de prueba (no toca catalogo.js ni publica)
-python sync_posgold.py --dry-run
-
-# regenerar TODAS las miniaturas desde POSGold (migraciones / auditorías)
-python sync_posgold.py --verificar-todas
-
-# enlace de configuración de un solo toque (llave + tokens para un navegador)
-python generar_enlace_config.py
 
 # verificar sintaxis JS del index (bloques <script> sin src)
 node -e "const h=require('fs').readFileSync('index.html','utf8');const re=/<script(?![^>]*\bsrc=)(?![^>]*ld\+json)[^>]*>([\s\S]*?)<\/script>/gi;let m;while((m=re.exec(h))!==null){if(m[1].trim())new Function(m[1]);}console.log('OK')"
@@ -227,19 +140,11 @@ node -e "const h=require('fs').readFileSync('index.html','utf8');const re=/<scri
 
 Publicar = `git push origin main` (GitHub Pages reconstruye en ~1 minuto).
 
-## Checkpoint — octubre de 2026
+## Pendientes manuales (una sola vez en GitHub)
 
-Estado del proyecto tras la última tanda de mejoras (22 de octubre de 2026):
-
-| Área | Estado |
-|---|---|
-| Precios | **Venta al Precio 2 exacto de POSGold** (margen 0, sin redondeo; fábrica en `PRECIOS_DEFECTO` y publicado en `data/configuracion.js`, sincronizados). Tachado honesto: solo del Precio 1 real por encima del precio de venta — hoy ningún producto lo trae, así que no hay badges de descuento inventados |
-| Reglas de la tienda | Sección nueva del panel con selección múltiple y vista previa viva: *deduplicar por mayor existencias* (activa: de cada grupo de repetidos queda el de más stock) y *ocultar agotados* (opción inactiva); conmutan entre sí y cada producto de `catalogo.js` viaja con `stock` |
-| Efecto de compra | **Vuelo al carrito** + pop del badge al agregar; **confeti** al enviar el pedido — sin librerías, respetan `prefers-reduced-motion` |
-| QA | `qa_e2e.py` **42/42** y `qa_carrito.py` **38/38** (verde antes de publicar; el carrito exige el Precio 2 exacto en todo el catálogo) |
-| Costos | Documentado: el API de POSGold no trae costos (verificado); el Excel de PRODUCTOS es el contrato de formato y el pipeline falla seguro en cada etapa |
-| Catálogo | 1.943 productos publicados, **todos activos y con existencias**: la conciliación dura con POSGold (3 puertas) aborta la corrida sin publicar si algo no cuadra; los nuevos de POSGold entran solos en la próxima corrida si cumplen los filtros (incluido costo en el Excel) |
-| Novedades | Cada corrida deja `reportes/novedades_*.xlsx` para la tienda: lo que no publica y por qué (inactivos, agotados, duplicados, sin precio, sin foto, sin costo), marcando lo que estaba publicado; el cron lo sube como artefacto de Actions (`novedades-sync`) |
-| Hub | **Fase 0+1 construidas** (21 oct 2026): catálogo maestro con costos + adaptador de Mercado Libre (`hub/`); pendiente aprobar la app en developers.mercadolibre.com.co. Hallazgo: POSGold ya tiene endpoints de pedidos y webhooks registrados (Inactivos) — correo de solicitud listo en `docs/correo_goldpos.md` |
-| Panel | Publica configuración y costos solo (API de GitHub); nada se edita a mano |
-| Dopamina descartada | Urgencia artificial y metas falsas: probadas/evaluadas y rechazadas (la urgencia ya costó pedidos una vez) |
+1. **Activar GitHub Pages**: Settings → Pages → Deploy from branch → `main` /
+   `/ (root)`. El sitio queda en `puntohogarjugueteria.github.io`.
+2. Si se quiere dominio propio, crear el CNAME y ajustar `sitioWeb`,
+   `canonical`, `og:url` y las URLs de `catalogo.js`.
+3. Configurar los IDs de analítica (Pixel de Meta, GA4, Clarity) desde el
+   panel — hoy vienen vacíos.

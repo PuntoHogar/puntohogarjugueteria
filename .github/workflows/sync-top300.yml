@@ -1,10 +1,15 @@
 # ==================================================================
 # SYNC TOP 300 POSGOLD -> index.html — 100% en GitHub Actions.
-# Ya NO depende de ningun PC local: corre en la nube de GitHub.
 #
-# Horario: todos los dias a las 06:00 y 18:00 hora Colombia (UTC-5).
-# Tambien se puede lanzar manualmente (workflow_dispatch) desde la
-# pestana Actions del repo: "sync-top300" -> Run workflow.
+# PUNTO HOGAR JUGUETERIA NO TIENE POSGold (26-10-2026): el catálogo
+# publicado (catalogo.js) es una foto estática del sistema original.
+# El cron queda DESACTIVADO (solo workflow_dispatch) para que no
+# falle 4 veces al día sin secrets. Si algún día Punto Hogar conecta
+# su propio POSGold:
+#   1. Define POSGOLD_BASE abajo y en secrets: POSGOLD_TOKEN_USER,
+#      POSGOLD_TOKEN_PASS, COSTOS_KEY (y sube el costos.posgold.enc
+#      propio, cifrado con la misma llave).
+#   2. Vuelve a agregar el bloque "schedule:".
 #
 # Los COSTOS viajan cifrados dentro del repo (costos.posgold.enc,
 # AES-256 + PBKDF2): el repo es publico pero el Excel de costos nunca
@@ -19,12 +24,8 @@
 name: sync-top300
 
 on:
-  schedule:
-    # Horario de la tienda: labores 07:30-19:00 (Colombia). Las corridas
-    # quedan 15 minutos antes de abrir y 15 despues de cerrar, con un
-    # reintento una hora despues de cada una (autocura si algo falla).
-    # UTC = Colombia + 5.
-    - cron: "15 12,13,0,1 * * *"  # 07:15, 08:15, 19:15 y 20:15 Colombia
+  # Sin schedule: Punto Hogar no tiene POSGold. Lanzar solo a mano
+  # (pestaña Actions -> sync-top300 -> Run workflow) cuando exista.
   workflow_dispatch:
 
 permissions:
@@ -65,11 +66,14 @@ jobs:
 
       - name: Crear .env desde secrets
         run: |
-          printf 'POSGOLD_BASE=https://jugueteriataiwan.goldpos.com.co\n' >> .env
+          # TODO: cuando Punto Hogar tenga POSGold, cambia POSGOLD_BASE
+          # al subdominio propio (hoy no existe y la corrida fallaria
+          # sin secrets; el workflow es dispatch-only).
+          printf 'POSGOLD_BASE=https://PUNTO-HOGAR.goldpos.com.co\n' >> .env
           printf 'POSGOLD_TOKEN_USER=%s\n' "$POSGOLD_TOKEN_USER" >> .env
           printf 'POSGOLD_TOKEN_PASS=%s\n' "$POSGOLD_TOKEN_PASS" >> .env
           printf 'POSGOLD_EMPRESAID=1\nPOSGOLD_USUARIOID=1\nPOSGOLD_BODEGAID=2\n' >> .env
-          printf 'DETAL_URL=https://saldosjugueteriataiwan.com\n' >> .env
+          printf 'DETAL_URL=https://puntohogarjugueteria.github.io\n' >> .env
           printf 'TOP300_CANTIDAD=99999\nRANKING=margen_costo\nCOSTO_CAMPO=costopromedio\n' >> .env
           printf 'REFRESCO_MINIATURAS=40\n' >> .env
           printf 'INCLUIR_DESTACADOS=true\n' >> .env

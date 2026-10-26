@@ -2,7 +2,13 @@
 # -*- coding: utf-8 -*-
 """
 sync_posgold.py — Carga automatica de los 300 productos mas rentables de
-POSGold al catalogo.js de Jugueteria Taiwan (saldosjugueteriataiwan.com).
+POSGold al catalogo.js de Punto Hogar Jugueteria
+(puntohogarjugueteria.github.io).
+
+NOTA PUNTO HOGAR (26-10-2026): la tienda NO tiene POSGold todavia; el
+catalogo.js del repo es una foto estatica del sistema original y el cron
+esta en modo dispatch-only. Si se conecta un POSGold propio, se configuran
+las credenciales en .env / secrets y se reactiva el schedule del workflow.
 
 Como funciona (cron: .github/workflows/sync-top300.yml):
   1. Carga credenciales de .env — JAMAS van al repo de GitHub
@@ -166,7 +172,7 @@ def cargar_env(ruta=ENV_FILE):
     if not os.path.exists(ruta):
         log("ERROR: falta el archivo .env (credenciales POSGold).")
         log("       Crea .env en la raiz del proyecto con POSGOLD_BASE,")
-        log("       POSGOLD_TOKEN_USER y POSGOLD_TOKEN_PASS (ver info taiwan.txt).")
+        log("       POSGOLD_TOKEN_USER y POSGOLD_TOKEN_PASS (ver README.md).")
         sys.exit(1)
     with open(ruta, encoding="utf-8-sig") as f:
         for linea in f:
@@ -566,10 +572,10 @@ def generar_catalogo_js(env, seleccion, cantidad):
     sigue siendo el Precio 2 (price). Sin Precio 5 definido, el campo no
     viaja y cada canal decide su respaldo."""
     fecha = dt.datetime.now().strftime("%Y-%m-%d %H:%M")
-    detal = (env.get("DETAL_URL") or "https://saldosjugueteriataiwan.com").rstrip("/")
+    detal = (env.get("DETAL_URL") or "https://puntohogarjugueteria.github.io").rstrip("/")
     L = []
     L.append("// ==================================================================")
-    L.append(f"// CATALOGO DE JUGUETERIA TAIWAN — generado automaticamente el {fecha}")
+    L.append(f"// CATALOGO DE PUNTO HOGAR JUGUETERIA — generado automaticamente el {fecha}")
     L.append("// por sync_posgold.py (cron). Todo el inventario elegible de")
     L.append("// POSGold que cumple la regla de la tienda: activo + existencias")
     L.append("// en bodega + foto real. El producto que deja de cumplir se")
@@ -737,7 +743,7 @@ def escribir_reporte_excel(filas, publicados):
         hoja = hoja_novedad(f.get("motivo"))
         conteo[hoja] = conteo.get(hoja, 0) + 1
     salen = sum(1 for f in novedades if f.get("codigo") in publicados)
-    resumen.append(["NOVEDADES POSGOLD — Jugueteria Taiwan"])
+    resumen.append(["NOVEDADES POSGOLD — Punto Hogar Jugueteria"])
     resumen.cell(row=1, column=1).font = negrita
     resumen.append(["Corrida: " + dt.datetime.now().strftime("%Y-%m-%d %H:%M")])
     resumen.append([])
