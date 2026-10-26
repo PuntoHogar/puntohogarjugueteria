@@ -26,7 +26,7 @@ de sincronización está desactivado (ver "El catálogo", abajo).
 | Tipografía principal | Poppins ExtraBold (titulares, precios destacados) |
 | Tipografía secundaria | Montserrat Medium/SemiBold (descripciones y textos) |
 | Logo | Circular (`assets/logo-circular.png`), oso, cohete, camión, pelota y estrellas |
-| WhatsApp | **+57 313 720 31 36** (pedidos e información) |
+| WhatsApp | **+57 314 724 7260** (pedidos e información) |
 | Tienda física | No: atención por WhatsApp y envíos a domicilio |
 
 Los tokens viven en `:root` de `index.html` (`--primary-color` = verde lima,
@@ -83,7 +83,7 @@ clonado) es una foto estática del sistema original:
 
 Los pedidos no tienen backend: el checkout arma el mensaje de WhatsApp con
 la referencia de cada producto y su enlace directo a la ficha en esta misma
-tienda (`?producto={slug}`), al **+57 313 720 31 36**.
+tienda (`?producto={slug}`), al **+57 314 724 7260**.
 
 ## Características de la tienda
 

@@ -6,6 +6,10 @@ Clonación completa del sistema de jugueteriataiwan
 que se aplicó con **Lunaria**: sistema heredado + rebranding completo al
 brief oficial de la marca.
 
+> **Actualización (26-10-2026, más tarde):** el WhatsApp de pedidos e
+> información pasó de +57 313 720 31 36 a **+57 314 724 7260**
+> (`573147247260`). Los valores de la tabla ya lo reflejan.
+
 ## Cambios aplicados
 
 ### Identidad (brief de branding)
@@ -23,8 +27,8 @@ brief oficial de la marca.
 
 | Qué | Antes | Ahora |
 |---|---|---|
-| WhatsApp pedidos | 573106988465 | **573137203136** (+57 313 720 31 36) |
-| WhatsApp contacto | 573138786096 | **573137203136** (mismo número) |
+| WhatsApp pedidos | 573106988465 | **573147247260** (+57 314 724 7260) |
+| WhatsApp contacto | 573138786096 | **573147247260** (mismo número) |
 | Dirección física | CC Taiwan, Local 27 | **Vacía** (sin tienda física) |
 | Instagram / TikTok | @jugueteriataiwan / @jugueteria.taiwan | @puntohogar / @puntohogar (placeholders) |
 | Retiro en tienda | Sí (checkout, FAQ, mapas) | **Eliminado**; solo entrega a domicilio |
@@ -71,7 +75,7 @@ por encima (hoy ningún producto lo trae → 0 badges de descuento).
 | `qa_carrito.py` | **38/38 OK** (regla de precios actualizada a Precio 2 +30%) |
 | Productos fuera de Precio 2 × 1.3 | **0 de 1.552** visibles (desvío máximo $0) |
 | Tachados inventados | **0** |
-| Enlace del pedido WhatsApp | wa.me/573137203136 con precios +30% correctos |
+| Enlace del pedido WhatsApp | wa.me/573147247260 con precios +30% correctos |
 
 Precios de muestra verificados en vivo:
 

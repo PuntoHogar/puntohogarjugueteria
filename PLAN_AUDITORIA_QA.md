@@ -29,7 +29,7 @@ Cubre 4 fases:
 |---|---|
 | 1 | El carrito agrega los productos CORRECTOS: id, nombre, SKU, precio, talla, fusión de líneas, badge |
 | 2 | La cuenta es EXACTA: totales (cálculo y DOM), subtotales, +1/−1, tacho, persistencia tras recarga, vaciado |
-| 3 | El pedido de WhatsApp es EXACTO: enlace al 573137203136, referencias, subtotales, TOTAL, unidades, confeti, reinicio del carrito |
+| 3 | El pedido de WhatsApp es EXACTO: enlace al 573147247260, referencias, subtotales, TOTAL, unidades, confeti, reinicio del carrito |
 | 4 | Dopamina: vuelo de la foto al carrito, reuso de la miniatura, pop del badge, guardas (checkout abierto, `prefers-reduced-motion`) |
 
 Incluye la **regla de precios de la tienda**: los 1.552 productos
@@ -61,7 +61,7 @@ Contra el sitio publicado (GitHub Pages), no contra `file://`:
 
 1. Agregar 2-3 productos variados (barato + caro).
 2. Completar el checkout con datos de prueba y enviar el pedido.
-3. Verificar en el WhatsApp +57 313 720 31 36: llega con
+3. Verificar en el WhatsApp +57 314 724 7260: llega con
    "*NUEVO PEDIDO — PUNTO HOGAR JUGUETERÍA*", precios con el +30%
    correcto, enlaces de ficha que abren la tarjeta resaltada en ESTA
    tienda, y el envío cotizado por WhatsApp.

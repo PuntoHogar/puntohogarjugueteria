@@ -90,7 +90,7 @@ solo cuando estén respaldadas por la información del producto.
 
 ## 6. Canales y contacto
 
-- **WhatsApp (pedidos e información):** +57 313 720 31 36 — único canal
+- **WhatsApp (pedidos e información):** +57 314 724 7260 — único canal
   de cierre del checkout; configurable desde el panel.
 - **Instagram / TikTok:** `@puntohogar` (placeholders configurables
   desde el panel).

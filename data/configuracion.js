@@ -2,12 +2,12 @@
 // (botón "Publicar para todos"). Se aplica a TODOS los visitantes de
 // puntohogarjugueteria.github.io. Nadie necesita editar este archivo a mano.
 window.CONFIG_PUBLICADA = {
-  "version": 1792710000000,
+  "version": 1792800000000,
   "tienda": {
     "nombre": "Punto Hogar Juguetería",
     "logo": "assets/logo-circular.png",
-    "whatsappPedidos": "573137203136",
-    "whatsappContacto": "573137203136",
+    "whatsappPedidos": "573147247260",
+    "whatsappContacto": "573147247260",
     "direccion": "",
     "instagram": "puntohogar",
     "tiktok": "puntohogar",

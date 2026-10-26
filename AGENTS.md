@@ -2,7 +2,7 @@
 
 Tienda al detal de Punto Hogar Juguetería — by Fredy Henao: un `index.html`
 monolítico publicado por GitHub Pages en puntohogarjugueteria.github.io, con
-checkout por WhatsApp (+57 313 720 31 36). Clonado y rebrandeado del sistema
+checkout por WhatsApp (+57 314 724 7260). Clonado y rebrandeado del sistema
 original de Juguetería Taiwan (26-10-2026) siguiendo el patrón de Lunaria:
 sistema heredado + rebranding completo al brief. Ver `README.md` para la
 arquitectura completa.
@@ -37,7 +37,7 @@ arquitectura completa.
   400-700). Se cargan por Google Fonts en el `<head>`.
 - Logo circular: `assets/logo-circular.png` (512). Favicons y og derivan del
   mismo.
-- WhatsApp pedidos e información: `573137203136` (313 720 31 36).
+- WhatsApp pedidos e información: `573147247260` (314 724 7260).
 - **Sin tienda física**: no hay dirección, retiro en tienda, ni enlaces de
   mapa. Si algún día se configura `direccion` en el panel, el sitio vuelve a
   mostrar tienda física y mapas automáticamente (ver `aplicarIdentidad` y
@@ -75,7 +75,7 @@ Publicar: `git push origin main`. GitHub Pages republica en ~1 min.
 - **Carrito**: `cart` fusiona líneas por `lineId` (`id::talla`), el total
   sale de `getCartSummary()` y `qa_carrito.py` vigila identidad, aritmética
   hasta el mensaje de WhatsApp, persistencia y vuelo.
-- **Pedidos**: `sendWhatsAppOrder()` arma el mensaje al +57 313 720 31 36;
+- **Pedidos**: `sendWhatsAppOrder()` arma el mensaje al +57 314 724 7260;
   el enlace de cada producto apunta a `?producto={slug}` de esta misma
   tienda (los `url` de catalogo.js ya apuntan a puntohogarjugueteria.github.io).
 - **Entrega**: solo "A domicilio" (no hay opción de retiro en tienda ni
