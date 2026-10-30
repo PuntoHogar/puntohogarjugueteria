@@ -2,16 +2,16 @@
 // (botón "Publicar para todos"). Se aplica a TODOS los visitantes de
 // puntohogar.github.io/puntohogarjugueteria. Nadie necesita editar este archivo a mano.
 window.CONFIG_PUBLICADA = {
-  "version": 1792800000000,
+  "version": 1793371868739,
   "tienda": {
     "nombre": "Punto Hogar Juguetería",
     "logo": "assets/logo-circular.png",
-    "whatsappPedidos": "573147247260",
-    "whatsappContacto": "573147247260",
+    "whatsappPedidos": "573137203136",
+    "whatsappContacto": "573137203136",
     "direccion": "",
     "instagram": "puntohogar",
     "tiktok": "puntohogar",
-    "sitioWeb": "puntohogar.github.io/puntohogarjugueteria",
+    "sitioWeb": "puntohogarjugueteria.github.io",
     "pixelMeta": "",
     "ga4": "",
     "clarity": "",
@@ -19,21 +19,21 @@ window.CONFIG_PUBLICADA = {
     "heroDestacadoVisible": true,
     "productosFavoritos": "mesa-futbol-de-madera, pista-neon-carro-pila-luz-con-numero, burbujero-mil-burbujas-pilas-cj-bubble-gun-4-motivos",
     "cantidadProductos": "+1.900",
-    "categoriasOcultas": "navidad, colecciones",
+    "categoriasOcultas": "navidad",
     "productosOcultos": "",
-    "creditoActivo": true,
-    "simuladorEnTarjetas": true,
+    "reglas": "deduplicar-mayor-existencia",
+    "creditoActivo": false,
+    "simuladorEnTarjetas": false,
     "aliados": "Addi, Sistecrédito",
     "plazos": "3, 6",
     "tasaMensual": 0,
     "montoMinimo": 100000,
     "pagoContraEntrega": true,
     "vaciarCarritoTrasPedido": true,
-    "sonidoAlAgregar": true,
-    "reglas": "deduplicar-mayor-existencia"
+    "sonidoAlAgregar": true
   },
   "precios": {
-    "margenGlobal": 0.30,
+    "margenGlobal": 0.3,
     "multiplicadorBase": 1,
     "redondeo": 0,
     "margenesPorCategoria": {},
