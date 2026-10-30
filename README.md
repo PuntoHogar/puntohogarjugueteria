@@ -109,15 +109,21 @@ tienda (`?producto={slug}`), al **+57 314 724 7260**.
 ## Panel de administración
 
 Se abre con el enlace "Administración" del pie, `?admin=1` o Ctrl+Shift+A
-(clave de `TIENDA_DEFECTO.claveAdmin`, de fábrica `Walter123*`).
+(clave de `TIENDA_DEFECTO.claveAdmin`, de fábrica `PUNTOHOGAR123*`).
 
 - **Una sola vez**: crear un fine-grained token sobre
   `PuntoHogar/puntohogarjugueteria` (permisos Actions:Read+write y
-  Contents:Read+write), cargarlo en el panel y usar "Publicar para todos".
+  Contents:Read+write) y pegarlo en el panel. Con un solo token basta:
+  los tres botones de GitHub (Sincronizar ahora, Cifrar y subir costos y
+  Publicar para todos) lo leen de cualquiera de los dos campos — sync o
+  costos — automáticamente (fallback 30-10-2026). Se guarda solo en ese
+  navegador.
 - **Guardar en MI computador** — previsualiza solo en ese navegador.
 - **Publicar para todos** — sube la configuración al proyecto y la ven todos.
 - **Sincronizar ahora** — lanza la corrida del catálogo al instante (solo
-  aplica cuando Punto Hogar tenga POSGold y secrets configurados).
+  aplica cuando Punto Hogar tenga POSGold y secrets configurados; sin
+  POSGold la corrida termina en verde con un aviso de lo que falta y el
+  catálogo no se modifica).
 
 ## Seguridad
 

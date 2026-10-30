@@ -82,11 +82,15 @@ Publicar: `git push origin main`. GitHub Pages republica en ~1 min.
   bloque de dirección en el checkout). El JS conserva la rama `tienda` por
   si algún día se configura dirección, pero no es alcanzable desde la UI.
 - **Panel de administración**: login con `TIENDA_DEFECTO.claveAdmin`
-  (fábrica `Walter123*`), abre con el enlace "Administración" del pie,
+  (fábrica `PUNTOHOGAR123*`, cambiada el 29-10-2026 desde la de clonado),
+  abre con el enlace "Administración" del pie,
   `?admin=1` o Ctrl+Shift+A. Publica TIENDA+PRECIOS a
   `data/configuracion.js` SIN `claveAdmin` (la clave nunca se publica).
   Los tokens deben crearse contra `PuntoHogar/puntohogarjugueteria`
-  (`SYNC_API` y `REPO_API` ya apuntan ahí).
+  (`SYNC_API` y `REPO_API` ya apuntan ahí). Los 3 botones de GitHub del
+  panel (Sincronizar ahora, Cifrar y subir costos, Publicar para todos)
+  aceptan el token de CUALQUIERA de los dos campos: si el campo propio
+  está vacío hacen fallback al del otro (30-10-2026).
 - **Analítica**: Pixel de Meta, GA4 y Clarity vienen VACÍOS de fábrica (los
   IDs del sistema original se retiraron en el clonado); se activan pegando
   el ID en el panel.
@@ -94,6 +98,9 @@ Publicar: `git push origin main`. GitHub Pages republica en ~1 min.
   `sync_posgold.py` solo correría si Punto Hogar conecta su propio POSGold
   (definir `POSGOLD_BASE`, secrets y `costos.posgold.enc` propio; el del
   sistema original se retiró del repo por ser material de otro negocio).
+  El paso "Verificar que POSGold esta conectado" (30-10-2026) hace que una
+  corrida sin POSGold termine en VERDE con aviso (`::warning::`) de lo que
+  falta — el catálogo no se toca y la pestaña Actions no queda en rojo.
 
 ## Gotchas conocidos
 

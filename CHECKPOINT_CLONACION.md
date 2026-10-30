@@ -93,9 +93,10 @@ Precios de muestra verificados en vivo:
    `main` / `(root)`. Sitio: https://puntohogar.github.io/puntohogarjugueteria
    (URL de proyecto porque el repo vive en la organización `PuntoHogar`).
 2. **Panel de administración**: crear fine-grained token sobre
-   `PuntoHogar/puntohogarjugueteria` (Actions y Contents Read+write),
-   cargarlo en el panel y usar "Publicar para todos". Clave de fábrica:
-   `Walter123*` (cambiable desde el panel).
+   `PuntoHogar/puntohogarjugueteria` (Actions y Contents Read+write) y
+   pegarlo en el panel; los tres botones de GitHub lo leen de cualquiera
+   de los dos campos (fallback). Clave de fábrica actual:
+   `PUNTOHOGAR123*` (cambiada el 29-10-2026 desde `Walter123*`).
 3. **Analítica**: pegar los IDs propios de Pixel de Meta / GA4 / Clarity
    en el panel (hoy todo viene apagado).
 4. **Futuro POSGold** (si algún día se contrata): definir `POSGOLD_BASE`
@@ -104,3 +105,37 @@ Precios de muestra verificados en vivo:
    y reactivar el `schedule:`.
 5. **Dominio propio** (opcional): al comprarlo, agregar el CNAME y ajustar
    `sitioWeb`, `canonical`, `og:url` y las URLs de `catalogo.js`.
+
+## Actualización 30-10-2026 — verificación de sincronización y ajustes
+
+Verificación en vivo con el token Contents del panel:
+
+- El token es válido y sirve para Actions (dispatch) y Contents (publicar
+  y subir archivos) sobre este repo.
+- `data/configuracion.js` publicado por el panel = igual al local
+  (versión 1792800000000), y el check local está en sync con `origin/main`.
+- Las 4 corridas de "Sincronizar ahora" del 30-10 fallaban en el paso
+  "Descifrar costos": sin `costos.posgold.enc` (retirado a propósito en el
+  clonado) y sin secrets — comportamiento esperado mientras la tienda no
+  conecte su POSGold propio.
+
+Ajustes publicados (commits `696bd63`, `5000967`):
+
+1. **Dominio real de GitHub Pages**: el repo vive en la organización
+   `PuntoHogar`, así que el sitio es proyecto:
+   `https://puntohogar.github.io/puntohogarjugueteria/` (HTTP 200), y el
+   subdominio `puntohogarjugueteria.github.io` responde 404. Corregidas
+   las URLs en `index.html` (canonical, og:url/og:image, JSON-LD,
+   `sitioWeb` de fábrica y publicado, footer, enlace de compartir) y las
+   1.938 URLs de pedido de `catalogo.js` — confirmado en vivo (0
+   referencias al dominio viejo y ficha `?producto=` en 200).
+2. **Workflow `sync-top300.yml`**: nuevo paso "Verificar que POSGold esta
+   conectado": una corrida sin POSGold termina en VERDE con `::warning::`
+   (lista lo que falta) y salta el descifrado y la sincronía — el
+   catálogo no se toca. Probado con una corrida real: success.
+3. **Fallback de tokens del panel** (`index.html`): los tres botones de
+   GitHub (Sincronizar ahora, Cifrar y subir costos, Publicar para todos)
+   aceptan el token de cualquiera de los dos campos del panel; antes el
+   token pegado en el campo de sync no servía para publicar.
+   Verificado con la secuencia exacta del panel (leer sha + PUT de
+   Contents): HTTP 200.
