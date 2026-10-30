@@ -7669,7 +7669,7 @@
         }
 
         async function forzarSyncAhora() {
-            const token = leerTokenSync();
+            const token = leerTokenSync() || leerTokenCostos();
             const inp = document.getElementById('adminSyncToken');
             if (inp && inp.value.trim() !== token) guardarTokenSync();
             if (!token) {
@@ -7761,6 +7761,10 @@
             if (!inp) return;
             try { localStorage.setItem(COSTOS_TOKEN_KEY, inp.value.trim()); } catch (e) {}
             showNotification(inp.value.trim() ? 'Token de costos guardado en este navegador' : 'Token borrado', 'success');
+        }
+
+        function leerTokenCostos() {
+            try { return localStorage.getItem(COSTOS_TOKEN_KEY) || ''; } catch (e) { return ''; }
         }
 
         /* ------------------------------------------------------------------
@@ -7890,7 +7894,7 @@
             const fileInput = document.getElementById('adminCostosFile');
             const file = fileInput && fileInput.files && fileInput.files[0];
             const clave = leerCostosClave();
-            const token = (() => { try { return localStorage.getItem(COSTOS_TOKEN_KEY) || ''; } catch (e) { return ''; } })();
+            const token = leerTokenCostos() || leerTokenSync();
             if (!file) { showNotification('Elige primero el Excel exportado de POSGold', 'error'); return; }
             if (!clave || !token) {
                 showNotification('Falta ' + (clave ? 'el token' : 'la llave') + ' de costos — mira la guía de abajo', 'error');
@@ -8920,7 +8924,7 @@
            archivo o guardada en cada navegador).
            ------------------------------------------------------------------ */
         async function publicarConfigNavegador() {
-            const token = (() => { try { return localStorage.getItem(COSTOS_TOKEN_KEY) || ''; } catch (e) { return ''; } })();
+            const token = leerTokenCostos() || leerTokenSync();
             if (!token) {
                 showNotification('Falta el token de GitHub — pide el enlace de configuración (un toque y queda cargado) o mira la guía de abajo', 'error');
                 const guias = document.querySelectorAll('.admin-sync-ayuda');
