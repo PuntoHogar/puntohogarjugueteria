@@ -32,7 +32,7 @@ brief oficial de la marca.
 | Dirección física | CC Taiwan, Local 27 | **Vacía** (sin tienda física) |
 | Instagram / TikTok | @jugueteriataiwan / @jugueteria.taiwan | @puntohogar / @puntohogar (placeholders) |
 | Retiro en tienda | Sí (checkout, FAQ, mapas) | **Eliminado**; solo entrega a domicilio |
-| Enlaces de ficha (catalogo.js) | saldosjugueteriataiwan.com/?producto= | **puntohogarjugueteria.github.io/?producto=** (1.938 URLs) |
+| Enlaces de ficha (catalogo.js) | saldosjugueteriataiwan.com/?producto= | **puntohogar.github.io/puntohogarjugueteria/?producto=** (1.938 URLs) |
 | SYNC_API / REPO_API (panel) | jugueteriataiwanoficial/… | **PuntoHogar/puntohogarjugueteria** |
 | Pixel de Meta | 3678555472322858 (activo) | **Retirado** (vacío = apagado; se pega el propio ID desde el panel) |
 | cantidadProductos | +22.000 | **+1.900** (1.938 productos en la foto del catálogo) |
@@ -90,7 +90,8 @@ Precios de muestra verificados en vivo:
 ## Pendientes manuales
 
 1. **Activar GitHub Pages**: Settings → Pages → Deploy from branch →
-   `main` / `(root)`. Sitio: https://puntohogarjugueteria.github.io
+   `main` / `(root)`. Sitio: https://puntohogar.github.io/puntohogarjugueteria
+   (URL de proyecto porque el repo vive en la organización `PuntoHogar`).
 2. **Panel de administración**: crear fine-grained token sobre
    `PuntoHogar/puntohogarjugueteria` (Actions y Contents Read+write),
    cargarlo en el panel y usar "Publicar para todos". Clave de fábrica:

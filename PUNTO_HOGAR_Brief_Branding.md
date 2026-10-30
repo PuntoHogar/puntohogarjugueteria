@@ -97,7 +97,7 @@ solo cuando estén respaldadas por la información del producto.
 - **Tienda física:** no hay — la atención es por WhatsApp con envíos a
   domicilio. Si algún día se configura `direccion` en el panel, el sitio
   vuelve a mostrar tienda física y mapas automáticamente.
-- **Sitio:** https://puntohogarjugueteria.github.io
+- **Sitio:** https://puntohogar.github.io/puntohogarjugueteria
 
 ## 7. Resumen ejecutivo
 

@@ -4,7 +4,7 @@ Tienda en línea de **Punto Hogar Juguetería — by Fredy Henao**: juguetes,
 juegos y regalos para sorprender, compartir y crear recuerdos. Al detal con
 envíos a toda Colombia y atención por WhatsApp.
 Se sirve por GitHub Pages desde este repositorio:
-**[puntohogarjugueteria.github.io](https://puntohogarjugueteria.github.io)**
+**[puntohogar.github.io/puntohogarjugueteria](https://puntohogar.github.io/puntohogarjugueteria/)**
 
 Todo el frente vive en **`index.html`** (HTML + CSS + JS en un solo archivo).
 El catálogo (`catalogo.js`, 1.938 productos) es una **foto estática del
@@ -37,7 +37,7 @@ Los tokens viven en `:root` de `index.html` (`--primary-color` = verde lima,
 | Archivo / carpeta | Qué es |
 |---|---|
 | `index.html` | La tienda completa: vitrina, carruseles, lightbox, carrito, checkout por WhatsApp y panel de administración |
-| `catalogo.js` | Catálogo publicado. En el sistema original lo regenera el cron; aquí es una foto estática (los enlaces de ficha apuntan a `puntohogarjugueteria.github.io`) |
+| `catalogo.js` | Catálogo publicado. En el sistema original lo regenera el cron; aquí es una foto estática (los enlaces de ficha apuntan a `puntohogar.github.io/puntohogarjugueteria`) |
 | `data/configuracion.js` | Configuración publicada desde el panel: la que ven **todos** los visitantes. La mantiene el botón "Publicar para todos" vía la API de GitHub — nadie la edita a mano |
 | `assets/fotos/` | Miniaturas WebP (~25 KB) de cada foto de producto, servidas por el CDN de GitHub Pages |
 | `assets/logo-circular.png` | Logo circular de la marca (512×512); `og-compartir.png`, `favicon-32.png` y `apple-touch-icon.png` derivan del mismo |
@@ -143,7 +143,11 @@ Publicar = `git push origin main` (GitHub Pages reconstruye en ~1 minuto).
 ## Pendientes manuales (una sola vez en GitHub)
 
 1. **Activar GitHub Pages**: Settings → Pages → Deploy from branch → `main` /
-   `/ (root)`. El sitio queda en `puntohogarjugueteria.github.io`.
+   `/ (root)`. Como el repo vive en la organización `PuntoHogar`, la URL del
+   sitio es proyecto: **https://puntohogar.github.io/puntohogarjugueteria/**
+   (el subdominio `puntohogarjugueteria.github.io` solo existiría en una
+   organización con ese mismo nombre; si se quiere, mover el repo a una
+   cuenta/organización con ese nombre o crear un dominio propio con CNAME).
 2. Si se quiere dominio propio, crear el CNAME y ajustar `sitioWeb`,
    `canonical`, `og:url` y las URLs de `catalogo.js`.
 3. Configurar los IDs de analítica (Pixel de Meta, GA4, Clarity) desde el

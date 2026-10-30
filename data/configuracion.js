@@ -1,6 +1,6 @@
 // Configuración de la tienda publicada desde el panel de administración
 // (botón "Publicar para todos"). Se aplica a TODOS los visitantes de
-// puntohogarjugueteria.github.io. Nadie necesita editar este archivo a mano.
+// puntohogar.github.io/puntohogarjugueteria. Nadie necesita editar este archivo a mano.
 window.CONFIG_PUBLICADA = {
   "version": 1792800000000,
   "tienda": {
@@ -11,7 +11,7 @@ window.CONFIG_PUBLICADA = {
     "direccion": "",
     "instagram": "puntohogar",
     "tiktok": "puntohogar",
-    "sitioWeb": "puntohogarjugueteria.github.io",
+    "sitioWeb": "puntohogar.github.io/puntohogarjugueteria",
     "pixelMeta": "",
     "ga4": "",
     "clarity": "",

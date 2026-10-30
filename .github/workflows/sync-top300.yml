@@ -55,7 +55,37 @@ jobs:
       - name: Instalar openpyxl y pillow
         run: pip install openpyxl pillow
 
+      # AVISO amable en vez de corrida fallida: si la tienda todavia no
+      # conecto su POSGold (falta costos.posgold.enc o los secrets), la
+      # corrida termina OK con un mensaje que explica lo que falta.
+      # Asi un clic accidental en "Sincronizar ahora" no deja rojo en Actions.
+      - name: Verificar que POSGold esta conectado
+        id: check
+        run: |
+          falta=""
+          if [ ! -f costos.posgold.enc ]; then
+            falta="$falta\n  - costos.posgold.enc (el export de PRODUCTOS cifrado)"
+          fi
+          if [ -z "$COSTOS_KEY" ]; then
+            falta="$falta\n  - secret COSTOS_KEY"
+          fi
+          if [ -z "$POSGOLD_TOKEN_USER" ] || [ -z "$POSGOLD_TOKEN_PASS" ]; then
+            falta="$falta\n  - secrets POSGOLD_TOKEN_USER / POSGOLD_TOKEN_PASS"
+          fi
+          if [ -n "$falta" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Sincronización no aplicada: el catálogo NO se tocó (la tienda sigue con la última versión publicada). Para conectar el POSGold propio hace falta:$falta"
+            echo "Cuando la tienda tenga su POSGold: subir costos.posgold.enc (botón 'Costos y token' del panel), configurar los secrets y volver a correr esta corrida."
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          POSGOLD_TOKEN_USER: ${{ secrets.POSGOLD_TOKEN_USER }}
+          POSGOLD_TOKEN_PASS: ${{ secrets.POSGOLD_TOKEN_PASS }}
+          COSTOS_KEY: ${{ secrets.COSTOS_KEY }}
+
       - name: Descifrar costos de POSGold
+        if: steps.check.outputs.ready == 'true'
         run: |
           openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 \
             -in costos.posgold.enc -out PRODUCTOS_cloud.xlsx \
@@ -65,6 +95,7 @@ jobs:
           COSTOS_KEY: ${{ secrets.COSTOS_KEY }}
 
       - name: Crear .env desde secrets
+        if: steps.check.outputs.ready == 'true'
         run: |
           # TODO: cuando Punto Hogar tenga POSGold, cambia POSGOLD_BASE
           # al subdominio propio (hoy no existe y la corrida fallaria
@@ -73,7 +104,7 @@ jobs:
           printf 'POSGOLD_TOKEN_USER=%s\n' "$POSGOLD_TOKEN_USER" >> .env
           printf 'POSGOLD_TOKEN_PASS=%s\n' "$POSGOLD_TOKEN_PASS" >> .env
           printf 'POSGOLD_EMPRESAID=1\nPOSGOLD_USUARIOID=1\nPOSGOLD_BODEGAID=2\n' >> .env
-          printf 'DETAL_URL=https://puntohogarjugueteria.github.io\n' >> .env
+          printf 'DETAL_URL=https://puntohogar.github.io/puntohogarjugueteria\n' >> .env
           printf 'TOP300_CANTIDAD=99999\nRANKING=margen_costo\nCOSTO_CAMPO=costopromedio\n' >> .env
           printf 'REFRESCO_MINIATURAS=40\n' >> .env
           printf 'INCLUIR_DESTACADOS=true\n' >> .env
@@ -83,6 +114,7 @@ jobs:
           POSGOLD_TOKEN_PASS: ${{ secrets.POSGOLD_TOKEN_PASS }}
 
       - name: Ejecutar sincronizacion y publicar
+        if: steps.check.outputs.ready == 'true'
         run: python sync_posgold.py --publicar
         env:
           GIT_AUTHOR_NAME: sync-posgold

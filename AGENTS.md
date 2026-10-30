@@ -1,7 +1,7 @@
 # AGENTS.md — Guía para trabajar en este repositorio
 
 Tienda al detal de Punto Hogar Juguetería — by Fredy Henao: un `index.html`
-monolítico publicado por GitHub Pages en puntohogarjugueteria.github.io, con
+monolítico publicado por GitHub Pages en puntohogar.github.io/puntohogarjugueteria, con
 checkout por WhatsApp (+57 314 724 7260). Clonado y rebrandeado del sistema
 original de Juguetería Taiwan (26-10-2026) siguiendo el patrón de Lunaria:
 sistema heredado + rebranding completo al brief. Ver `README.md` para la
@@ -77,7 +77,7 @@ Publicar: `git push origin main`. GitHub Pages republica en ~1 min.
   hasta el mensaje de WhatsApp, persistencia y vuelo.
 - **Pedidos**: `sendWhatsAppOrder()` arma el mensaje al +57 314 724 7260;
   el enlace de cada producto apunta a `?producto={slug}` de esta misma
-  tienda (los `url` de catalogo.js ya apuntan a puntohogarjugueteria.github.io).
+   tienda (los `url` de catalogo.js ya apuntan a puntohogar.github.io/puntohogarjugueteria).
 - **Entrega**: solo "A domicilio" (no hay opción de retiro en tienda ni
   bloque de dirección en el checkout). El JS conserva la rama `tienda` por
   si algún día se configura dirección, pero no es alcanzable desde la UI.

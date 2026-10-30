@@ -3,7 +3,7 @@
 """
 sync_posgold.py — Carga automatica de los 300 productos mas rentables de
 POSGold al catalogo.js de Punto Hogar Jugueteria
-(puntohogarjugueteria.github.io).
+(puntohogar.github.io/puntohogarjugueteria).
 
 NOTA PUNTO HOGAR (26-10-2026): la tienda NO tiene POSGold todavia; el
 catalogo.js del repo es una foto estatica del sistema original y el cron
@@ -572,7 +572,7 @@ def generar_catalogo_js(env, seleccion, cantidad):
     sigue siendo el Precio 2 (price). Sin Precio 5 definido, el campo no
     viaja y cada canal decide su respaldo."""
     fecha = dt.datetime.now().strftime("%Y-%m-%d %H:%M")
-    detal = (env.get("DETAL_URL") or "https://puntohogarjugueteria.github.io").rstrip("/")
+    detal = (env.get("DETAL_URL") or "https://puntohogar.github.io/puntohogarjugueteria").rstrip("/")
     L = []
     L.append("// ==================================================================")
     L.append(f"// CATALOGO DE PUNTO HOGAR JUGUETERIA — generado automaticamente el {fecha}")
